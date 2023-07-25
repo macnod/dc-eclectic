@@ -124,32 +124,59 @@ a log entry. Returns the same string that was written to STREAM."
     entry))
 
 
+(defun verify-string (string regex &key ignore-case)
+  "Return t if STRING matches the REGEX exactly.  Use the IGNORE-CASE
+parameter if you want case-insensitve matches."
+  (multiple-value-bind (a b)
+      (scan
+       (if ignore-case (concatenate 'string "(?is)" regex) regex)
+       string)
+    (and a b (zerop a) (= b (length string)))))
+
+
 (defun join-paths (&rest path-parts)
   "Joins parameters (collected in PATH-PARTS) into a unix-like file
 path, inserting slashes where necessary."
-  (let* ((path-parts (mapcar (lambda (s) (if (stringp s) s (format nil "~a" s)))
-                             path-parts))
-         (path (format nil "~{~a~^/~}"
-                       (loop for part in path-parts 
-                             collect (regex-replace-all "^/|/$" part "")))))
-    (format nil "~a~a"
-            (if (verify-string (car path-parts) "^/.*$") "/" "")
-            path)))
+  (cond ((null path-parts) "")
+        ((loop for s in path-parts thereis (not (or (null s) (stringp s))))
+         (error "All path parts must be strings or nil."))
+        (t (let* ((clean-parts (remove-if
+                                (lambda (p) (or (null p) (string= p "")))
+                                (mapcar
+                                 (lambda (s)
+                                   (regex-replace-all "^/+|/+$" s ""))
+                                 path-parts)))
+                  (path (format nil "~{~a~^/~}" clean-parts)))
+             (format nil "~a~a"
+                     (if (and (stringp (car path-parts))
+                              (verify-string (car path-parts) "^/.*$"))
+                         "/" "")
+                     path)))))
+
 
 (defun path-only (filename)
   "Retrieves the path (path only, without the filename) of FILENAME."
+  (declare (type string filename))
   (multiple-value-bind (match strings)
       (scan-to-strings "(.+)\/[^\/]*$" filename)
     (declare (ignore match))
-    (if (null strings) "./" (elt strings 0))))
+    (if (or (null strings)
+            (null (car strings)))
+        "./"
+        (elt strings 0))))
+
 
 (defun ds (list-or-atom &optional type)
-  "Create a dc-utilities nested data structure.  Each node in LIST-OR-ATOM can be a scalar value or object, a map (hash table), an array, or a list.  Here's an example:
+  "Create a dc-eclectic nested data structure.  Each node in
+LIST-OR-ATOM can be a scalar value or object, a map (hash table), an
+array, or a list.  Here's an example:
 
     (ds '(:array (:map :name \"Donnie\" :age 50 :height \"6'4\" :weight 225)
                  (:map :name \"Tracy\" :age 45 :height \"5'0'\" :weight 120)))
 
-When you create a dc-utilities data structure like the one above, you can use other data-structure functions to easily access and manipulate the data."
+When you create a dc-utilities data structure like the one above, you
+can use other ds- data-structure functions to easily access and
+manipulate the data."
   (let ((l (if (and type (listp list-or-atom) (not (null list-or-atom)))
                (cons type list-or-atom)
                list-or-atom)))
@@ -167,8 +194,12 @@ When you create a dc-utilities data structure like the one above, you can use ot
             (:list (mapcar #'ds l))
             (t (error (format nil "Unknown collection type ~a" type))))))))
 
+
 (defun ds-get (ds &rest keys)
-  "Get a node (a leaf or a subtree) of DS, a dc-utilities data structure.  The parameters that follow ds, collected in KEYS, describe the path to the node.  For example, given the following data structure in bogus-ds:
+  "Get a node (a leaf or a subtree) of DS, a dc-utilities data
+structure.  The parameters that follow ds, collected in KEYS, describe
+the path to the node.  For example, given the following data structure
+in bogus-ds:
 
     (ds '(:array (:map :name \"Donnie\" :age 50 :height \"6'4\" :weight 225)
                  (:map :name \"Tracy\" :age 45 :height \"5'0'\" :weight 120)))

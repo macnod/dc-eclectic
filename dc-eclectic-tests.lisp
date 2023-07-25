@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 28)
+(plan 50)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -121,6 +121,40 @@
                                       append (list timestamp m)))
       "log-entries with multiple strings in a deeply-nested list"))
 
+;; join-paths tests
+(is (join-paths nil) "" "join-paths with nil")
+(is (join-paths nil "a" "b" "c") "a/b/c" "join-paths with nil and strings")
+(is (join-paths "/" nil "a" "b" "c") "/a/b/c" 
+    "join-paths with /, nil and strings")
+(is (join-paths "a") "a" "join-paths with single string")
+(is (join-paths "/a") "/a" "join-paths with single string that starts with /")
+(is (join-paths "/") "/" "join-paths with single /")
+(is (join-paths "a" "b" "c") "a/b/c" "join-paths with multiple strings")
+(is (join-paths "/a" "b" "c") "/a/b/c"
+    "join-paths with multiple strings starting with /a")
+(is (join-paths "/" "a" "b" "c") "/a/b/c" 
+    "join-paths with multiple strings starting with /")
+(is (join-paths "a" "b" "c" nil) "a/b/c" 
+    "join-paths with multiple strings and nil")
+(is (join-paths "a" "b" "c" "") "a/b/c" 
+    "join-paths with multiple strings ending in empty string")
+(is (join-paths "a" "b" "c" "/") "a/b/c" 
+    "join-paths with multiple strings ending in /")
+(is (join-paths "" "a" "b" "c") "a/b/c" 
+    "join-paths with multiple strings starting with empty string")
+(is (join-paths "a" "" "b" "c") "a/b/c" 
+    "join-paths with multiple strings containing empty string")
+(is-error (join-paths "a" 1 "b") 'error "join-paths with one non-string")
+(is-error (join-paths 1 2 3) 'error "join-paths with all non-string")
 
+;; path-only
+(is-error (path-only nil) 'error "path-only with nil")
+(is (path-only "") "./" "path-only with empty string")
+(is (path-only "/") "./" "path-only with /")
+(is (path-only "/a/b/c/file.txt") "/a/b/c" 
+    "path-only with /a/b/c/file.txt")
+(is (path-only "a/b/c/file.txt") "a/b/c" 
+    "path-only with a/b/c/file.txt")
+(is (path-only "file.txt") "./" "path-only with file.txt")
 
 (finalize)
