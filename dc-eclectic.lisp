@@ -100,44 +100,19 @@ log entry."
 (defun log-entries (&rest messages)
   "Flattens MESSAGES, then calls LOG-ENTRY with each element of the
 resulting list."
-  (loop for m in (flatten-list messages)
+  (loop for m in (flatten messages)
         collect (log-entry m) into entries
         finally (return (apply #'concatenate 'string entries))))
 
 
-(defun flatten-list (l)
+(defun flatten (l)
   "Given a nested list L, return a flat list. If an array or other
 sequence is among the elements of L, the sequence is not flattened,
 but treated as a single element."
   (cond
     ((null l) nil)
     ((atom l) (list l))
-    (t (loop for i in l append (flatten-list i)))))
-
-
-(defun flatten-array (a)
-  "Given an nested array A, return a flat array. If an element of the
-array is a non-array sequence (for example a list), then the sequence
-is not flattened but treated as a single element."
-  (cond ((null a) nil)
-        ((not (arrayp a)) (vector a))
-        ((stringp a) (vector a))
-        (t (loop for i across a append (map 'list 'identity (flatten-array i)) into result
-                 finally (return (map 'vector #'identity result))))))
-
-(defgeneric flatten (l)
-  (:documentation "Given a nested list or array L, return a flat list or array. Strings are treated as atoms, not sequences.")
-  (:method ((l list))
-    (cond
-      ((null l) nil)
-      ((atom l) (list l))
-      (t (loop for i in l append (flatten i)))))
-  (:method ((l vector))
-    (cond ((null l) nil)
-          ((not (arrayp l)) (vector l))
-          ((stringp l) (vector l))
-          (t (loop for i across l append (flatten i) into result
-                   finally (return (map 'vector #'identity result)))))))
+    (t (loop for i in l append (flatten i)))))
 
 
 (defun write-log-entry (stream &rest messages)

@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 31)
+(plan 28)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -52,36 +52,19 @@
     "?y?"
     "to-ascii non-ascii chars with printable-only nil")
 
-(is (flatten-list (list 1 2 (list 3 (list 4 (list 5 6) 7) 8) 9))
-    (list 1 2 3 4 5 6 7 8 9)
-    "flatten-list nested list of integers")
-
-(is (flatten-list (list 1 2 3))
-    (list 1 2 3)
-    "flatten-list already-flat list of integers")
-
-(is (flatten-list 
-     (list "one" "two"
-           (list "three" (list "four" (list "five" "six") "seven") "eight")))
-    (list "one" "two" "three" "four" "five" "six" "seven" "eight")
-    "flatten-list nested list of strings")
-
-(ok (equalp
-     (flatten-array
-      (vector "one" "two"
-              (vector "three" 
-                      (vector "four" (vector "five" "six") "seven") "eight")))
-    (vector "one" "two" "three" "four" "five" "six" "seven" "eight"))
-    "flatten-array nested list of strings")
-
-(ok (equalp
-     (flatten-array (vector 1 2 (vector 3 (vector 4 (vector 5 6) 7) 8) 9))
-     (vector 1 2 3 4 5 6 7 8 9))
-    "flatten-array nested vector of integers")
-
 (is (flatten (list 1 2 (list 3 (list 4 (list 5 6) 7) 8) 9))
     (list 1 2 3 4 5 6 7 8 9)
     "flatten nested list of integers")
+
+(is (flatten (list 1 2 3))
+    (list 1 2 3)
+    "flatten already-flat list of integers")
+
+(is (flatten
+     (list "one" "two"
+           (list "three" (list "four" (list "five" "six") "seven") "eight")))
+    (list "one" "two" "three" "four" "five" "six" "seven" "eight")
+    "flatten nested list of strings")
 
 (let ((reference-time (unix-time-to-universal-time 1689698048)))
   (is (timestamp-string :universal-time reference-time) 
@@ -137,5 +120,7 @@
       (format nil "~{~a ~a~%~}" (loop for m in (list "one" "two" "three" "four" "five" "six")
                                       append (list timestamp m)))
       "log-entries with multiple strings in a deeply-nested list"))
+
+
 
 (finalize)
