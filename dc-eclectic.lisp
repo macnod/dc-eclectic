@@ -160,10 +160,11 @@ path, inserting slashes where necessary."
   (multiple-value-bind (match strings)
       (scan-to-strings "(.+)\/[^\/]*$" filename)
     (declare (ignore match))
-    (if (or (null strings)
-            (null (car strings)))
-        "./"
-        (elt strings 0))))
+    (let ((string-list (map 'list 'identity strings)))
+      (if (or (null string-list)
+              (null (car string-list)))
+          "./"
+          (elt string-list 0)))))
 
 
 (defun ds (list-or-atom &optional type)
