@@ -167,6 +167,20 @@ path, inserting slashes where necessary."
           (elt string-list 0)))))
 
 
+(defun filename-only (filename)
+  "Retrieves the filename (filename only, without the path) of FILENAME."
+  (if (null filename)
+      ""
+      (if (stringp filename)
+          (multiple-value-bind (match parts)
+              (scan-to-strings "((.*)/)?([^\/]*)$" filename)
+            (declare (ignore match))
+            (if (not (zerop (length parts)))
+                (elt parts (1- (length parts)))
+                ""))
+          (error "FILENAME must be a string."))))
+
+
 (defun ds (list-or-atom &optional type)
   "Create a dc-eclectic nested data structure.  Each node in
 LIST-OR-ATOM can be a scalar value or object, a map (hash table), an

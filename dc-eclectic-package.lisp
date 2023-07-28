@@ -18,9 +18,8 @@
    ds-set
    ds-to-json
    ds-type
+   filename-only
    flatten
-   flatten-list
-   flatten-array
    get-unix-time
    hash-hmac-256
    hash-string

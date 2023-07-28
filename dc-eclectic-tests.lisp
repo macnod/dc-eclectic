@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 50)
+(plan 57)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -156,5 +156,19 @@
 (is (path-only "a/b/c/file.txt") "a/b/c" 
     "path-only with a/b/c/file.txt")
 (is (path-only "file.txt") "./" "path-only with file.txt")
+
+;; filename-only
+(is (filename-only nil) "" "filename-only with nil")
+(is (filename-only "/") "" "filename-only with /")
+(is (filename-only "/a/b/c/file.txt") "file.txt" 
+    "filename-only with /a/b/c/file.txt")
+(is (filename-only "/file.txt") "file.txt" 
+    "filename-only with /file.txt")
+(is (filename-only "file.txt") "file.txt" 
+    "filename-only with file.txt")
+(is (filename-only "") "" "filename-only with empty string")
+(is (filename-only "file.txt/") "" "filename-only with file.txt/")
+
+
 
 (finalize)
