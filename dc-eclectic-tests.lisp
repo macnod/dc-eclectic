@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 57)
+(plan 89)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -169,6 +169,72 @@
 (is (filename-only "") "" "filename-only with empty string")
 (is (filename-only "file.txt/") "" "filename-only with file.txt/")
 
+;; ds
+(is (ds nil) nil "ds with nil")
+(is (ds "") "" "ds with empty string")
+(is (ds 1) 1 "ds with integer")
+(is (ds 1/2) 1/2 "ds with fraction")
+(is (ds "hello") "hello" "ds with string")
+(is (ds '(:list 1 2 3)) '(1 2 3) "ds with list of integers")
+(ok (equalp (ds '(:array 1 2 3)) (vector 1 2 3)) "ds with array of integers")
+(let ((list-of-maps (list (make-hash-table :test 'equal) 
+                          (make-hash-table :test 'equal)))
+      (ds (ds '(:list (:map :a 1 :b 2) (:map :a 3 :b 4)))))
+  (setf (gethash :a (first list-of-maps)) 1)
+  (setf (gethash :b (first list-of-maps)) 2)
+  (setf (gethash :a (second list-of-maps)) 3)
+  (setf (gethash :b (second list-of-maps)) 4)
+  (let ((s1 (loop for h in list-of-maps
+                  collect (loop for k being the hash-keys of h
+                                using (hash-value v)
+                                collect (format nil "~a=~a" k v))
+                  into kv-pairs
+                  finally (return (format nil "~{~a~^, ~}" kv-pairs))))
+        (s2 (loop for h in ds
+                  collect (loop for k being the hash-keys of h
+                                using (hash-value v)
+                                collect (format nil "~a=~a" k v))
+                  into kv-pairs
+                  finally (return (format nil "~{~a~^, ~}" kv-pairs)))))
+    (is s1 s2 "ds with list of maps")))
+(let ((ds (ds '(:map :a (:list 1 2 3) :b (:list 4 5 6))))
+      (map-of-lists (make-hash-table :test 'equal)))
+  (setf (gethash :a map-of-lists) '(1 2 3))
+  (setf (gethash :b map-of-lists) '(4 5 6))
+  (is (format nil "~a" (ds-list ds))
+      (format nil "~a" (ds-list map-of-lists))
+      "ds with map of lists"))
+(is-error (ds '(:map :a 1 :b)) 'type-error "ds with map")
+(is-error (ds (list 1)) 'type-error "ds with list of single integer")
+(is-error (ds '(:vector 1 2 3)) 'type-error "ds with vector of integers")
 
+;; ds-list
+(is (ds-list (ds nil)) nil "ds-list (ds nil)")
+(is (ds-list (ds "")) "" "ds-list (ds empty string)")
+(is (ds-list (ds 1)) 1 "ds-list (ds integer)")
+(is (ds-list (ds 1/2)) 1/2 "ds-list (ds fraction)")
+(is (ds-list (ds "hello")) "hello" "ds-list (ds string)")
+(is (ds-list (ds '(:list 1 2 3))) '(:list 1 2 3) "ds-list (ds list of integers)")
+(is (ds-list (ds '(:list (:map :a 1 :b 2) (:map :a 3 :b 4))))
+    '(:list (:map :a 1 :b 2) (:map :a 3 :b 4))
+    "ds-list (ds list of maps)")
+(is (ds-list (ds '(:map :a (:list 1 2 3) :b (:list 4 5 6))))
+    '(:map :a (:list 1 2 3) :b (:list 4 5 6))
+    "ds-list (ds map of lists)")
+
+;; ds-get
+(let ((ds (ds '(:map :a (:list 1 2 3) :b (:list 4 5 (:array 6 7 8)) :c "nine"))))
+  (is (ds-get ds :c) "nine" "ds-get with :c")
+  (is (ds-get ds :a 0) 1 "ds-get with :a 0")
+  (is (ds-get ds :a 1) 2 "ds-get with :a 1")
+  (is (ds-get ds :a 2) 3 "ds-get with :a 2")
+  (is (ds-get ds :a 3) nil "ds-get with :a 3")
+  (is (ds-get ds :b 0) 4 "ds-get with :b 0")
+  (is (ds-get ds :b 1) 5 "ds-get with :b 1")
+  (is (ds-get ds :b 3) nil "ds-get with :b 3")
+  (is (ds-get ds :b 2 0) 6 "ds-get with :b 2 0")
+  (is (ds-get ds :b 2 1) 7 "ds-get with :b 2 1")
+  (is (ds-get ds :b 2 2) 8 "ds-get with :b 2 2")
+  (is (ds-get ds :b 2 3) nil "ds-get with :b 2 3"))
 
 (finalize)

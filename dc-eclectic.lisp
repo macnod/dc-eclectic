@@ -180,35 +180,101 @@ path, inserting slashes where necessary."
                 ""))
           (error "FILENAME must be a string."))))
 
+(defun ds-collection-p (x)
+  "Return T if OBJECT is of type ds-collection."
+  (cond ((atom x) t)
+        ((and (listp x)
+              (not (zerop (length x)))
+              (member (car x) '(:map :list :array)))
+         (if (eq (car x) :map) (evenp (length (cdr x))) t))
+        (t nil)))
 
-(defun ds (list-or-atom &optional type)
-  "Create a dc-eclectic nested data structure.  Each node in
-LIST-OR-ATOM can be a scalar value or object, a map (hash table), an
-array, or a list.  Here's an example:
+(deftype ds-collection ()
+  "A type specifier for a ds-collection. A ds-collection is either an
+atom or a list. If it is a list, then the list's first element must be
+the type of the collection, and the rest of the list must represent
+the collection's contents. If the collection is a map, then the list
+must have an even number of elements (key/value pairs). Here are some
+examles of collections:
+
+  - (:list 1 2 3)
+  - (:array 1 2 3)
+  - (:map \"a\" 1 \"b\" 2 \"c\" 3)
+  - (:list (:map \"a\" 1 \"b\" 2) 
+           (:map \"c\" 3 \"d\" 4)
+           (:map \"e\" 5 \"f\" 6))"
+  `(satisfies ds-collection-p))
+
+
+(declaim (ftype (function (ds-collection) t) ds))
+(defun ds (collection)
+  "Create a nested data structure.  Each node in LIST-OR-ATOM can be an
+atom or a collection. A collection is a map (hash table), an array, or
+a list.  Valid collection types are :map, :array, and :list. These
+types respresent the corresponding types in Common Lisp. An atom is
+represented by any Common Lisp atom. A collection consists of a Common
+Lisp list that starts with collection type. In lists and arrays, the
+elements that follow the collection type are the elements of the list
+or array. In maps, the elements that follow the collection type are 
+taken in pairs, to represent the key and value pairs of the map.
+
+For example, here's how you would call DS to create the
+given data structures:
+
+  A list of integers: 
+
+    (ds '(:list 1 2 3))
+
+  A list of strings:
+
+    (ds '(:list \"one\" \"two\" \"three\"))
+
+  An array of integers:
+
+    (ds '(:array 1 2 3))
+
+  A map of strings to integers:
+
+    (ds '(:map \"one\" 1 \"two\" 2 \"three\" 3))
+
+If you want to create a datastructure that consists of an atom, you
+can do this:
+
+    (ds 1)
+
+However, if you pass a list instead of an atom, and you don't provide
+a type for the list, you get an error. Don't try this:
+
+    (ds '(1 2 3))  ==>  ERROR: Unknown collection type 1
+
+The data structures you pass can be nested to any depth. Here's an
+example:
+
+    (ds '(:list 1 2 3 (:list \"one\" \"two\" \"three\")))
+
+Note how you have to specify the type for each collection.
+
+Here's an example of a list of maps:
 
     (ds '(:array (:map :name \"Donnie\" :age 50 :height \"6'4\" :weight 225)
                  (:map :name \"Tracy\" :age 45 :height \"5'0'\" :weight 120)))
 
-When you create a dc-utilities data structure like the one above, you
-can use other ds- data-structure functions to easily access and
-manipulate the data."
-  (let ((l (if (and type (listp list-or-atom) (not (null list-or-atom)))
-               (cons type list-or-atom)
-               list-or-atom)))
-    (if (atom l)
-        l
-        (let ((type (pop l)))
-          (case type
-            (:map (loop with h = (make-hash-table :test #'equal)
-                     while l
-                     for key = (pop l)
-                     for val = (ds (pop l))
-                     do (setf (gethash key h) val)
-                     finally (return h)))
-            (:array (apply #'vector (mapcar 'ds l)))
-            (:list (mapcar #'ds l))
-            (t (error (format nil "Unknown collection type ~a" type))))))))
-
+When you create a data structure like the one above, you can use other
+ds functions to access and manipulate the data."
+  (if (atom collection)
+      collection
+      (let* ((list (copy-list collection))
+             (type (pop list)))
+        (case type
+          (:map (loop with h = (make-hash-table :test #'equal)
+                      while list
+                      for key = (pop list)
+                      for val = (ds (pop list))
+                      do (setf (gethash key h) val)
+                      finally (return h)))
+          (:array (apply #'vector (mapcar 'ds list)))
+          (:list (mapcar #'ds list))))))
+  
 
 (defun ds-get (ds &rest keys)
   "Get a node (a leaf or a subtree) of DS, a dc-utilities data
