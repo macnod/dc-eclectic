@@ -1,4 +1,4 @@
-;; Run these tests in the repl with 
+;; Run these tests in the repl with
 ;;   (prove:run #P"/home/macnod/common-lisp/dc-eclectic/dc-eclectic-tests.lisp")
 ;; or, from the shell with
 ;;   make test
@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 89)
+(plan 91)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -21,7 +21,7 @@
       "unix-time-to-universal-time")
   (is (universal-time-to-unix-time universal-time) unix-time
       "universal-time-to-unix-time")
-  (ok (zerop (universal-time-to-unix-time 
+  (ok (zerop (universal-time-to-unix-time
               (unix-time-to-universal-time 0)))
        "unix-time universal-time round trip")
   (ok (<= (get-unix-time) (get-unix-time))
@@ -67,7 +67,7 @@
     "flatten nested list of strings")
 
 (let ((reference-time (unix-time-to-universal-time 1689698048)))
-  (is (timestamp-string :universal-time reference-time) 
+  (is (timestamp-string :universal-time reference-time)
       "2023-07-18T16:34:08"
       "timestamp-string with reference time (in utc, default format)")
   (is (timestamp-string :universal-time (- reference-time (* 7 3600))
@@ -97,16 +97,16 @@
                        while (string= timestamp reference-timestamp)
                        finally (return timestamp))))
   ;; log-entry tests
-  (is (log-entry "hello world") 
+  (is (log-entry "hello world")
       (format nil "~a hello world~%" timestamp)
     "log-entry with 1 string")
   (is (log-entry "hello" "world")
       (format nil "~a helloworld~%" timestamp)
       "log-entry with 2 strings")
-  (is (log-entry "hello " "beautiful " "world") 
+  (is (log-entry "hello " "beautiful " "world")
       (format nil "~a hello beautiful world~%" timestamp)
       "log-entry with 3 strings")
-  
+
   ;; log-entries tests
   (is (log-entries "one" "two" "three")
       (format nil "~{~a ~a~%~}" (loop for m in (list "one" "two" "three")
@@ -124,7 +124,7 @@
 ;; join-paths tests
 (is (join-paths nil) "" "join-paths with nil")
 (is (join-paths nil "a" "b" "c") "a/b/c" "join-paths with nil and strings")
-(is (join-paths "/" nil "a" "b" "c") "/a/b/c" 
+(is (join-paths "/" nil "a" "b" "c") "/a/b/c"
     "join-paths with /, nil and strings")
 (is (join-paths "a") "a" "join-paths with single string")
 (is (join-paths "/a") "/a" "join-paths with single string that starts with /")
@@ -132,17 +132,17 @@
 (is (join-paths "a" "b" "c") "a/b/c" "join-paths with multiple strings")
 (is (join-paths "/a" "b" "c") "/a/b/c"
     "join-paths with multiple strings starting with /a")
-(is (join-paths "/" "a" "b" "c") "/a/b/c" 
+(is (join-paths "/" "a" "b" "c") "/a/b/c"
     "join-paths with multiple strings starting with /")
-(is (join-paths "a" "b" "c" nil) "a/b/c" 
+(is (join-paths "a" "b" "c" nil) "a/b/c"
     "join-paths with multiple strings and nil")
-(is (join-paths "a" "b" "c" "") "a/b/c" 
+(is (join-paths "a" "b" "c" "") "a/b/c"
     "join-paths with multiple strings ending in empty string")
-(is (join-paths "a" "b" "c" "/") "a/b/c" 
+(is (join-paths "a" "b" "c" "/") "a/b/c"
     "join-paths with multiple strings ending in /")
-(is (join-paths "" "a" "b" "c") "a/b/c" 
+(is (join-paths "" "a" "b" "c") "a/b/c"
     "join-paths with multiple strings starting with empty string")
-(is (join-paths "a" "" "b" "c") "a/b/c" 
+(is (join-paths "a" "" "b" "c") "a/b/c"
     "join-paths with multiple strings containing empty string")
 (is-error (join-paths "a" 1 "b") 'error "join-paths with one non-string")
 (is-error (join-paths 1 2 3) 'error "join-paths with all non-string")
@@ -151,20 +151,20 @@
 (is-error (path-only nil) 'error "path-only with nil")
 (is (path-only "") "./" "path-only with empty string")
 (is (path-only "/") "./" "path-only with /")
-(is (path-only "/a/b/c/file.txt") "/a/b/c" 
+(is (path-only "/a/b/c/file.txt") "/a/b/c"
     "path-only with /a/b/c/file.txt")
-(is (path-only "a/b/c/file.txt") "a/b/c" 
+(is (path-only "a/b/c/file.txt") "a/b/c"
     "path-only with a/b/c/file.txt")
 (is (path-only "file.txt") "./" "path-only with file.txt")
 
 ;; filename-only
 (is (filename-only nil) "" "filename-only with nil")
 (is (filename-only "/") "" "filename-only with /")
-(is (filename-only "/a/b/c/file.txt") "file.txt" 
+(is (filename-only "/a/b/c/file.txt") "file.txt"
     "filename-only with /a/b/c/file.txt")
-(is (filename-only "/file.txt") "file.txt" 
+(is (filename-only "/file.txt") "file.txt"
     "filename-only with /file.txt")
-(is (filename-only "file.txt") "file.txt" 
+(is (filename-only "file.txt") "file.txt"
     "filename-only with file.txt")
 (is (filename-only "") "" "filename-only with empty string")
 (is (filename-only "file.txt/") "" "filename-only with file.txt/")
@@ -177,7 +177,7 @@
 (is (ds "hello") "hello" "ds with string")
 (is (ds '(:list 1 2 3)) '(1 2 3) "ds with list of integers")
 (ok (equalp (ds '(:array 1 2 3)) (vector 1 2 3)) "ds with array of integers")
-(let ((list-of-maps (list (make-hash-table :test 'equal) 
+(let ((list-of-maps (list (make-hash-table :test 'equal)
                           (make-hash-table :test 'equal)))
       (ds (ds '(:list (:map :a 1 :b 2) (:map :a 3 :b 4)))))
   (setf (gethash :a (first list-of-maps)) 1)
@@ -236,5 +236,25 @@
   (is (ds-get ds :b 2 1) 7 "ds-get with :b 2 1")
   (is (ds-get ds :b 2 2) 8 "ds-get with :b 2 2")
   (is (ds-get ds :b 2 3) nil "ds-get with :b 2 3"))
+
+;; ds-keys
+(let ((ds-1 (ds '(:list
+                  (:map :name "Donnie" :age 55 :phone "919-429-9377")
+                  (:map :name "Tracy" :age 41 :phone "650-622-6492")
+                  (:map :name "Graydon" :age 8 :phone "n/a"))))
+      (ds-2 (ds '(:map
+                  :donnie (:map :name "Donnie" :age 55 :phone "919-429-9377")
+                  :tracy (:map :name "Tracy" :age 41 :phone "650-622-6492")
+                  :graydon (:map :name "Graydon" :age 8 :phone "n/a")))))
+  (is (ds-keys ds-1) '((0 :name) (0 :age) (0 :phone)
+                       (1 :name) (1 :age) (1 :phone)
+                       (2 :name) (2 :age) (2 :phone))
+        "ds-keys with list of maps")
+  (is (ds-keys ds-2) '((:donnie :name) (:donnie :age) (:donnie :phone)
+                       (:tracy :name) (:tracy :age) (:tracy :phone)
+                       (:graydon :name) (:graydon :age) (:graydon :phone))
+        "ds-keys with map of maps")
+  (is (ds-keys (ds '(:list 1 2))) '
+
 
 (finalize)

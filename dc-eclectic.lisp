@@ -181,7 +181,8 @@ path, inserting slashes where necessary."
           (error "FILENAME must be a string."))))
 
 (defun ds-collection-p (x)
-  "Return T if OBJECT is of type ds-collection."
+  "Return T if X is of type ds-collection. See the documentation for
+ ds-collection."
   (cond ((atom x) t)
         ((and (listp x)
               (not (zerop (length x)))
@@ -190,19 +191,31 @@ path, inserting slashes where necessary."
         (t nil)))
 
 (deftype ds-collection ()
-  "A type specifier for a ds-collection. A ds-collection is either an
-atom or a list. If it is a list, then the list's first element must be
-the type of the collection, and the rest of the list must represent
-the collection's contents. If the collection is a map, then the list
-must have an even number of elements (key/value pairs). Here are some
-examles of collections:
+  "A specifier for the type ds-collection. An item of type ds-collection
+is either an atom or a list. If it is a list, then the first element
+must be the type of the collection, and the type must be one of:
+  :list,
+  :array
+  :map
+
+The rest of the list must represent the ds-collection item's
+contents. If the ds-collection item is a map, then the list must have
+an even number of elements (key/value pairs). Here are some examles of
+collections:
 
   - (:list 1 2 3)
   - (:array 1 2 3)
   - (:map \"a\" 1 \"b\" 2 \"c\" 3)
   - (:list (:map \"a\" 1 \"b\" 2) 
            (:map \"c\" 3 \"d\" 4)
-           (:map \"e\" 5 \"f\" 6))"
+           (:map \"e\" 5 \"f\" 6))
+
+A ds-collection item is just an easy way for humans to write a
+representation of a nested data structure. The ds command can
+turn that representation into an actual data structure that
+uses standard Common Lisp types. The ds-list command accepts
+a nested data structure and writes it out as a ds-collection
+item."
   `(satisfies ds-collection-p))
 
 
@@ -317,7 +330,9 @@ or like this:
       (values ds t)))
 
 (defun ds-keys (ds &optional parent-keys)
-  "Given a dc-utilities data structure DS, this function returns the path to every leaf.  If you provide a key or list of keys in PARENT-KEYS, those keys are prepended to the path to every leaf."
+  "Given a nested data structure DS, this function returns the path
+to every leaf.  If you provide a key or list of keys in PARENT-KEYS,
+those keys are prepended to the path to every leaf."
   (when (and parent-keys (atom parent-keys))
     (setf parent-keys (list parent-keys)))
   (case (ds-type ds)
