@@ -253,8 +253,7 @@
   (is (ds-keys ds-2) '((:donnie :name) (:donnie :age) (:donnie :phone)
                        (:tracy :name) (:tracy :age) (:tracy :phone)
                        (:graydon :name) (:graydon :age) (:graydon :phone))
-        "ds-keys with map of maps")
-  (is (ds-keys (ds '(:list 1 2))) '
+        "ds-keys with map of maps"))
 
 
 (finalize)
