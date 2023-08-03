@@ -350,7 +350,11 @@ those keys are prepended to the path to every leaf."
     (t (list parent-keys))))
 
 (defun ds-type (ds)
-  "Given a dc-utilities data structure DS, this function returns the type of the data structure.  Valid return values include 'string, 'sequence, 'hash-table, and some Common Lisp types."
+  "Given a dc-eclectic data structure DS, this function returns the type
+of the data structure.  Valid return values include 'string,
+'sequence, 'hash-table, and some Common Lisp types. This function is
+used internally, by the ds-clone, ds-get, ds-keys, ds-list, ds-set,
+and ds-to-json functions."
   (let* ((a (type-of ds))
          (b (string-downcase (format nil "~a" a))))
     (cond ((ppcre:scan
