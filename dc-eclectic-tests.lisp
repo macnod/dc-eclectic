@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 110)
+(plan 118)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -289,5 +289,30 @@
     "ds-type 1 is not a hash-table or a sequence")
 (is (ds-type 1) 'bit "ds-type 1 is a bit")
 (is (ds-type "abc") 'string "ds-type \"abc\" is a string")
+
+;; ds-set
+(let ((ds (ds '(:map :a 1 :b 2 :c 3
+                :d (:list 4 5 (:map :six 6 :seven 7 "eight" 8
+                                   :nine (:list 9 10 11)))))))
+  (ds-set ds :a 5)
+  (is (ds-get ds :a) 5 "ds-set :a 5")
+  (ds-set ds :b 6)
+  (is (ds-get ds :b) 6 "ds-set :b 6")
+  (ds-set ds :c 7)
+  (is (ds-get ds :c) 7 "ds-set :c 7")
+  (ds-set ds '(:d 0) 4.5)
+  (is (ds-get ds :d 0) 4.5 "ds-set :d 0 4.5")
+  (ds-set ds '(:d 2 :seven) 7.5)
+  (is (ds-get ds :d 2 :seven) 7.5 "ds-set :d 2 :seven 7.5")
+  (ds-set ds '(:d 2 "eight") 8.5)
+  (is (ds-get ds :d 2 "eight") 8.5 "ds-set :d 2 \"eight\" 8.5")
+  (ds-set ds '(:d 2 :nine 2) 11.5)
+  (is (ds-get ds :d 2 :nine 2) 11.5 "ds-set :d 2 :nine 2 11.5")
+  (is (ds-list ds)
+      (ds-list
+       (ds '(:map :a 5 :b 6 :c 7
+             :d (:list 4.5 5 (:map :six 6 :seven 7.5 "eight" 8.5
+                                   :nine (:list 9 10 11.5))))))
+      "ds-set all changes"))
 
 (finalize)
