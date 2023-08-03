@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 118)
+(plan 120)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -313,6 +313,9 @@
        (ds '(:map :a 5 :b 6 :c 7
              :d (:list 4.5 5 (:map :six 6 :seven 7.5 "eight" 8.5
                                    :nine (:list 9 10 11.5))))))
-      "ds-set all changes"))
+      "ds-set all changes")
+  (ds-set ds '(:d 2 :nine 2) (ds '(:map :eleven 11 :twelve 12)))
+  (is (ds-get ds :d 2 :nine 2 :eleven) 11 "ds-set :d 2 :nine 2 :eleven 11")
+  (is (ds-get ds :d 2 :nine 2 :twelve) 12 "ds-set :d 2 :nine 2 :twelve 12"))
 
 (finalize)

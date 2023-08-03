@@ -368,7 +368,9 @@ and ds-to-json functions."
           (t (car a)))))
 
 (defun ds-set (ds location-key-path value)
-  "In the given dc-utilities data structure DS, this function sets the value of the node at LOCATION-KEY-PATH, which is a key or a list of keys, to VALUE."
+  "In the given dc-utilities data structure DS, this function sets the
+value of the node at LOCATION-KEY-PATH, which is a key or a list of
+keys, to VALUE."
   (let* ((keys (if (atom location-key-path)
                    (list location-key-path)
                    location-key-path))
