@@ -329,7 +329,7 @@ or like this:
         (t (values nil nil)))
       (values ds t)))
 
-(defun ds-keys (ds &optional parent-keys)
+(defun ds-paths (ds &optional parent-keys)
   "Given a nested data structure DS, this function returns the path
 to every leaf.  If you provide a key or list of keys in PARENT-KEYS,
 those keys are prepended to the path to every leaf."
@@ -340,20 +340,20 @@ those keys are prepended to the path to every leaf."
      (loop for k being the hash-keys in ds
         for new-parent-keys = (append parent-keys (list k))
         for child-ds = (gethash k ds)
-        for child-keys = (ds-keys child-ds new-parent-keys)
+        for child-keys = (ds-paths child-ds new-parent-keys)
         append child-keys))
     (sequence
      (loop for i from 0 below (length ds)
         for new-parent-keys = (append parent-keys (list i))
         for child-ds = (elt ds i)
-        append (ds-keys child-ds new-parent-keys)))
+        append (ds-paths child-ds new-parent-keys)))
     (t (list parent-keys))))
 
 (defun ds-type (ds)
   "Given a dc-eclectic data structure DS, this function returns the type
 of the data structure.  Valid return values include 'string,
 'sequence, 'hash-table, and some Common Lisp types. This function is
-used internally, by the ds-clone, ds-get, ds-keys, ds-list, ds-set,
+used internally, by the ds-clone, ds-get, ds-paths, ds-list, ds-set,
 and ds-to-json functions."
   (let* ((a (type-of ds))
          (b (string-downcase (format nil "~a" a))))
@@ -393,13 +393,16 @@ keys, to VALUE."
                 (setf target-ds (ds-get ds key))
                 (ds-set target-ds (cdr keys) value)))))))
 
-(defun ds-merge (ds-base &rest ds-set)
-  "Merges dc-utilities data structures, starting with DS-BASE and then progressing through the rest of the data structures, collected in ds-set, in order.  Values in later data structures override values in earlier data structures when the paths of the values coincide."
+(defun ds-merge (ds-base &rest ds-rest)
+  "Merges dc-utilities data structures, starting with DS-BASE and then
+progressing through the rest of the data structures, collected in
+ds-set, in order.  Values in later data structures override values in
+earlier data structures when the paths of the values coincide."
   (loop with ds-main = (ds-clone ds-base)
-     for ds in ds-set
-     do (loop for key-path in (ds-keys ds)
-           do (ds-set ds-main key-path (apply #'ds-get (cons ds key-path))))
-     finally (return ds-main)))
+        for ds in ds-rest do
+          (loop for key-path in (ds-paths ds)
+                do (ds-set ds-main key-path (apply #'ds-get (cons ds key-path))))
+        finally (return ds-main)))
 
 (defun ds-clone (ds)
   "Clone the dc-utilities data structure DS."

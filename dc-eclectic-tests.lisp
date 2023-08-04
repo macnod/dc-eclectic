@@ -23,7 +23,7 @@
       "universal-time-to-unix-time")
   (ok (zerop (universal-time-to-unix-time
               (unix-time-to-universal-time 0)))
-       "unix-time universal-time round trip")
+      "unix-time universal-time round trip")
   (ok (<= (get-unix-time) (get-unix-time))
       "In consecutive calls to get-unix-time, first call <= second call"))
 
@@ -40,15 +40,15 @@
 (is (to-ascii "ñx¼" :replacement-char #\Space) " x "
     "to-ascii with custom replacement char")
 (is (to-ascii (vector (code-char 129) #\x (code-char 130))
-                      :printable-only nil)
+              :printable-only nil)
     "x"
     "to-ascii chars above high with printable-only nil")
 (is (to-ascii (vector (code-char 29) #\x (code-char 28))
-                      :printable-only nil)
+              :printable-only nil)
     "x"
     "to-ascii chars below min with printable-only nil")
 (is (to-ascii (vector (code-char 1000) #\y (code-char 1001))
-                      :printable-only nil)
+              :printable-only nil)
     "?y?"
     "to-ascii non-ascii chars with printable-only nil")
 
@@ -99,7 +99,7 @@
   ;; log-entry tests
   (is (log-entry "hello world")
       (format nil "~a hello world~%" timestamp)
-    "log-entry with 1 string")
+      "log-entry with 1 string")
   (is (log-entry "hello" "world")
       (format nil "~a helloworld~%" timestamp)
       "log-entry with 2 strings")
@@ -186,15 +186,15 @@
   (setf (gethash :b (second list-of-maps)) 4)
   (let ((s1 (loop for h in list-of-maps
                   collect (loop for k being the hash-keys of h
-                                using (hash-value v)
+                                  using (hash-value v)
                                 collect (format nil "~a=~a" k v))
-                  into kv-pairs
+                    into kv-pairs
                   finally (return (format nil "~{~a~^, ~}" kv-pairs))))
         (s2 (loop for h in ds
                   collect (loop for k being the hash-keys of h
-                                using (hash-value v)
+                                  using (hash-value v)
                                 collect (format nil "~a=~a" k v))
-                  into kv-pairs
+                    into kv-pairs
                   finally (return (format nil "~{~a~^, ~}" kv-pairs)))))
     (is s1 s2 "ds with list of maps")))
 (let ((ds (ds '(:map :a (:list 1 2 3) :b (:list 4 5 6))))
@@ -237,7 +237,7 @@
   (is (ds-get ds :b 2 2) 8 "ds-get with :b 2 2")
   (is (ds-get ds :b 2 3) nil "ds-get with :b 2 3"))
 
-;; ds-keys
+;; ds-paths
 (let ((ds-1 (ds '(:list
                   (:map :name "Donnie" :age 55 :phone "919-429-9377")
                   (:map :name "Tracy" :age 41 :phone "650-622-6492")
@@ -248,28 +248,28 @@
                   :graydon (:map :name "Graydon" :age 8 :phone "n/a"))))
       (ds-3 (ds '(:list 1 2 (:map :a 1 :b 2 :c (:map :three 3 :four 4 :five
                                                 (:list 5 6 7)))))))
-  (is (ds-keys ds-1) '((0 :name) (0 :age) (0 :phone)
-                       (1 :name) (1 :age) (1 :phone)
-                       (2 :name) (2 :age) (2 :phone))
-        "ds-keys with list of maps")
-  (is (ds-keys ds-2) '((:donnie :name) (:donnie :age) (:donnie :phone)
-                       (:tracy :name) (:tracy :age) (:tracy :phone)
-                       (:graydon :name) (:graydon :age) (:graydon :phone))
-        "ds-keys with map of maps")
-  (is (ds-keys (ds '(:list 1 2 3))) '((0) (1) (2)) "ds-keys for '(1 2 3)")
-  (is (ds-keys (ds 1)) (list nil) "ds-keys for (ds 1)")
-  (is (ds-keys (ds "one")) (list nil) "ds-keys for (ds \"one\")")
-  (is (ds-keys nil) (list nil) "ds-keys for (ds nil)")
-  (is (ds-keys 1) (list nil) "ds-keys for 1")
-  (is (ds-keys "one") (list nil) "ds-keys for \"one\"")
-  (is (ds-keys nil) (list nil) "ds-keys for nil")
-  (is (mapcar #'car (ds-keys (ds '(:map :one 1 :two 2 :three 3))))
+  (is (ds-paths ds-1) '((0 :name) (0 :age) (0 :phone)
+                        (1 :name) (1 :age) (1 :phone)
+                        (2 :name) (2 :age) (2 :phone))
+      "ds-paths with list of maps")
+  (is (ds-paths ds-2) '((:donnie :name) (:donnie :age) (:donnie :phone)
+                        (:tracy :name) (:tracy :age) (:tracy :phone)
+                        (:graydon :name) (:graydon :age) (:graydon :phone))
+      "ds-paths with map of maps")
+  (is (ds-paths (ds '(:list 1 2 3))) '((0) (1) (2)) "ds-paths for '(1 2 3)")
+  (is (ds-paths (ds 1)) (list nil) "ds-paths for (ds 1)")
+  (is (ds-paths (ds "one")) (list nil) "ds-paths for (ds \"one\")")
+  (is (ds-paths nil) (list nil) "ds-paths for (ds nil)")
+  (is (ds-paths 1) (list nil) "ds-paths for 1")
+  (is (ds-paths "one") (list nil) "ds-paths for \"one\"")
+  (is (ds-paths nil) (list nil) "ds-paths for nil")
+  (is (mapcar #'car (ds-paths (ds '(:map :one 1 :two 2 :three 3))))
       (list :one :two :three)
-      "ds-keys with a simple map")
-  (is (ds-keys ds-3)
+      "ds-paths with a simple map")
+  (is (ds-paths ds-3)
       '((0) (1) (2 :A) (2 :B) (2 :C :THREE) (2 :C :FOUR) 
         (2 :C :FIVE 0) (2 :C :FIVE 1) (2 :C :FIVE 2))
-      "ds-keys with unbalanced tree"))
+      "ds-paths with unbalanced tree"))
 
 ;; ds-type
 (is (ds-type (ds '(:map :a 1))) 'hash-table "ds-type hash-table")
@@ -293,7 +293,7 @@
 ;; ds-set
 (let ((ds (ds '(:map :a 1 :b 2 :c 3
                 :d (:list 4 5 (:map :six 6 :seven 7 "eight" 8
-                                   :nine (:list 9 10 11)))))))
+                                    :nine (:list 9 10 11)))))))
   (ds-set ds :a 5)
   (is (ds-get ds :a) 5 "ds-set :a 5")
   (ds-set ds :b 6)
@@ -316,6 +316,20 @@
       "ds-set all changes")
   (ds-set ds '(:d 2 :nine 2) (ds '(:map :eleven 11 :twelve 12)))
   (is (ds-get ds :d 2 :nine 2 :eleven) 11 "ds-set :d 2 :nine 2 :eleven 11")
-  (is (ds-get ds :d 2 :nine 2 :twelve) 12 "ds-set :d 2 :nine 2 :twelve 12"))
+  (is (ds-get ds :d 2 :nine 2 :twelve) 12 "ds-set :d 2 :nine 2 :twelve 12")
+  (ds-set ds '(:e :f :g) 1)
+  (is (ds-get ds :e :f :g) 1 "ds-set atom non-existing map path")
+  (ds-set ds '(:h 1) 2)
+  (is (ds-get ds '(:h 1)) 2 "ds-set atom non-existing map/list path"))
+
+;; ds-merge
+;; (let ((ds-1 (ds '(:map :a 1 :b 2)))
+;;       (ds-2 (ds '(:map :c (:list 4 5 6))))
+;;       (ds-3 (ds '(:map :b 22)))
+;;       (ds-4 (ds '(:map :c (:list 7 8 9))))
+;;       (ds-5 (ds '(:map :c (:map :ten 10 :eleven 11))))
+;;       (ds-6 (ds '(:map :c (:map :eleven 111)))))
+;;   (is (ds-list (ds-merge ds-1 ds-2)) '(:map :a 1 :b 2 :c (:list 4 5 6))
+;;       "ds-merge ds-1 ds-2"))
 
 (finalize)
