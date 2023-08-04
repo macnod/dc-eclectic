@@ -14,7 +14,7 @@ also be run on the command line with the command 'make test`."
 
 (defun universal-time-to-unix-time (&optional universal-time)
   "Converts universal time to unix time. If you don't provide a universal time,
-this function returns the current unix time. 
+this function returns the current unix time.
 
 * Unix time is the number of seconds elapsed since the epoch, January
   1, 1970 at 00:00:00 UTC.
@@ -45,7 +45,7 @@ seconds elapsed since the epoch, January 1, 1970 at 00:00:00 UTC."
   (universal-time-to-unix-time (get-universal-time)))
 
 
-(defun to-ascii (string &key 
+(defun to-ascii (string &key
                           (replacement-char #\?)
                           (printable-only t))
   "In STRING, replaces non-ASCII characters with REPLACEMENT_CHAR, which
@@ -206,7 +206,7 @@ collections:
   - (:list 1 2 3)
   - (:array 1 2 3)
   - (:map \"a\" 1 \"b\" 2 \"c\" 3)
-  - (:list (:map \"a\" 1 \"b\" 2) 
+  - (:list (:map \"a\" 1 \"b\" 2)
            (:map \"c\" 3 \"d\" 4)
            (:map \"e\" 5 \"f\" 6))
 
@@ -228,13 +228,13 @@ types respresent the corresponding types in Common Lisp. An atom is
 represented by any Common Lisp atom. A collection consists of a Common
 Lisp list that starts with collection type. In lists and arrays, the
 elements that follow the collection type are the elements of the list
-or array. In maps, the elements that follow the collection type are 
+or array. In maps, the elements that follow the collection type are
 taken in pairs, to represent the key and value pairs of the map.
 
 For example, here's how you would call DS to create the
 given data structures:
 
-  A list of integers: 
+  A list of integers:
 
     (ds '(:list 1 2 3))
 
@@ -531,12 +531,12 @@ earlier data structures when the paths of the values coincide."
 (defun shuffle (seq)
   "Return a sequence with the same elements as the given sequence S, but in random order (shuffled)."
   (loop
-    with l = (length seq) 
+    with l = (length seq)
     with w = (make-array l :initial-contents seq)
-    for i from 0 below l 
-    for r = (random l) 
+    for i from 0 below l
+    for r = (random l)
     for h = (aref w i)
-    do 
-       (setf (aref w i) (aref w r)) 
+    do
+       (setf (aref w i) (aref w r))
        (setf (aref w r) h)
     finally (return (if (listp seq) (map 'list 'identity w) w))))

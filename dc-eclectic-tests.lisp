@@ -267,7 +267,7 @@
       (list :one :two :three)
       "ds-paths with a simple map")
   (is (ds-paths ds-3)
-      '((0) (1) (2 :A) (2 :B) (2 :C :THREE) (2 :C :FOUR) 
+      '((0) (1) (2 :A) (2 :B) (2 :C :THREE) (2 :C :FOUR)
         (2 :C :FIVE 0) (2 :C :FIVE 1) (2 :C :FIVE 2))
       "ds-paths with unbalanced tree"))
 
@@ -282,7 +282,7 @@
     'sequence "ds-type (list of hashes)")
 (ok (not (member (ds-type (ds 1)) '(hash-table sequence)))
     "ds-type (ds 1) is not a hash-table or a sequence")
-(ok (not (member (ds-type (ds "")) '(hash-table sequence) 
+(ok (not (member (ds-type (ds "")) '(hash-table sequence)
                  :test 'equal))
     "ds-type (ds \"\") is not a hash-table or a sequence")
 (ok (not (member (ds-type 1) '(hash-table sequence)))
