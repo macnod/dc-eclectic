@@ -287,7 +287,7 @@ ds functions to access and manipulate the data."
                       finally (return h)))
           (:array (apply #'vector (mapcar 'ds list)))
           (:list (mapcar #'ds list))))))
-  
+
 
 (defun ds-get (ds &rest keys)
   "Get a node (a leaf or a subtree) of DS, a dc-utilities data
@@ -338,15 +338,15 @@ those keys are prepended to the path to every leaf."
   (case (ds-type ds)
     (hash-table
      (loop for k being the hash-keys in ds
-        for new-parent-keys = (append parent-keys (list k))
-        for child-ds = (gethash k ds)
-        for child-keys = (ds-paths child-ds new-parent-keys)
-        append child-keys))
+           for new-parent-keys = (append parent-keys (list k))
+           for child-ds = (gethash k ds)
+           for child-keys = (ds-paths child-ds new-parent-keys)
+           append child-keys))
     (sequence
      (loop for i from 0 below (length ds)
-        for new-parent-keys = (append parent-keys (list i))
-        for child-ds = (elt ds i)
-        append (ds-paths child-ds new-parent-keys)))
+           for new-parent-keys = (append parent-keys (list i))
+           for child-ds = (elt ds i)
+           append (ds-paths child-ds new-parent-keys)))
     (t (list parent-keys))))
 
 (defun ds-type (ds)
@@ -374,7 +374,7 @@ keys, to VALUE."
   (let* ((keys (if (atom location-key-path)
                    (list location-key-path)
                    location-key-path))
-        (key (car keys)))
+         (key (car keys)))
     (if (= (length keys) 1)
         (progn
           (case (ds-type ds)
@@ -409,24 +409,24 @@ earlier data structures when the paths of the values coincide."
   (case (ds-type ds)
     (hash-table
      (loop with ds-new = (make-hash-table :test 'equal)
-        for key being the hash-keys in ds
-          do (setf (gethash key ds-new) (ds-clone (gethash key ds)))
-          finally (return ds-new)))
+           for key being the hash-keys in ds
+           do (setf (gethash key ds-new) (ds-clone (gethash key ds)))
+           finally (return ds-new)))
     (string
      (copy-seq ds))
     (sequence
      (if (equal (type-of ds) 'cons)
          (loop
-            with ds-new = nil
-            for i from 0 below (length ds)
-            do (push (ds-clone (elt ds i)) ds-new)
-            finally (return (reverse ds-new)))
+           with ds-new = nil
+           for i from 0 below (length ds)
+           do (push (ds-clone (elt ds i)) ds-new)
+           finally (return (reverse ds-new)))
          (loop
-            with l = (length ds)
-            with ds-new = (make-array l)
-            for i from 0 below l
-            do (setf (elt ds-new i) (ds-clone (elt ds i)))
-            finally (return ds-new))))
+           with l = (length ds)
+           with ds-new = (make-array l)
+           for i from 0 below l
+           do (setf (elt ds-new i) (ds-clone (elt ds i)))
+           finally (return ds-new))))
     (t ds)))
 
 (defun ds-list (ds)
@@ -434,25 +434,25 @@ earlier data structures when the paths of the values coincide."
   (case (ds-type ds)
     (hash-table
      (loop with list = (list :map)
-        for k being the hash-keys in ds
-        for v = (gethash k ds)
-        do (push k list)
-          (push (ds-list v) list)
-        finally (return (nreverse list))))
+           for k being the hash-keys in ds
+           for v = (gethash k ds)
+           do (push k list)
+              (push (ds-list v) list)
+           finally (return (nreverse list))))
     (string
      (map 'string 'identity (copy-seq ds)))
     (sequence
      (if (equal (type-of ds) 'cons)
          (loop
-            with list = (list :list)
-            for a in ds
-            do (push (ds-list a) list)
-            finally (return (nreverse list)))
+           with list = (list :list)
+           for a in ds
+           do (push (ds-list a) list)
+           finally (return (nreverse list)))
          (loop
-            with list = (list :array)
-            for a across ds
-            do (push (ds-list a) list)
-            finally (return (nreverse list)))))
+           with list = (list :array)
+           for a across ds
+           do (push (ds-list a) list)
+           finally (return (nreverse list)))))
     (otherwise ds)))
 
 (defun ds-from-json (json)
@@ -468,18 +468,18 @@ earlier data structures when the paths of the values coincide."
     (hash-table
      (format nil "{~{~a~^,~}}"
              (loop for k being the hash-keys in ds using (hash-value v)
-                for v-json = (ds-to-json v)
-                for k-json = (if (symbolp k) (string-downcase (format nil "~a" k)) k)
-                collect (format nil "\"~a\":~a" k-json v-json))))
+                   for v-json = (ds-to-json v)
+                   for k-json = (if (symbolp k) (string-downcase (format nil "~a" k)) k)
+                   collect (format nil "\"~a\":~a" k-json v-json))))
     (sequence
      (format nil "[~{~a~^,~}]"
              (if (consp ds)
                  (loop with list = nil
-                    for a in ds do (push (ds-to-json a) list)
-                    finally (return (nreverse list)))
+                       for a in ds do (push (ds-to-json a) list)
+                       finally (return (nreverse list)))
                  (loop with list = nil
-                    for a across ds do (push (ds-to-json a) list)
-                    finally (return (nreverse list))))))
+                       for a across ds do (push (ds-to-json a) list)
+                       finally (return (nreverse list))))))
     (otherwise
      (let ((v (if (and ds (symbolp ds)) (string-downcase (format nil "~a" ds)) ds)))
        (format nil
@@ -525,18 +525,18 @@ earlier data structures when the paths of the values coincide."
 (defun range (start end &key (step 1) (filter #'identity) shuffle)
   "Returns a list of values between START and END (inclusive), skipping values by STEP, filtering remaining values with the function in FILTER, and shuffling the remaining values if SHUFFLE is true.  STEP defaults to 1, FILTER defaults to allowing all values through, and SHUFFLE default to nil."
   (let ((range (loop for a from start to end by step
-                  when (funcall filter a) collect a)))
+                     when (funcall filter a) collect a)))
     (if shuffle (shuffle range) range)))
 
 (defun shuffle (seq)
   "Return a sequence with the same elements as the given sequence S, but in random order (shuffled)."
   (loop
-     with l = (length seq) 
-     with w = (make-array l :initial-contents seq)
-     for i from 0 below l 
-     for r = (random l) 
-     for h = (aref w i)
-     do 
+    with l = (length seq) 
+    with w = (make-array l :initial-contents seq)
+    for i from 0 below l 
+    for r = (random l) 
+    for h = (aref w i)
+    do 
        (setf (aref w i) (aref w r)) 
        (setf (aref w r) h)
-     finally (return (if (listp seq) (map 'list 'identity w) w))))
+    finally (return (if (listp seq) (map 'list 'identity w) w))))

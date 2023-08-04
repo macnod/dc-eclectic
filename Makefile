@@ -5,4 +5,4 @@ REPORTER=list
 test:
 	$(LISP) --eval "(require :prove)" \
 	  --eval "(prove:run #P\"$(TESTS_FILE)\" :reporter :$(REPORTER))" \
-	  --quit
+	  --non-interactive

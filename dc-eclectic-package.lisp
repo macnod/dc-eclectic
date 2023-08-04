@@ -12,7 +12,7 @@
    ds-clone
    ds-from-json
    ds-get
-   ds-keys
+   ds-paths
    ds-list
    ds-merge
    ds-set
