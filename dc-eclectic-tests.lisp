@@ -318,11 +318,11 @@
   (is (ds-get ds :d 2 :nine 2 :eleven) 11 "ds-set :d 2 :nine 2 :eleven 11")
   (is (ds-get ds :d 2 :nine 2 :twelve) 12 "ds-set :d 2 :nine 2 :twelve 12")
   (ds-set ds '(:e :f :g) 1)
-  (is (ds-get ds :e :f :g) 1 "ds-set atom non-existing map path"))
+  (is (ds-get ds :e :f :g) 1 "ds-set atom non-existing map path")
 
-;; This one is failing
-;; (ds-set ds '(:h 1) 2)
-;; (is (ds-get ds '(:h 1)) 2 "ds-set atom non-existing map/list path"))
+  ;; This one is failing
+  (ds-set ds '(:h 1) 2)
+  (is (ds-get ds '(:h 1)) 2 "ds-set atom non-existing map/list path"))
 
 ;; ds-merge function needs rewriting. It's not working properly.
 ;; ds-merge
