@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 121)
+(plan 123)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -319,10 +319,15 @@
   (is (ds-get ds :d 2 :nine 2 :twelve) 12 "ds-set :d 2 :nine 2 :twelve 12")
   (ds-set ds '(:e :f :g) 1)
   (is (ds-get ds :e :f :g) 1 "ds-set atom non-existing map path")
-
-  ;; This one is failing
   (ds-set ds '(:h 1) 2)
-  (is (ds-get ds '(:h 1)) 2 "ds-set atom non-existing map/list path"))
+  (is-error (ds-get ds '(:h 1)) 'simple-error 
+            "ds-get keys must be integers, strings, or keywords")
+  (is (ds-get ds :h 1) 2 "ds-set atom non-existing map/list path")
+  (is-error (ds-set ds '(:i 1 '(:j :k :l) :m 2) 3) 'simple-error
+            "ds-set keys must be integers, strings, or keywords")
+  (ds-set ds '(:i 1 :j 2 :k) 4)
+  (is (ds-get ds :i 1 :j 2 :k) 4 "ds-set atom non-existing map/list path"))
+
 
 ;; ds-merge function needs rewriting. It's not working properly.
 ;; ds-merge

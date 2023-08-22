@@ -289,6 +289,16 @@ ds functions to access and manipulate the data."
           (:list (mapcar #'ds list))))))
 
 
+(defun ds-valid-keys (keys)
+  "Check that the keys are strings, integers, or keywords."
+  (loop for key in keys
+        for key-type = (type-of key)
+        when (not (or (stringp key)
+                      (integerp key)
+                      (eq key-type 'keyword)))
+          do (error "Invalid key type. Must be a string, integer, or keyword.")))
+
+
 (defun ds-get (ds &rest keys)
   "Get a node (a leaf or a subtree) of DS, a dc-utilities data
 structure.  The parameters that follow ds, collected in KEYS, describe
@@ -308,6 +318,7 @@ or like this:
                                 bogus-ds)
                  0)
             :weight)"
+  (ds-valid-keys keys)
   (if keys
       (case (ds-type ds)
         (hash-table
@@ -367,7 +378,7 @@ and ds-to-json functions."
           ((atom a) a)
           (t (car a)))))
 
-(defun ds-set (ds location value)
+(defun ds-set (ds location value &optional debug)
   "In the given dc-utilities data structure DS, this function sets the
 value of the node at LOCATION-KEY-PATH, which is a key or a list of
 keys, to VALUE."
@@ -375,55 +386,79 @@ keys, to VALUE."
                    (list location)
                    location))
          (key (car keys)))
+    (ds-valid-keys keys)
+    (when debug
+      (format t "keys: ~a~%" keys)
+      (format t "ds: ~a~%" (ds-list ds)))
     (if (= (length keys) 1)
-        (case (ds-type ds)
-          (hash-table (progn (setf (gethash key ds) value)
-                             ds))
-          (sequence (if (listp ds)
-                      (loop while (>= key (length ds))
-                            do (setf ds (append ds (list nil)))
-                            finally (progn (setf (elt ds key) value)
-                                           (return ds)))
-                      (if (>= key (length ds))
-                          (loop with new-ds = (make-array (1+ key))
-                                for i from 0 below (length ds)
-                                do (setf (elt new-ds i) (elt ds i))
-                                finally (progn (setf (elt new-ds key) value)
-                                               (setf ds new-ds)
-                                               (return new-ds)))
-                          (progn (setf (elt ds key) value)
-                                 ds))))
-          (t (if (integerp key)
-                 (setf ds (list ds value))
-                 (progn (setf ds (make-hash-table :test #'equal))
-                        (setf (gethash key ds) value)))))
+        (progn
+          (when debug (format t "last key~%"))
+          (case (ds-type ds)
+            (hash-table (progn (setf (gethash key ds) value)
+                               ds))
+            (sequence (progn
+                        (when debug (format t "sequence~%"))
+                        (if (listp ds)
+                          (if (< key (length ds))
+                              (progn
+                                (setf (elt ds key) value)
+                                ds)
+                              (loop
+                                initially (when debug (format t "list~%"))
+                                while (< (length ds) key)
+                                do (push nil (cdr (last ds)))
+                                finally (progn (push value (cdr (last ds)))
+                                               (return ds))))
+                          (progn
+                            (when debug (format t "not a list~%"))
+                            (if (>= key (length ds))
+                                (loop with new-ds = (make-array (1+ key))
+                                      for i from 0 below (length ds)
+                                      do (setf (elt new-ds i) (elt ds i))
+                                      finally (progn (setf (elt new-ds key) value)
+                                                     (setf ds new-ds)
+                                                     (return new-ds)))
+                                (progn (setf (elt ds key) value)
+                                       ds))))))
+            (t (if (integerp key)
+                   (setf ds (list ds value))
+                   (progn (setf ds (make-hash-table :test #'equal))
+                          (setf (gethash key ds) value))))))
         (multiple-value-bind (target-ds exists)
             (ds-get ds key)
           (if exists
-              (ds-set target-ds (cdr keys) value)
-              (case (ds-type ds)
-                (hash-table (progn
-                              (setf (gethash key ds)
+              (progn (when debug (format t "key ~a exists~%" key))
+                     (ds-set target-ds (cdr keys) value debug))
+              (progn
+                (when debug (format t "key ~a does not exist~%" key))
+                (case (ds-type ds)
+                  (hash-table (progn
+                                (when debug (format t "hash table ~a~%" ds))
+                                (setf (gethash key ds)
+                                      (if (integerp (second keys))
+                                          (make-array (1+ (second keys))
+                                                      :initial-element nil)
+                                          (make-hash-table :test #'equal)))
+                                (ds-set ds keys value debug)))
+                  (sequence (progn
+                              (when debug (format t "sequence ~a~%" ds))
+                              (setf (elt ds key)
                                     (if (integerp (second keys))
                                         (make-array (1+ (second keys))
                                                     :initial-element nil)
                                         (make-hash-table :test #'equal)))
-                              (ds-set ds keys value)))
-                (sequence (progn
-                            (setf (elt ds key)
-                                  (if (integerp (second keys))
-                                      (make-array (1+ (second keys))
-                                                  :initial-element nil)
-                                      (make-hash-table :test #'equal)))
-                            (ds-set ds (cdr keys) value)))
-                (otherwise (if (integerp key)
-                               (progn
-                                 (setf ds (make-array (1+ key) 
-                                                      :initial-element nil))
-                                 (ds-set ds keys value))
-                               (progn
-                                 (setf ds (make-hash-table :test #'equal))
-                                 (ds-set ds keys value))))))))))
+                              (ds-set ds keys value debug)))
+                  (otherwise (progn
+                               (when debug (format t "other ~a~%" ds))
+                               (if (integerp key)
+                                   (progn
+                                     (setf ds (make-array (1+ key) 
+                                                          :initial-element nil))
+                                     (ds-set ds keys value debug))
+                                   (progn
+                                     (setf ds (make-hash-table :test #'equal))
+                                     (ds-set ds keys value debug))))))))))))
+                             
 
 
 (defun ds-merge (ds-base &rest ds-rest)
