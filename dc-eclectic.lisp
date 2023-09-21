@@ -387,18 +387,13 @@ keys, to VALUE."
                    location))
          (key (car keys)))
     (ds-valid-keys keys)
-    (when debug
-      (format t "keys: ~a~%" keys)
-      (format t "ds: ~a~%" (ds-list ds)))
     (if (= (length keys) 1)
-        (progn
-          (when debug (format t "last key~%"))
-          (case (ds-type ds)
-            (hash-table (progn (setf (gethash key ds) value)
-                               ds))
-            (sequence (progn
-                        (when debug (format t "sequence~%"))
-                        (if (listp ds)
+        (case (ds-type ds)
+          (hash-table (progn (setf (gethash key ds) value)
+                             ds))
+          (sequence (progn
+                      (when debug (format t "sequence~%"))
+                      (if (listp ds)
                           (if (< key (length ds))
                               (progn
                                 (setf (elt ds key) value)
@@ -410,7 +405,7 @@ keys, to VALUE."
                                 finally (progn (push value (cdr (last ds)))
                                                (return ds))))
                           (progn
-                            (when debug (format t "not a list~%"))
+                            (when debug (format t "sequence that's not a list~%"))
                             (if (>= key (length ds))
                                 (loop with new-ds = (make-array (1+ key))
                                       for i from 0 below (length ds)
@@ -420,25 +415,49 @@ keys, to VALUE."
                                                      (return new-ds)))
                                 (progn (setf (elt ds key) value)
                                        ds))))))
-            (t (if (integerp key)
-                   (setf ds (list ds value))
-                   (progn (setf ds (make-hash-table :test #'equal))
-                          (setf (gethash key ds) value))))))
+          (t (if (integerp key)
+                 (setf ds (list ds value))
+                 (progn (setf ds (make-hash-table :test #'equal))
+                        (setf (gethash key ds) value)))))
         (multiple-value-bind (target-ds exists)
             (ds-get ds key)
           (if exists
               (progn (when debug (format t "key ~a exists~%" key))
-                     (ds-set target-ds (cdr keys) value debug))
+                     (if (atom target-ds)
+                         (let ((sub-ds (if (integerp (second keys))
+                                            (make-array (1+ (second keys))
+                                                        :initial-element nil)
+                                            (make-hash-table :test #'equal))))
+                           (case (ds-type ds)
+                             (hash-table (setf (gethash key ds) sub-ds))
+                             (sequence (setf (elt ds key) sub-ds))
+                             (otherwise (error "ds-set: unknown type ~a" (ds-type ds))))
+                           (ds-set sub-ds (cdr keys) value debug))
+                         (ds-set target-ds (cdr keys) value debug)))
               (progn
                 (when debug (format t "key ~a does not exist~%" key))
                 (case (ds-type ds)
                   (hash-table (progn
-                                (when debug (format t "hash table ~a~%" ds))
+                                (when debug (format t "hash table ~a~%"
+                                                    (ds-list ds)))
                                 (setf (gethash key ds)
                                       (if (integerp (second keys))
-                                          (make-array (1+ (second keys))
-                                                      :initial-element nil)
-                                          (make-hash-table :test #'equal)))
+                                          (progn
+                                            (when debug 
+                                              (format 
+                                               t 
+                                               "make array with ~d elements, as value of ~a~%"
+                                               (1+ (second keys))
+                                               key))
+                                            (make-array (1+ (second keys))
+                                                        :initial-element nil))
+                                          (progn
+                                            (when debug
+                                              (format
+                                               t
+                                               "make hash table, as value of ~a~%"
+                                                key))
+                                          (make-hash-table :test #'equal))))
                                 (ds-set ds keys value debug)))
                   (sequence (progn
                               (when debug (format t "sequence ~a~%" ds))
@@ -452,13 +471,13 @@ keys, to VALUE."
                                (when debug (format t "other ~a~%" ds))
                                (if (integerp key)
                                    (progn
-                                     (setf ds (make-array (1+ key) 
+                                     (setf ds (make-array (1+ key)
                                                           :initial-element nil))
                                      (ds-set ds keys value debug))
                                    (progn
                                      (setf ds (make-hash-table :test #'equal))
                                      (ds-set ds keys value debug))))))))))))
-                             
+
 
 
 (defun ds-merge (ds-base &rest ds-rest)
@@ -524,7 +543,8 @@ earlier data structures when the paths of the values coincide."
     (otherwise ds)))
 
 (defun ds-from-json (json)
-  "Creates a dc-utilities data structure from JSON.  This is useful if you want to easily traverse the JSON data structure."
+  "Creates a dc-utilities data structure from JSON.  This is useful if
+you want to easily traverse the JSON data structure."
   (let* ((data (yason:parse json)))
     (ds (if (hash-table-p data)
             (ds data)
@@ -570,7 +590,15 @@ earlier data structures when the paths of the values coincide."
     (ironclad:byte-array-to-hex-string (ironclad:hmac-digest hmac))))
 
 (defun distinct-elements (sequence &key (key (lambda (x) x)))
-  "Accespts a sequence of elements (list or vector) and returns a new sequence of the same type with distinct elements from the original sequence.  If the elements in the sequence are hash tables, plists, or objects with methods, then you can provide a value or function for the :key parameter.  If you provide a value, the function will use the value as the key of the element, and the value of the key will represent the unique signature of the element.  If you provide a function, then the function will be applied to the element to compute the elements unique signature."
+  "Accespts a sequence of elements (list or vector) and returns a new
+sequence of the same type with distinct elements from the original
+sequence.  If the elements in the sequence are hash tables, plists, or
+objects with methods, then you can provide a value or function for the
+:key parameter.  If you provide a value, the function will use the
+value as the key of the element, and the value of the key will
+represent the unique signature of the element.  If you provide a
+function, then the function will be applied to the element to compute
+the elements unique signature."
   (let* ((list (if (vectorp sequence)
                    (map 'list 'identity sequence)
                    sequence))
@@ -591,13 +619,18 @@ earlier data structures when the paths of the values coincide."
   (distinct-elements list))
 
 (defun range (start end &key (step 1) (filter #'identity) shuffle)
-  "Returns a list of values between START and END (inclusive), skipping values by STEP, filtering remaining values with the function in FILTER, and shuffling the remaining values if SHUFFLE is true.  STEP defaults to 1, FILTER defaults to allowing all values through, and SHUFFLE default to nil."
+  "Returns a list of values between START and END (inclusive), skipping
+values by STEP, filtering remaining values with the function in
+FILTER, and shuffling the remaining values if SHUFFLE is true.  STEP
+defaults to 1, FILTER defaults to allowing all values through, and
+SHUFFLE default to nil."
   (let ((range (loop for a from start to end by step
                      when (funcall filter a) collect a)))
     (if shuffle (shuffle range) range)))
 
 (defun shuffle (seq)
-  "Return a sequence with the same elements as the given sequence S, but in random order (shuffled)."
+  "Return a sequence with the same elements as the given sequence S, but
+in random order (shuffled)."
   (loop
     with l = (length seq)
     with w = (make-array l :initial-contents seq)
