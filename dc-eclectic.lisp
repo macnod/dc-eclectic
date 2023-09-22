@@ -409,10 +409,10 @@ the element."
 ;; the element."
 
 
-(defun ds-set (ds location value &optional debug)
+(defun ds-set (ds location value)
   "In the given dc-utilities data structure DS, this function sets the
-value of the node at LOCATION-KEY-PATH, which is a key or a list of
-keys, to VALUE."
+value of the node at LOCATION-KEY-PATH, which is a key or an index, or
+a list of keys or indexes, to VALUE."
   (let* ((keys (if (atom location)
                    (list location)
                    location))
@@ -427,43 +427,40 @@ keys, to VALUE."
         (multiple-value-bind (target-ds exists)
             (ds-get ds key)
           (if exists
-              (progn (when debug (format t "key ~a exists~%" key))
-                     (if (atom target-ds)
-                         (let ((sub-ds (if (integerp (second keys))
-                                           (make-array (1+ (second keys))
-                                                       :initial-element nil)
-                                           (make-hash-table :test #'equal))))
-                           (case (ds-type ds)
-                             (hash-table (setf (gethash key ds) sub-ds))
-                             (sequence (setf (elt ds key) sub-ds))
-                             (otherwise (error "Not hash-table or sequence.")))
-                           (ds-set sub-ds (cdr keys) value debug))
-                         (ds-set target-ds (cdr keys) value debug)))
-              (progn
-                (when debug (format t "key ~a does not exist~%" key))
-                (case (ds-type ds)
-                  (hash-table (progn
-                                (setf (gethash key ds)
-                                      (if (integerp (second keys))
-                                          (make-array (1+ (second keys))
-                                                      :initial-element nil)
-                                          (make-hash-table :test #'equal)))
-                                (ds-set ds keys value debug)))
-                  (sequence (progn
-                              (setf (elt ds key)
+              (if (atom target-ds)
+                  (let ((sub-ds (if (integerp (second keys))
+                                    (make-array (1+ (second keys))
+                                                :initial-element nil)
+                                    (make-hash-table :test #'equal))))
+                    (case (ds-type ds)
+                      (hash-table (setf (gethash key ds) sub-ds))
+                      (sequence (setf (elt ds key) sub-ds))
+                      (otherwise (error "Not hash-table or sequence.")))
+                    (ds-set sub-ds (cdr keys) value))
+                  (ds-set target-ds (cdr keys) value))
+              (case (ds-type ds)
+                (hash-table (progn
+                              (setf (gethash key ds)
                                     (if (integerp (second keys))
                                         (make-array (1+ (second keys))
                                                     :initial-element nil)
                                         (make-hash-table :test #'equal)))
-                              (ds-set ds keys value debug)))
-                  (otherwise (if (integerp key)
-                                 (progn
-                                   (setf ds (make-array (1+ key)
-                                                        :initial-element nil))
-                                   (ds-set ds keys value debug))
-                                 (progn
-                                   (setf ds (make-hash-table :test #'equal))
-                                   (ds-set ds keys value debug)))))))))))
+                              (ds-set ds keys value)))
+                (sequence (progn
+                            (setf (elt ds key)
+                                  (if (integerp (second keys))
+                                      (make-array (1+ (second keys))
+                                                  :initial-element nil)
+                                      (make-hash-table :test #'equal)))
+                            (ds-set ds keys value)))
+                (otherwise (if (integerp key)
+                               (progn
+                                 (setf ds (make-array (1+ key)
+                                                      :initial-element nil))
+                                 (ds-set ds keys value))
+                               (progn
+                                 (setf ds (make-hash-table :test #'equal))
+                                 (ds-set ds keys value))))))))))
 
 
 
