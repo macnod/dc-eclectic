@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 125)
+(plan 130)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -329,7 +329,18 @@
             "ds-set keys must be integers, strings, or keywords")
   (ds-set ds '(:l 1 :m 2 :n) 4)
   (is (ds-get ds :l 1 :m 2 :n) 4 "ds-set atom non-existing map/list path"))
-
+(let ((ds (ds '(:list 1 1 3))))
+  (ds-set ds 1 2)
+  (is (ds-get ds 1) 2 "ds-set 1 2")
+  (ds-set ds 4 5)
+  (is (ds-get ds 4) 5 "ds-set 4 5"))
+(let ((ds (ds '(:array 1 1 3))))
+  (ds-set ds 1 2)
+  (is (ds-get ds 1) 2 "ds-set 1 2")
+  (is-error (ds-set ds 3 4) 'simple-error 
+            "Non-list sequence extension is not supported")
+  (is-error (ds-set ds 5 6) 'simple-error 
+            "Non-list sequence extension is not supported"))
 
 ;; ds-merge function needs rewriting. It's not working properly.
 ;; ds-merge
