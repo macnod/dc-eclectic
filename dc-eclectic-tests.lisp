@@ -342,15 +342,20 @@
   (is-error (ds-set ds 5 6) 'simple-error 
             "Non-list sequence extension is not supported"))
 
-;; ds-merge function needs rewriting. It's not working properly.
 ;; ds-merge
-;; (let ((ds-1 (ds '(:map :a 1 :b 2)))
-;;       (ds-2 (ds '(:map :c (:list 4 5 6))))
-;;       (ds-3 (ds '(:map :b 22)))
-;;       (ds-4 (ds '(:map :c (:list 7 8 9))))
-;;       (ds-5 (ds '(:map :c (:map :ten 10 :eleven 11))))
-;;       (ds-6 (ds '(:map :c (:map :eleven 111)))))
-;;   (is (ds-list (ds-merge ds-1 ds-2)) '(:map :a 1 :b 2 :c (:list 4 5 6))
-;;       "ds-merge ds-1 ds-2"))
+(let* ((ds-1 (ds '(:map :a 1 :b 2))))
+  (is (ds-list (ds-merge ds-1 (ds '(:map :c 3 :d 4))))
+      '(:map :a 1 :b 2 :c 3 :d 4)
+      "ds-merge (:a 1 :b 2) (:c 3 :d 4)")
+  (is (ds-list (ds-merge ds-1 (ds '(:map :a 3))))
+      '(:map :a 3 :b 2)
+      "ds-merge (:a 1 :b 2) (:a 3)"))
+;; Failing
+  ;; (is (ds-list (ds-merge ds-1 (ds '(:map :b (:list 1 2 3)))))
+  ;;     '(:map :a 1 :b (:list 1 2 3))
+  ;;     "ds-merge (:a 1 :b 2) (:b (1 2 3))")
+  ;; (is (ds-list (ds-merge ds-1 (ds '(:map :a (:map :aa 11 :ab 12)))))
+  ;;     '(:map :a (:map :aa 11 :ab 12) :b 2)
+  ;;     "ds-merge (:a 1 :b 2) (:a (:map :aa 11 :ab 12))"))
 
 (finalize)
