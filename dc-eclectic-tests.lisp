@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 130)
+(plan 134)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -349,7 +349,13 @@
       "ds-merge (:a 1 :b 2) (:c 3 :d 4)")
   (is (ds-list (ds-merge ds-1 (ds '(:map :a 3))))
       '(:map :a 3 :b 2)
-      "ds-merge (:a 1 :b 2) (:a 3)"))
+      "ds-merge (:a 1 :b 2) (:a 3)")
+  (is (ds-list (ds-merge ds-1 (ds '(:map :a 3 :b 4))))
+      '(:map :a 3 :b 4)
+      "ds-merge (:a 1 :b 2) (:a 3 :b 4)")
+  (is (ds-list (ds-merge ds-1 (ds '(:map :a 3 :c 5))))
+      '(:map :a 3 :b 2 :c 5)
+      "ds-merge (:a 1 :b 2) (:a 3 :c 5)"))
 ;; Failing
   ;; (is (ds-list (ds-merge ds-1 (ds '(:map :b (:list 1 2 3)))))
   ;;     '(:map :a 1 :b (:list 1 2 3))
