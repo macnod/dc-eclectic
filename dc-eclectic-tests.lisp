@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 134)
+(plan 146)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -341,6 +341,38 @@
             "Non-list sequence extension is not supported")
   (is-error (ds-set ds 5 6) 'simple-error 
             "Non-list sequence extension is not supported"))
+
+;; ds-paths
+(let ((ds (ds '(:map :a 1 :b 2 :c 3
+                :d (:list 4 5 (:map :six 6 :seven 7 "eight" 8
+                                    :nine (:list 9 10 11)))))))
+  (is (ds-paths ds)
+      '((:a) (:b) (:c) (:d 0) (:d 1) (:d 2 :six) (:d 2 :seven)
+        (:d 2 "eight") (:d 2 :nine 0) (:d 2 :nine 1) (:d 2 :nine 2))
+      "ds-paths with a nested data structure")
+  (is (apply #'ds-get (cons ds (elt (ds-paths ds) 0))) 1
+      "path #1 leads to 1")
+  (is (apply #'ds-get (cons ds (elt (ds-paths ds) 1))) 2
+      "path #2 leads to 2")
+  (is (apply #'ds-get (cons ds (elt (ds-paths ds) 2))) 3
+      "path #3 leads to 3")
+  (is (apply #'ds-get (cons ds (elt (ds-paths ds) 3))) 4
+      "path #4 leads to 4")
+  (is (apply #'ds-get (cons ds (elt (ds-paths ds) 4))) 5
+      "path #5 leads to 5")
+  (is (apply #'ds-get (cons ds (elt (ds-paths ds) 5))) 6
+      "path #6 leads to 6")
+  (is (apply #'ds-get (cons ds (elt (ds-paths ds) 6))) 7
+      "path #7 leads to 7")
+  (is (apply #'ds-get (cons ds (elt (ds-paths ds) 7))) 8
+      "path #8 leads to 8")
+  (is (apply #'ds-get (cons ds (elt (ds-paths ds) 8))) 9
+      "path #9 leads to 9")
+  (is (apply #'ds-get (cons ds (elt (ds-paths ds) 9))) 10
+      "path #10 leads to 10")
+  (is (apply #'ds-get (cons ds (elt (ds-paths ds) 10))) 11
+      "path #11 leads to 11"))
+      
 
 ;; ds-merge
 (let* ((ds-1 (ds '(:map :a 1 :b 2))))
