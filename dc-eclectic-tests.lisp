@@ -387,7 +387,6 @@
   (is (ds-list ds-2) (ds-list ds-3)
       "ds-clone clone is an exact copy of the deeply-nested original"))
 
-
 ;; ds-merge
 (let* ((ds-1 (ds '(:map :a 1 :b 2))))
   (is (ds-list (ds-merge ds-1 (ds '(:map :c 3 :d 4))))
@@ -407,7 +406,6 @@
                          (ds '(:map :b (:list 1 4 3)))))
       '(:map :a 1 :b (:list 1 4 3))
       "ds-merge (:a 1 :b 2) (:b (:list 1 2 3)) (:b (:list 1 4 3))")
-;; Failing
   (is (ds-list (ds-merge ds-1 (ds '(:map :b (:list 1 2 3)))))
       '(:map :a 1 :b (:list 1 2 3))
       "ds-merge (:a 1 :b 2) (:b (1 2 3))")
