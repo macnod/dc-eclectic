@@ -391,7 +391,6 @@ function extends the list with nil values before setting the element.
           (error "Index out of bounds.")))
   sequence)
 
-
 (defun set-list-element (list index value)
   "Set the element of LIST at INDEX to VALUE. If INDEX is greater than
 the last index of LIST, the list is extended with nils before setting
@@ -402,12 +401,29 @@ the element."
             do (push nil (cdr (last list)))
             finally (push value (cdr (last list)))))
   list)
-  
-;; (defun set-array-element (array index value)
-;;   "Set the element of ARRAY at INDEX to VALUE. If INDEX is greater than
-;; the last index of ARRAY, the ARRAY is extended with nils before setting
-;; the element."
 
+(defun set-collection-element (sequence-or-hashtable index value)
+  "Set the element of SEQUENCE-OR-HASHTABLE at INDEX to VALUE. If
+SEQUENCE-OR-HASHTABLE is a list and the index is larger than the last
+index of the sequence, then this function extends the list with nil
+values before setting the element. If SEQUENCE-OR-HASHTABLE is a
+non-list sequence and the index is larger than the last index of the
+sequence, then this function signals an error. SEQUENCE-OR-HASHTABLE
+can also be a hash table, in which case INDEX becomes the value's key."
+  (cond ((listp sequence-or-hashtable)
+         (set-list-element sequence-or-hashtable index value))
+        ((arrayp sequence-or-hashtable)
+         (if (< index (length sequence-or-hashtable))
+             (setf (elt sequence-or-hashtable index) value)
+             (error "Index out of bounds.")))
+        ((hash-table-p sequence-or-hashtable)
+         (setf (gethash index sequence-or-hashtable) value))
+        (t (error "Invalid data structure."))))
+
+(defun create-sub-ds (keys)
+  (if (integerp (second keys))
+      (make-list (1+ (second keys)))
+      (make-hash-table :test #'equal)))
 
 (defun ds-set (ds location value)
   "In the given dc-utilities data structure DS, this function sets the
@@ -416,53 +432,40 @@ a list of keys or indexes, to VALUE."
   (let* ((keys (if (atom location)
                    (list location)
                    location))
-         (key (car keys)))
+         (key (car keys))
+         (debug nil))
+    (when debug (format t "ds=~a; keys=~a~%" (ds-list ds) keys))
     (ds-valid-keys keys)
     (if (= (length keys) 1)
-        (case (ds-type ds)
-          (hash-table (progn (setf (gethash key ds) value)
-                             ds))
-          (sequence (set-sequence-element ds key value))
-          (t (error "Not a hash-table or sequence.")))
+        (progn
+          (when debug (format t "one key left"))
+          (set-collection-element ds key value))
         (multiple-value-bind (target-ds exists)
             (ds-get ds key)
           (if exists
-              (if (atom target-ds)
-                  (let ((sub-ds (if (integerp (second keys))
-                                    (make-array (1+ (second keys))
-                                                :initial-element nil)
-                                    (make-hash-table :test #'equal))))
-                    (case (ds-type ds)
-                      (hash-table (setf (gethash key ds) sub-ds))
-                      (sequence (setf (elt ds key) sub-ds))
-                      (otherwise (error "Not hash-table or sequence.")))
-                    (ds-set sub-ds (cdr keys) value))
-                  (ds-set target-ds (cdr keys) value))
-              (case (ds-type ds)
-                (hash-table (progn
-                              (setf (gethash key ds)
-                                    (if (integerp (second keys))
-                                        (make-array (1+ (second keys))
-                                                    :initial-element nil)
-                                        (make-hash-table :test #'equal)))
-                              (ds-set ds keys value)))
-                (sequence (progn
-                            (setf (elt ds key)
-                                  (if (integerp (second keys))
-                                      (make-array (1+ (second keys))
-                                                  :initial-element nil)
-                                      (make-hash-table :test #'equal)))
-                            (ds-set ds keys value)))
-                (otherwise (if (integerp key)
-                               (progn
-                                 (setf ds (make-array (1+ key)
-                                                      :initial-element nil))
-                                 (ds-set ds keys value))
-                               (progn
-                                 (setf ds (make-hash-table :test #'equal))
-                                 (ds-set ds keys value))))))))))
-
-
+              (progn
+                (when debug
+                  (format t "key ~a exists~%" key)
+                  (format t "target-ds=~a~%" (ds-list target-ds)))
+                (if (or (stringp target-ds) (numberp target-ds) (null target-ds))
+                    (let ((sub-ds (if (integerp (second keys))
+                                      (make-list (1+ (second keys)))
+                                      (make-hash-table :test #'equal))))
+                      (set-collection-element ds key sub-ds)
+                      (ds-set sub-ds (cdr keys) value))
+                    (ds-set target-ds (cdr keys) value)))
+              (progn
+                (when debug (format t "key ~a doesn't exist~%" key))
+                (case (ds-type ds)
+                  (hash-table 
+                   (setf (gethash key ds) (create-sub-ds keys))
+                   (ds-set ds keys value))
+                  (sequence
+                   (setf (elt ds key) (create-sub-ds keys))
+                   (ds-set ds keys value))
+                  (otherwise 
+                   (setf ds (create-sub-ds keys))
+                   (ds-set ds keys value)))))))))
 
 (defun ds-merge (ds-base &rest ds-rest)
   "Merges dc-utilities data structures, starting with DS-BASE and then

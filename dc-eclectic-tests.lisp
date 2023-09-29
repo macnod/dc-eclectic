@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 146)
+(plan 152)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -310,25 +310,26 @@
   (is (ds-get ds :d 2 :nine 2) 11.5 "ds-set :d 2 :nine 2 11.5")
   (is (ds-list ds)
       (ds-list
-       (ds '(:map 
-             :a 5 :b 6 :c 7 
-             :d (:list 4.5 5 
-                 (:map :nine 
-                  (:array nil nil 11.5))))))
+       (ds '(:map :a 5 :b 6 :c 7 :d
+             (:list 4.5 5 
+              (:map :six 6 
+                    :seven 7.5 
+                    "eight" 8.5 
+                    :nine (:list 9 10 11.5))))))
       "ds-set all changes")
   (ds-set ds '(:d 2 :nine 2) (ds '(:map :eleven 11 :twelve 12)))
   (is (ds-get ds :d 2 :nine 2 :eleven) 11 "ds-set :d 2 :nine 2 :eleven 11")
   (is (ds-get ds :d 2 :nine 2 :twelve) 12 "ds-set :d 2 :nine 2 :twelve 12")
   (ds-set ds '(:e :f :g) 1)
-  (is (ds-get ds :e :f :g) 1 "ds-set atom non-existing map path")
+  (is (ds-get ds :e :f :g) 1 "ds-set atom non-existing map path 1")
   (ds-set ds '(:h 1) 2)
   (is-error (ds-get ds '(:h 1)) 'simple-error 
-            "ds-get keys must be integers, strings, or keywords")
-  (is (ds-get ds :h 1) 2 "ds-set atom non-existing map/list path")
+            "ds-get keys must be integers, strings, or keywords 1")
+  (is (ds-get ds :h 1) 2 "ds-set atom non-existing map/list path 2")
   (is-error (ds-set ds '(:i 1 '(:j :k :l) :m 2) 3) 'simple-error
-            "ds-set keys must be integers, strings, or keywords")
+            "ds-set keys must be integers, strings, or keywords 2")
   (ds-set ds '(:l 1 :m 2 :n) 4)
-  (is (ds-get ds :l 1 :m 2 :n) 4 "ds-set atom non-existing map/list path"))
+  (is (ds-get ds :l 1 :m 2 :n) 4 "ds-set atom non-existing map/list path 3"))
 (let ((ds (ds '(:list 1 1 3))))
   (ds-set ds 1 2)
   (is (ds-get ds 1) 2 "ds-set 1 2")
@@ -338,9 +339,9 @@
   (ds-set ds 1 2)
   (is (ds-get ds 1) 2 "ds-set 1 2")
   (is-error (ds-set ds 3 4) 'simple-error 
-            "Non-list sequence extension is not supported")
+            "Non-list sequence extension is not supported 1")
   (is-error (ds-set ds 5 6) 'simple-error 
-            "Non-list sequence extension is not supported"))
+            "Non-list sequence extension is not supported 2"))
 
 ;; ds-paths
 (let ((ds (ds '(:map :a 1 :b 2 :c 3
@@ -373,6 +374,19 @@
   (is (apply #'ds-get (cons ds (elt (ds-paths ds) 10))) 11
       "path #11 leads to 11"))
       
+;; ds-clone
+(let* ((ds (ds '(:map :a 1 :b 2)))
+       (ds-1 (ds-clone ds))
+       (ds-2 '(:map :a (:map b (:map :c (:list 1 2 3))) :aa 4))
+       (ds-3 (ds-clone ds-2)))
+  (is (ds-list ds) (ds-list ds-1) 
+      "ds-clone clone is an exact copy of the original")
+  (ds-set ds-1 :a 3)
+  (isnt (ds-list ds) (ds-list ds-1)
+        "ds-clone original doesn't change when clone changes")
+  (is (ds-list ds-2) (ds-list ds-3)
+      "ds-clone clone is an exact copy of the deeply-nested original"))
+
 
 ;; ds-merge
 (let* ((ds-1 (ds '(:map :a 1 :b 2))))
@@ -387,13 +401,18 @@
       "ds-merge (:a 1 :b 2) (:a 3 :b 4)")
   (is (ds-list (ds-merge ds-1 (ds '(:map :a 3 :c 5))))
       '(:map :a 3 :b 2 :c 5)
-      "ds-merge (:a 1 :b 2) (:a 3 :c 5)"))
+      "ds-merge (:a 1 :b 2) (:a 3 :c 5)")
+  (is (ds-list (ds-merge ds-1 
+                         (ds '(:map :b (:list 1 2 3)))
+                         (ds '(:map :b (:list 1 4 3)))))
+      '(:map :a 1 :b (:list 1 4 3))
+      "ds-merge (:a 1 :b 2) (:b (:list 1 2 3)) (:b (:list 1 4 3))")
 ;; Failing
-  ;; (is (ds-list (ds-merge ds-1 (ds '(:map :b (:list 1 2 3)))))
-  ;;     '(:map :a 1 :b (:list 1 2 3))
-  ;;     "ds-merge (:a 1 :b 2) (:b (1 2 3))")
-  ;; (is (ds-list (ds-merge ds-1 (ds '(:map :a (:map :aa 11 :ab 12)))))
-  ;;     '(:map :a (:map :aa 11 :ab 12) :b 2)
-  ;;     "ds-merge (:a 1 :b 2) (:a (:map :aa 11 :ab 12))"))
+  (is (ds-list (ds-merge ds-1 (ds '(:map :b (:list 1 2 3)))))
+      '(:map :a 1 :b (:list 1 2 3))
+      "ds-merge (:a 1 :b 2) (:b (1 2 3))")
+  (is (ds-list (ds-merge ds-1 (ds '(:map :a (:map :aa 11 :ab 12)))))
+      '(:map :a (:map :aa 11 :ab 12) :b 2)
+      "ds-merge (:a 1 :b 2) (:a (:map :aa 11 :ab 12))"))
 
 (finalize)
