@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 152)
+(plan 156)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -412,5 +412,27 @@
   (is (ds-list (ds-merge ds-1 (ds '(:map :a (:map :aa 11 :ab 12)))))
       '(:map :a (:map :aa 11 :ab 12) :b 2)
       "ds-merge (:a 1 :b 2) (:a (:map :aa 11 :ab 12))"))
+
+;; ds-from-json
+(let* ((json-1 "{\"a\":1,\"b\":2,\"c\":[1,2,3],\"d\":{\"e\":4,\"f\":5}}")
+       (json-2 (format nil "{\"a\":1,\"b\":2,\"c\":[1,2,~a],\"d\":\"five\"}"
+                       "{\"e\":4,\"f\":[\"one\",\"two\",\"three\"]}"))
+       (ds-1 (ds-from-json json-1))
+       (ds-2 (ds-from-json json-2)))
+  (is (ds-list ds-1) 
+      '(:map "a" 1 "b" 2 "c" (:list 1 2 3) "d" (:map "e" 4 "f" 5))
+      "ds-from-json map with ints, a string, a nested list, a nested map")
+  (is (ds-to-json ds-1) json-1 "ds-to-json")
+  (is (ds-list ds-2)
+      '(:map 
+        "a" 1 
+        "b" 2 
+        "c" (:list 1 2 (:map 
+                        "e" 4 
+                        "f" (:list "one" "two" "three")))
+        "d" "five")
+      "ds-from-json with more deeply nested structures")
+  (is (ds-get ds-2 "c" 2 "f" 1) "two"
+  "ds-get against a deeply-nested ds-to-json structure"))
 
 (finalize)
