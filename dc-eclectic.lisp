@@ -378,19 +378,6 @@ and ds-to-json functions."
           ((atom a) a)
           (t (car a)))))
 
-(defun set-sequence-element (sequence index value)
-  "Set the element of SEQUENCE at INDEX to VALUE. If the index is larger
-than the last index of the sequence and the sequence is a list, then this
-function extends the list with nil values before setting the element.
- If the index is larger than the last index of the sequence and the
- sequence is an array or vector, then this function signals an error."
-  (if (listp sequence)
-      (set-list-element sequence index value)
-      (if (< index (length sequence))
-          (setf (elt sequence index) value)
-          (error "Index out of bounds.")))
-  sequence)
-
 (defun set-list-element (list index value)
   "Set the element of LIST at INDEX to VALUE. If INDEX is greater than
 the last index of LIST, the list is extended with nils before setting
