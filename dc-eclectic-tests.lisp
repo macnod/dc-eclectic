@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 156)
+(plan 163)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -434,5 +434,46 @@
       "ds-from-json with more deeply nested structures")
   (is (ds-get ds-2 "c" 2 "f" 1) "two"
   "ds-get against a deeply-nested ds-to-json structure"))
+
+;; sorted-hash representation
+(is (sorted-hash-representation 
+     (ds '(:map :one 1 :two 2 :three 3 :four 4 :five 5)))
+    '((:five 5) (:four 4) (:one 1) (:three 3) (:two 2))
+    "sorted-hash-representation with keyword keys")
+(is (sorted-hash-representation 
+     (ds '(:map :one 1 :two 2 :three 3 :four 4 :five 5))
+     :f-sort #'string>)
+    (reverse '((:five 5) (:four 4) (:one 1) (:three 3) (:two 2)))
+    "sorted-hash-representation with keyword keys, descending")
+(is (sorted-hash-representation
+     (ds '(:map  5 1   3 2   4 3   1 4   2 5)))
+    '((1 4) (2 5) (3 2) (4 3) (5 1))
+    "sorted-hash-representation with integer keys")
+(is (sorted-hash-representation
+     (ds '(:map  5 1   3 2   4 3   1 4   2 5))
+     :f-sort #'<
+     :f-make-sortable #'identity)
+    '((1 4) (2 5) (3 2) (4 3) (5 1))
+    "sorted-hash-representation with integer keys, numeric sort")
+(is (sorted-hash-representation
+     (ds '(:map  5 1   3 2   4 3   1 4   2 5))
+     :f-sort #'>
+     :f-make-sortable #'identity)
+    (reverse '((1 4) (2 5) (3 2) (4 3) (5 1)))
+    "sorted-hash-representation with integer keys, descending numeric sort")
+
+;; hashify-list :method :count
+(is (sorted-hash-representation
+     (hashify-list (list :one :two :three :two :one))
+     :flatten t)
+    '(:one 2 :three 1 :two 2)
+    "hashify-list with keyword keys")
+(is (sorted-hash-representation
+     (hashify-list '(1 2 3 2 1))
+     :flatten t
+     :f-sort #'<
+     :f-make-sortable #'identity)
+    '(1 2 2 2 3 1)
+    "hasify-list with integer keys and numeric sort")
 
 (finalize)

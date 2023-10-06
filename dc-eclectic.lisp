@@ -615,3 +615,124 @@ in random order (shuffled)."
        (setf (aref w i) (aref w r))
        (setf (aref w r) h)
     finally (return (if (listp seq) (map 'list 'identity w) w))))
+
+(defun hashify-list (list
+                     &key (method :count)
+                       f-key
+                       hash-key
+                       plist-key
+                       (f-value (lambda (key-raw key-clean value)
+                                  (declare (ignore key-raw key-clean))
+                                  value))
+                       (initial-value 0))
+
+  "Takes a list and returns a hash table, using the specified
+method. Supported methods, specified via the :method key, are :count,
+:plist, :alist, :index, and :custom.
+
+With the :count method, which the function uses by default, the
+function to creates a hash table in which the keys are the distinct
+items of the list and the value for each key is the count of that
+distinct element in the list.  
+
+The :alist and :plist methods do the same thing, but with alists and
+plists.  The :alist method assumes that the list contains key/value
+pairs and looks like this: '((key1 . value1) (key2 . value2) (key3
+. value3)...).  
+
+The :plist method works just like the :alist method, but expects a
+list that looks like this: '(key1 value1 key2 value2 key3 value3 ...).
+
+The :index method tells this function that you to specify the key with
+one of the f-key, hash-key, and plist-key parameters, and that the
+value should be the list value.
+
+If the objects in the list that you're indexing are hash tables, then
+you can specify the index key with hash-key. The value you provide
+with hash-key will be the key of the hash table who's value will be
+used as the key in the index hash table. For example, if you have a
+list with 2 hash tables that look like this:
+
+[
+  {id: 1, name: \"abc\"},
+  {id: 2, name: \"def\"}
+]
+
+Then specify :method :index :hash-key \"id\", this function will
+create a hash table that looks like this: 
+
+{
+  1: {id: 1, name: \"abc\"},
+  2: {id: 2, name: \"def\"}
+}
+
+If the objects are plists, then you can specify the index with
+plist-key. hash-key and plist-key are just shortcuts to save you from
+having to write some code for f-key. You can specify only one of 
+hash-key, plist-key, and f-key.
+
+The :index method allows you to later look up an element in the list,
+by the given key, in O(1) time.
+
+The :custom method requires that you provide functions for computing
+the key from the element in the list and for computing the value given
+the element, the computed key, and the existing hash value currently
+associated with the computed key.  If there's no hash value associated
+with the computed key, then the value specified via :initial-value is
+used. The :count, :pairs, and :merged-pairs methods allow you to
+specify functions for computing the key (given the element) and the
+value (given the element, the computed key, and the existing value)."
+
+  (let ((h (make-hash-table :test 'equal))
+        (counter 0))
+    (case method
+      (:count (loop 
+                with key-function = (cond 
+                                      (hash-key 
+                                       (lambda (x) (gethash hash-key x)))
+                                      (plist-key 
+                                       (lambda (x) (getf x plist-key)))
+                                      (t (if f-key f-key (lambda (x) x))))
+                for k-raw in list
+                for k-clean = (funcall key-function k-raw)
+                do (incf (gethash k-clean h 0))))
+      (:custom (loop with key-function = (or f-key (lambda (x) x))
+                  for k-raw in list
+                  for k-clean = (funcall key-function k-raw)
+                  for value-old = (gethash k-clean h initial-value)
+                  for value-new = (funcall f-value k-raw k-clean value-old)
+                  do (setf (gethash k-clean h) value-new)))
+      (:plist (loop with key-function = (or f-key (lambda (x) x))
+                 for (k-raw value) on list by #'cddr
+                 for k-clean = (funcall key-function k-raw)
+                 for value-new = (funcall f-value k-raw k-clean value)
+                 do (setf (gethash k-clean h) value-new)))
+      (:alist (loop with key-function = (or f-key (lambda (x) x))
+                 for (k-raw value) in list
+                 for k-clean = (funcall key-function k-raw)
+                 for value-new = (funcall f-value k-raw k-clean value)
+                 do (setf (gethash k-clean h) value-new)))
+      (:index (loop with key-function =
+                   (cond (hash-key (lambda (x) (gethash hash-key x)))
+                         (plist-key (lambda (x) (getf x plist-key)))
+                         (f-key f-key)
+                         (t (lambda (x) (declare (ignore x)) (incf counter))))
+                 for value in list
+                 for k-raw = (funcall key-function value)
+                 for k-clean = k-raw
+                 for value-new = (funcall f-value k-raw k-clean value)
+                 do (setf (gethash k-clean h) value-new))))
+    h))
+
+(defun sorted-hash-representation (hash &key
+                                        (f-sort #'string<)
+                                        (f-make-sortable
+                                         (lambda (k) (format nil "~a" k)))
+                                        flatten)
+  (loop for k being the hash-keys in hash
+        using (hash-value v)
+        for k-sortable = (funcall f-make-sortable k)
+        collect (list k-sortable k v) into pairs
+        finally (return 
+                  (let ((result (mapcar #'cdr (sort pairs f-sort :key #'car))))
+                    (if flatten (flatten result) result)))))

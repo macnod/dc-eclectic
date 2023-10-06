@@ -23,6 +23,7 @@
    get-unix-time
    hash-hmac-256
    hash-string
+   hashify-list
    join-paths
    log-entry
    log-entries
@@ -30,6 +31,7 @@
    range
    run-tests
    shuffle
+   sorted-hash-representation
    timestamp-string
    to-ascii
    universal-time-to-unix-time
