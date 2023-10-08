@@ -31,7 +31,7 @@
    range
    run-tests
    shuffle
-   sorted-hash-representation
+   human-readable-hash-dump
    timestamp-string
    to-ascii
    universal-time-to-unix-time
