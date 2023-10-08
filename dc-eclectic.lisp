@@ -731,11 +731,23 @@ value (given the element, the computed key, and the existing value)."
                     do (setf (gethash k-clean h) value-new))))
     h))
 
-(defun human-readable-hash-dump (hash &key
-                                        (f-sort #'string<)
-                                        (f-make-sortable
-                                         (lambda (k) (format nil "~a" k)))
-                                        flat)
+(defun comparable-hash-dump (hash &key
+                                    (f-sort #'string<)
+                                    (f-make-sortable
+                                     (lambda (k) (format nil "~a" k)))
+                                    flat)
+  "Turns the given hash table into a list of pairs or, if FLAT is T,
+ into a plist that represents the hash. In the resulting list, the
+ keys are sorted, so that the list can be more easily compared with
+ other lists. HASH is the hash you want to dump. F-SORT is the sort
+ predicate, which defaults to sorting strings in ascending order.
+ F-MAKE-SORTABLE is a function that accepts a key and returns a
+ sortable version of the key. This defaults to turning the key into a
+ string. If the keys to the hash are integers, for example, you can
+ provide an F-SORT of #'<, which sorts integers numerically in
+ ascending order, and you can provide an F-MAKE-SORTABLE of
+ #'identity, which will leave the keys as integers for sorting
+ purposes."
   (loop for k being the hash-keys in hash
           using (hash-value v)
         for k-sortable = (funcall f-make-sortable k)

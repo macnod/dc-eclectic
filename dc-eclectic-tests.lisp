@@ -436,46 +436,46 @@
   "ds-get against a deeply-nested ds-to-json structure"))
 
 ;; sorted-hash representation
-(is (human-readable-hash-dump 
+(is (comparable-hash-dump 
      (ds '(:map :one 1 :two 2 :three 3 :four 4 :five 5)))
     '((:five 5) (:four 4) (:one 1) (:three 3) (:two 2))
-    "human-readable-hash-dump with keyword keys")
-(is (human-readable-hash-dump 
+    "comparable-hash-dump with keyword keys")
+(is (comparable-hash-dump 
      (ds '(:map :one 1 :two 2 :three 3 :four 4 :five 5))
      :f-sort #'string>)
     (reverse '((:five 5) (:four 4) (:one 1) (:three 3) (:two 2)))
-    "human-readable-hash-dump with keyword keys, descending")
-(is (human-readable-hash-dump
+    "comparable-hash-dump with keyword keys, descending")
+(is (comparable-hash-dump
      (ds '(:map  5 1   3 2   4 3   1 4   2 5)))
     '((1 4) (2 5) (3 2) (4 3) (5 1))
-    "human-readable-hash-dump with integer keys")
-(is (human-readable-hash-dump
+    "comparable-hash-dump with integer keys")
+(is (comparable-hash-dump
      (ds '(:map  5 1   3 2   4 3   1 4   2 5))
      :f-sort #'<
      :f-make-sortable #'identity)
     '((1 4) (2 5) (3 2) (4 3) (5 1))
-    "human-readable-hash-dump with integer keys, numeric sort")
-(is (human-readable-hash-dump
+    "comparable-hash-dump with integer keys, numeric sort")
+(is (comparable-hash-dump
      (ds '(:map  5 1   3 2   4 3   1 4   2 5))
      :f-sort #'>
      :f-make-sortable #'identity)
     (reverse '((1 4) (2 5) (3 2) (4 3) (5 1)))
-    "human-readable-hash-dump with integer keys, descending numeric sort")
+    "comparable-hash-dump with integer keys, descending numeric sort")
 
 ;; hashify-list :method :count
-(is (human-readable-hash-dump
+(is (comparable-hash-dump
      (hashify-list (list :one :two :three :two :one))
      :flat t)
     '(:one 2 :three 1 :two 2)
     "hashify-list with keyword keys")
-(is (human-readable-hash-dump
+(is (comparable-hash-dump
      (hashify-list '(1 2 3 2 1))
      :flat t
      :f-sort #'<
      :f-make-sortable #'identity)
     '(1 2 2 2 3 1)
     "hashify-list with integer keys and numeric sort")
-(is (human-readable-hash-dump
+(is (comparable-hash-dump
      (hashify-list '("one" "two" "three")
                    :method :index)
      :flat t
@@ -483,26 +483,26 @@
      :f-make-sortable #'identity)
     '(1 "one" 2 "two" 3 "three")
     "hashify-list index method")
-(is (human-readable-hash-dump
+(is (comparable-hash-dump
      (hashify-list '(:one 1 :two 2 :three 3 :one 11)
                    :method :plist)
      :flat t)
     '(:one 11 :three 3 :two 2)
     "hashify-list plist method")
-(is (human-readable-hash-dump
+(is (comparable-hash-dump
      (hashify-list '((:one 1) (:two 2) (:three 3))
                    :method :alist)
      :flat t)
     '(:one 1 :three 3 :two 2)
     "hashify-list alist method")
-(is (human-readable-hash-dump
+(is (comparable-hash-dump
      (hashify-list '(:one 1 :two 2 :three 3)
                    :method :plist
                    :f-key (lambda (k) (format nil "~a" k)))
      :flat t)
     '("ONE" 1 "THREE" 3 "TWO" 2)
     "hashify-list plist method, stringified keys")
-(is (human-readable-hash-dump
+(is (comparable-hash-dump
      (hashify-list '(:one 1 :two 2 :three 3)
                    :method :plist
                    :f-value (lambda (r c v)
