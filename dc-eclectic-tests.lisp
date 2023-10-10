@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 168)
+(plan 169)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -511,4 +511,14 @@
      :flat t)
     '(:one "1" :three "3" :two "2")
     "hashify-list plist method, strigified values")
+(is (comparable-hash-dump 
+     (hashify-list '((:a 11 :b 12 :c 13)
+                     (:a 21 :b 22 :c 23)
+                     (:a 31 :b 32 :c 33)
+                     (:a 41 :b 12 :c 43))
+                   :method :count
+                   :plist-key :b))
+    '(((:a 21 :b 22 :c 23) 1) ((:a 31 :b 32 :c 33) 1) ((:a 41 :b 12 :c 43) 2))
+    "hashify-list list of plists, method count, specifying plist-key")
+
 (finalize)

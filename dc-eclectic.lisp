@@ -621,6 +621,7 @@ in random order (shuffled)."
                        f-key
                        hash-key
                        plist-key
+                       alist-key
                        (f-value (lambda (key-raw key-clean value)
                                   (declare (ignore key-raw key-clean))
                                   value))
@@ -693,37 +694,65 @@ value (given the element, the computed key, and the existing value)."
   (let ((h (make-hash-table :test 'equal))
         (counter 0))
     (case method
-      (:count (loop 
-                with key-function = (cond 
-                                      (hash-key 
-                                       (lambda (x) (gethash hash-key x)))
-                                      (plist-key 
-                                       (lambda (x) (getf x plist-key)))
-                                      (t (if f-key f-key #'identity)))
+      (:count (loop
+                with h-index 
+                  = (cond
+                      (hash-key (hashify-list 
+                                 list
+                                 :method :index
+                                 :hash-key hash-key))
+                      (plist-key (hashify-list
+                                  list
+                                  :method :index
+                                  :plist-key plist-key))
+                      (alist-key (hashify-list
+                                  list
+                                  :method :index
+                                  :alist-key alist-key))
+                      (t nil))
+                and h1 = (make-hash-table :test 'equal)
+                and key-function 
+                      = (cond 
+                          (hash-key (lambda (x) (gethash hash-key x)))
+                          (plist-key (lambda (x) (getf x plist-key)))
+                          (alist-key (lambda (x) (cdr (assoc alist-key x))))
+                          (t (if f-key f-key #'identity)))
                 for k-raw in list
                 for k-clean = (funcall key-function k-raw)
-                do (incf (gethash k-clean h 0))))
-      (:custom (loop with key-function = (or f-key #'identity)
-                     for k-raw in list
-                     for k-clean = (funcall key-function k-raw)
-                     for value-old = (gethash k-clean h initial-value)
-                     for value-new = (funcall f-value k-raw k-clean value-old)
-                     do (setf (gethash k-clean h) value-new)))
-      (:plist (loop with key-function = (or f-key #'identity)
-                    for (k-raw value) on list by #'cddr
-                    for k-clean = (funcall key-function k-raw)
-                    for value-new = (funcall f-value k-raw k-clean value)
-                    do (setf (gethash k-clean h) value-new)))
-      (:alist (loop with key-function = (or f-key #'identity)
-                    for (k-raw value) in list
-                    for k-clean = (funcall key-function k-raw)
-                    for value-new = (funcall f-value k-raw k-clean value)
-                    do (setf (gethash k-clean h) value-new)))
-      (:index (loop with key-function =
-                                      (cond (hash-key (lambda (x) (gethash hash-key x)))
-                                            (plist-key (lambda (x) (getf x plist-key)))
-                                            (f-key f-key)
-                                            (t (lambda (x) (declare (ignore x)) (incf counter))))
+                do (incf (gethash k-clean h1 0))
+                finally (loop for k-old being the hash-keys in h1 
+                                using (hash-value v)
+                              for k-new = (if h-index 
+                                              (gethash k-old h-index)
+                                              k-old)
+                              do (setf (gethash k-new h) v))))
+      (:custom (loop 
+                 with key-function = (or f-key #'identity)
+                 for k-raw in list
+                 for k-clean = (funcall key-function k-raw)
+                 for value-old = (gethash k-clean h initial-value)
+                 for value-new = (funcall f-value k-raw k-clean value-old)
+                 do (setf (gethash k-clean h) value-new)))
+      (:plist (loop 
+                with key-function = (or f-key #'identity)
+                for (k-raw value) on list by #'cddr
+                for k-clean = (funcall key-function k-raw)
+                for value-new = (funcall f-value k-raw k-clean value)
+                do (setf (gethash k-clean h) value-new)))
+      (:alist (loop 
+                with key-function = (or f-key #'identity)
+                for (k-raw value) in list
+                for k-clean = (funcall key-function k-raw)
+                for value-new = (funcall f-value k-raw k-clean value)
+                do (setf (gethash k-clean h) value-new)))
+      (:index (loop with key-function 
+                      = (cond (hash-key (lambda (x) (gethash hash-key x)))
+                              (plist-key (lambda (x) (getf x plist-key)))
+                              (alist-key (lambda (x) (cdr (assoc alist-key x))))
+                              (f-key f-key)
+                              (t (lambda (x) 
+                                   (declare (ignore x))
+                                   (incf counter))))
                     for value in list
                     for k-raw = (funcall key-function value)
                     for k-clean = k-raw
