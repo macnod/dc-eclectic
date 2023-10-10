@@ -2,6 +2,7 @@
 
 
 (defvar *unix-epoch-difference* (encode-universal-time 0 0 0 1 1 1970 0))
+(defparameter *debug* nil)
 
 (defun run-tests(&optional (reporter :tap))
   "Runs all the tests in dc-eclectic-tets.lisp. The reporter can be
@@ -419,19 +420,18 @@ a list of keys or indexes, to VALUE."
   (let* ((keys (if (atom location)
                    (list location)
                    location))
-         (key (car keys))
-         (debug nil))
-    (when debug (format t "ds=~a; keys=~a~%" (ds-list ds) keys))
+         (key (car keys)))
+    (when *debug* (format t "ds=~a; keys=~a~%" (ds-list ds) keys))
     (ds-valid-keys keys)
     (if (= (length keys) 1)
         (progn
-          (when debug (format t "one key left"))
+          (when *debug* (format t "one key left"))
           (set-collection-element ds key value))
         (multiple-value-bind (target-ds exists)
             (ds-get ds key)
           (if exists
               (progn
-                (when debug
+                (when *debug*
                   (format t "key ~a exists~%" key)
                   (format t "target-ds=~a~%" (ds-list target-ds)))
                 (if (or (stringp target-ds) (numberp target-ds) (null target-ds))
@@ -442,7 +442,7 @@ a list of keys or indexes, to VALUE."
                       (ds-set sub-ds (cdr keys) value))
                     (ds-set target-ds (cdr keys) value)))
               (progn
-                (when debug (format t "key ~a doesn't exist~%" key))
+                (when *debug* (format t "key ~a doesn't exist~%" key))
                 (case (ds-type ds)
                   (hash-table 
                    (setf (gethash key ds) (create-sub-ds keys))
