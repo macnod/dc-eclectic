@@ -444,13 +444,13 @@ a list of keys or indexes, to VALUE."
               (progn
                 (when *debug* (format t "key ~a doesn't exist~%" key))
                 (case (ds-type ds)
-                  (hash-table 
+                  (hash-table
                    (setf (gethash key ds) (create-sub-ds keys))
                    (ds-set ds keys value))
                   (sequence
                    (setf (elt ds key) (create-sub-ds keys))
                    (ds-set ds keys value))
-                  (otherwise 
+                  (otherwise
                    (setf ds (create-sub-ds keys))
                    (ds-set ds keys value)))))))))
 
@@ -642,7 +642,7 @@ both consist of collections of key/value pairs. Alists look like this:
 
 '((key1 . value1) (key2 . value2) (key3 . value3)...)
 
-Plists look like this: 
+Plists look like this:
 
 '(key1 value1 key2 value2 key3 value3 ...)
 
@@ -667,7 +667,7 @@ object. For example, for a given hash:
 ]
 
 If you specify :method :index :hash-key \"id\", this function will
-create a hash table that looks like this: 
+create a hash table that looks like this:
 
 {
   1: {id: 1, name: \"abc\"},
@@ -695,9 +695,9 @@ value (given the element, the computed key, and the existing value)."
         (counter 0))
     (case method
       (:count (loop
-                with h-index 
+                with h-index
                   = (cond
-                      (hash-key (hashify-list 
+                      (hash-key (hashify-list
                                  list
                                  :method :index
                                  :hash-key hash-key))
@@ -711,8 +711,8 @@ value (given the element, the computed key, and the existing value)."
                                   :alist-key alist-key))
                       (t nil))
                 and h1 = (make-hash-table :test 'equal)
-                and key-function 
-                      = (cond 
+                and key-function
+                      = (cond
                           (hash-key (lambda (x) (gethash hash-key x)))
                           (plist-key (lambda (x) (getf x plist-key)))
                           (alist-key (lambda (x) (cdr (assoc alist-key x))))
@@ -720,37 +720,37 @@ value (given the element, the computed key, and the existing value)."
                 for k-raw in list
                 for k-clean = (funcall key-function k-raw)
                 do (incf (gethash k-clean h1 0))
-                finally (loop for k-old being the hash-keys in h1 
+                finally (loop for k-old being the hash-keys in h1
                                 using (hash-value v)
-                              for k-new = (if h-index 
+                              for k-new = (if h-index
                                               (gethash k-old h-index)
                                               k-old)
                               do (setf (gethash k-new h) v))))
-      (:custom (loop 
+      (:custom (loop
                  with key-function = (or f-key #'identity)
                  for k-raw in list
                  for k-clean = (funcall key-function k-raw)
                  for value-old = (gethash k-clean h initial-value)
                  for value-new = (funcall f-value k-raw k-clean value-old)
                  do (setf (gethash k-clean h) value-new)))
-      (:plist (loop 
+      (:plist (loop
                 with key-function = (or f-key #'identity)
                 for (k-raw value) on list by #'cddr
                 for k-clean = (funcall key-function k-raw)
                 for value-new = (funcall f-value k-raw k-clean value)
                 do (setf (gethash k-clean h) value-new)))
-      (:alist (loop 
+      (:alist (loop
                 with key-function = (or f-key #'identity)
                 for (k-raw value) in list
                 for k-clean = (funcall key-function k-raw)
                 for value-new = (funcall f-value k-raw k-clean value)
                 do (setf (gethash k-clean h) value-new)))
-      (:index (loop with key-function 
+      (:index (loop with key-function
                       = (cond (hash-key (lambda (x) (gethash hash-key x)))
                               (plist-key (lambda (x) (getf x plist-key)))
                               (alist-key (lambda (x) (cdr (assoc alist-key x))))
                               (f-key f-key)
-                              (t (lambda (x) 
+                              (t (lambda (x)
                                    (declare (ignore x))
                                    (incf counter))))
                     for value in list
@@ -781,6 +781,6 @@ value (given the element, the computed key, and the existing value)."
           using (hash-value v)
         for k-sortable = (funcall f-make-sortable k)
         collect (list k-sortable k v) into pairs
-        finally (return 
+        finally (return
                   (let ((result (mapcar #'cdr (sort pairs f-sort :key #'car))))
                     (if flat (flatten result) result)))))
