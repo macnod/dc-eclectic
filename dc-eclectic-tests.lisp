@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 169)
+(plan 176)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -91,7 +91,9 @@
       "Year=2023; Month=07; Day=18"
       "timestamp-string with reference time (Year=%Y; Month=%M; Day=%D)"))
 
-(let ((timestamp (loop ;; this gives us a whole second with the same timestamp
+(let ((timestamp (loop ;; Get a timestamp that starts at the beginning of
+                       ;; a second. This will give us a whole second to
+                       ;; run the log-entry tests.
                        with reference-timestamp = (timestamp-string)
                        for timestamp = (timestamp-string)
                        while (string= timestamp reference-timestamp)
@@ -117,9 +119,15 @@
                                       append (list timestamp m)))
       "log-entries with 3 strings in a list")
   (is (log-entries (list "one" "two" (list "three" (list "four" "five")) "six"))
-      (format nil "~{~a ~a~%~}" (loop for m in (list "one" "two" "three" "four" "five" "six")
-                                      append (list timestamp m)))
-      "log-entries with multiple strings in a deeply-nested list"))
+      (format nil "~{~a ~a~%~}" 
+              (loop for m in (list "one" "two" "three" "four" "five" "six")
+                    append (list timestamp m)))
+      "log-entries with multiple strings in a deeply-nested list")
+  (is (with-output-to-string (s)
+        (write-log-entry s "line 1")
+        (write-log-entry s "line 2"))
+      (format nil "~a line 1~%~a line 2~%" timestamp timestamp)
+      "write-log-entry 2 lines"))
 
 ;; join-paths tests
 (is (join-paths nil) "" "join-paths with nil")
@@ -214,7 +222,9 @@
 (is (ds-list (ds 1)) 1 "ds-list (ds integer)")
 (is (ds-list (ds 1/2)) 1/2 "ds-list (ds fraction)")
 (is (ds-list (ds "hello")) "hello" "ds-list (ds string)")
-(is (ds-list (ds '(:list 1 2 3))) '(:list 1 2 3) "ds-list (ds list of integers)")
+(is (ds-list (ds '(:list 1 2 3))) 
+    '(:list 1 2 3) 
+    "ds-list (ds list of integers)")
 (is (ds-list (ds '(:list (:map :a 1 :b 2) (:map :a 3 :b 4))))
     '(:list (:map :a 1 :b 2) (:map :a 3 :b 4))
     "ds-list (ds list of maps)")
@@ -223,7 +233,10 @@
     "ds-list (ds map of lists)")
 
 ;; ds-get
-(let ((ds (ds '(:map :a (:list 1 2 3) :b (:list 4 5 (:array 6 7 8)) :c "nine"))))
+(let ((ds (ds '(:map 
+                :a (:list 1 2 3) 
+                :b (:list 4 5 (:array 6 7 8)) 
+                :c "nine"))))
   (is (ds-get ds :c) "nine" "ds-get with :c")
   (is (ds-get ds :a 0) 1 "ds-get with :a 0")
   (is (ds-get ds :a 1) 2 "ds-get with :a 1")
@@ -239,12 +252,12 @@
 
 ;; ds-paths
 (let ((ds-1 (ds '(:list
-                  (:map :name "Donnie" :age 55 :phone "919-429-9377")
-                  (:map :name "Tracy" :age 41 :phone "650-622-6492")
+                  (:map :name "Donnie" :age 55 :phone "919-429-1371")
+                  (:map :name "Tracy" :age 41 :phone "650-622-1491")
                   (:map :name "Graydon" :age 8 :phone "n/a"))))
       (ds-2 (ds '(:map
-                  :donnie (:map :name "Donnie" :age 55 :phone "919-429-9377")
-                  :tracy (:map :name "Tracy" :age 41 :phone "650-622-6492")
+                  :donnie (:map :name "Donnie" :age 55 :phone "919-429-1371")
+                  :tracy (:map :name "Tracy" :age 41 :phone "650-622-1491")
                   :graydon (:map :name "Graydon" :age 8 :phone "n/a"))))
       (ds-3 (ds '(:list 1 2 (:map :a 1 :b 2 :c (:map :three 3 :four 4 :five
                                                 (:list 5 6 7)))))))
@@ -462,7 +475,7 @@
     (reverse '((1 4) (2 5) (3 2) (4 3) (5 1)))
     "comparable-hash-dump with integer keys, descending numeric sort")
 
-;; hashify-list :method :count
+;; hashify-list
 (is (comparable-hash-dump
      (hashify-list (list :one :two :three :two :one))
      :flat t)
@@ -520,5 +533,44 @@
                    :plist-key :b))
     '(((:a 21 :b 22 :c 23) 1) ((:a 31 :b 32 :c 33) 1) ((:a 41 :b 12 :c 43) 2))
     "hashify-list list of plists, method count, specifying plist-key")
+
+;; hash-string
+(is (hash-string "Donnie")
+    (format nil "~{~a~}"
+            '("2daf3ad277939e55520a61187c73abc3"
+              "f09b8759ce41469d67ec7fd8f6930c6c"
+              "e943809d1c37312838cef4b40665aa2e"
+              "02803cc0a206c97bb8a476b1d681ca95"))
+    "hash-string")
+(is (hash-hmac-256 "secret" "Donnie")
+    "b81c15aafc9935e7138b5c09fc775e66275739370493c06051fea29f5cc6c32a"
+    "hash-hmac-256")
+
+;; distinct-elements
+(is (sort (distinct-elements '(1 2 3 4 3 2 1)) #'<)
+    '(1 2 3 4)
+    "distinct-elements with integers")
+(is (sort (distinct-elements '("abc" "def" "ghi" "jkl" "abc" "def" "ghi" "jkl"))
+          #'string<)
+    '("abc" "def" "ghi" "jkl")
+    "distinct-elements with strings")
+(is (sort 
+     (mapcar (lambda (x) (format nil "~a" x))
+             (distinct-elements '("one" 1 "two" 2 "three" 3 "two" 2 "one" 1)))
+     #'string<)
+    '("1" "2" "3" "one" "three" "two")
+    "distinct-elements with mixed types")
+(is (sort (distinct-elements '((:a 1 :b 2 :c 3)
+                               (:a 4 :b 5 :c 6)
+                               (:a 7 :b 8 :c 9)
+                               (:a 1 :b 2 :c 3)
+                               (:a 4 :b 5 :c 6)
+                               (:a 7 :b 8 :c 9))
+                             :key :b)
+          #'< :key (lambda (x) (getf x :b)))
+    '((:a 1 :b 2 :c 3)
+      (:a 4 :b 5 :c 6)
+      (:a 7 :b 8 :c 9))
+    "distinct-elements for list with key")
 
 (finalize)

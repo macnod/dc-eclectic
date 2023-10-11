@@ -22,7 +22,9 @@
    flatten
    get-unix-time
    hash-hmac-256
+   hash-keys
    hash-string
+   hash-values
    hashify-list
    join-paths
    log-entry
