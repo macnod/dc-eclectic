@@ -587,9 +587,9 @@ the elements unique signature."
                           (t (lambda (x) (funcall key x))))))
          (distinct (hash-values
                     (hashify-list list :method :index :f-key f-key))))
-    (if (vectorp sequence)
-        (map 'vector 'identity distinct)
-        distinct)))
+    (cond ((stringp sequence) (map 'string 'identity distinct))
+          ((vectorp sequence) (map 'vector 'identity distinct))
+          (t distinct))))
 
 (defun distinct-values (list)
   (distinct-elements list))
@@ -792,3 +792,49 @@ value (given the element, the computed key, and the existing value)."
         finally (return
                   (let ((result (mapcar #'cdr (sort pairs f-sort :key #'car))))
                     (if flat (flatten result) result)))))
+
+(defun all-permutations-base (list)
+  (cond ((null list) nil)
+        ((null (cdr list)) (list list))
+        (t (loop for item in list appending
+                                  (mapcar (lambda (sublist) (cons item sublist))
+                                          (all-permutations-base (remove item list)))))))
+
+(defun all-permutations (list)
+  "Returns a list of every permutation of elements in LIST. For
+ example:
+    '(1 2 3) -> '((1 2 3) (1 3 2) (2 1 3) (2 3 1) (3 1 2) (3 2 1))"
+  (let ((h (hashify-list list :method :index)))
+    (distinct-values
+     (mapcar (lambda (list) (mapcar (lambda (x) (gethash x h)) list))
+             (all-permutations-base (hash-keys h))))))
+
+(defun all-permutations-of-string (s)
+  "Returns a list of strings representing every permutation of the
+orginal string S. For example:
+    \"abc\" -> '(\"abc\" \"acb\" \"bac\" \"bca\" \"cab\" \"cba\")"
+  (mapcar (lambda (list) (map 'string 'identity list))
+          (all-permutations (map 'list 'identity s))))
+
+(defun existing-permutations-of-string (s hash)
+  "Works just like all-permutations-of-string, but excludes any
+ permutations of S that are not among the keys in HASH."
+  (loop for word in (all-permutations-of-string s)
+        when (gethash word hash)
+          collect word))
+
+(defun strings-from-chars (chars count &optional (prefix ""))
+  (if (zerop count)
+      prefix
+      (loop for char across chars
+            collect (strings-from-chars
+                     chars
+                     (1- count)
+                     (format nil "~a~a" prefix char))
+              into result
+            finally (return (flatten result)))))
+
+(defun words-from-chars (chars count hash)
+  (remove-if-not (lambda (word)
+                   (gethash word hash))
+                 (strings-from-chars chars count)))

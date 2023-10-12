@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 178)
+(plan 188)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -119,7 +119,7 @@
                                       append (list timestamp m)))
       "log-entries with 3 strings in a list")
   (is (log-entries (list "one" "two" (list "three" (list "four" "five")) "six"))
-      (format nil "~{~a ~a~%~}" 
+      (format nil "~{~a ~a~%~}"
               (loop for m in (list "one" "two" "three" "four" "five" "six")
                     append (list timestamp m)))
       "log-entries with multiple strings in a deeply-nested list")
@@ -222,8 +222,8 @@
 (is (ds-list (ds 1)) 1 "ds-list (ds integer)")
 (is (ds-list (ds 1/2)) 1/2 "ds-list (ds fraction)")
 (is (ds-list (ds "hello")) "hello" "ds-list (ds string)")
-(is (ds-list (ds '(:list 1 2 3))) 
-    '(:list 1 2 3) 
+(is (ds-list (ds '(:list 1 2 3)))
+    '(:list 1 2 3)
     "ds-list (ds list of integers)")
 (is (ds-list (ds '(:list (:map :a 1 :b 2) (:map :a 3 :b 4))))
     '(:list (:map :a 1 :b 2) (:map :a 3 :b 4))
@@ -233,9 +233,9 @@
     "ds-list (ds map of lists)")
 
 ;; ds-get
-(let ((ds (ds '(:map 
-                :a (:list 1 2 3) 
-                :b (:list 4 5 (:array 6 7 8)) 
+(let ((ds (ds '(:map
+                :a (:list 1 2 3)
+                :b (:list 4 5 (:array 6 7 8))
                 :c "nine"))))
   (is (ds-get ds :c) "nine" "ds-get with :c")
   (is (ds-get ds :a 0) 1 "ds-get with :a 0")
@@ -324,11 +324,11 @@
   (is (ds-list ds)
       (ds-list
        (ds '(:map :a 5 :b 6 :c 7 :d
-             (:list 4.5 5 
-              (:map :six 6 
-                    :seven 7.5 
-                    "eight" 8.5 
-                    :nine (:list 9 10 11.5))))))
+             (:list 4.5 5
+              (:map :six 6
+                    :seven 7.5
+               "eight" 8.5
+               :nine (:list 9 10 11.5))))))
       "ds-set all changes")
   (ds-set ds '(:d 2 :nine 2) (ds '(:map :eleven 11 :twelve 12)))
   (is (ds-get ds :d 2 :nine 2 :eleven) 11 "ds-set :d 2 :nine 2 :eleven 11")
@@ -336,7 +336,7 @@
   (ds-set ds '(:e :f :g) 1)
   (is (ds-get ds :e :f :g) 1 "ds-set atom non-existing map path 1")
   (ds-set ds '(:h 1) 2)
-  (is-error (ds-get ds '(:h 1)) 'simple-error 
+  (is-error (ds-get ds '(:h 1)) 'simple-error
             "ds-get keys must be integers, strings, or keywords 1")
   (is (ds-get ds :h 1) 2 "ds-set atom non-existing map/list path 2")
   (is-error (ds-set ds '(:i 1 '(:j :k :l) :m 2) 3) 'simple-error
@@ -351,9 +351,9 @@
 (let ((ds (ds '(:array 1 1 3))))
   (ds-set ds 1 2)
   (is (ds-get ds 1) 2 "ds-set 1 2")
-  (is-error (ds-set ds 3 4) 'simple-error 
+  (is-error (ds-set ds 3 4) 'simple-error
             "Non-list sequence extension is not supported 1")
-  (is-error (ds-set ds 5 6) 'simple-error 
+  (is-error (ds-set ds 5 6) 'simple-error
             "Non-list sequence extension is not supported 2"))
 
 ;; ds-paths
@@ -386,13 +386,13 @@
       "path #10 leads to 10")
   (is (apply #'ds-get (cons ds (elt (ds-paths ds) 10))) 11
       "path #11 leads to 11"))
-      
+
 ;; ds-clone
 (let* ((ds (ds '(:map :a 1 :b 2)))
        (ds-1 (ds-clone ds))
        (ds-2 '(:map :a (:map b (:map :c (:list 1 2 3))) :aa 4))
        (ds-3 (ds-clone ds-2)))
-  (is (ds-list ds) (ds-list ds-1) 
+  (is (ds-list ds) (ds-list ds-1)
       "ds-clone clone is an exact copy of the original")
   (ds-set ds-1 :a 3)
   (isnt (ds-list ds) (ds-list ds-1)
@@ -414,7 +414,7 @@
   (is (ds-list (ds-merge ds-1 (ds '(:map :a 3 :c 5))))
       '(:map :a 3 :b 2 :c 5)
       "ds-merge (:a 1 :b 2) (:a 3 :c 5)")
-  (is (ds-list (ds-merge ds-1 
+  (is (ds-list (ds-merge ds-1
                          (ds '(:map :b (:list 1 2 3)))
                          (ds '(:map :b (:list 1 4 3)))))
       '(:map :a 1 :b (:list 1 4 3))
@@ -432,28 +432,28 @@
                        "{\"e\":4,\"f\":[\"one\",\"two\",\"three\"]}"))
        (ds-1 (ds-from-json json-1))
        (ds-2 (ds-from-json json-2)))
-  (is (ds-list ds-1) 
+  (is (ds-list ds-1)
       '(:map "a" 1 "b" 2 "c" (:list 1 2 3) "d" (:map "e" 4 "f" 5))
       "ds-from-json map with ints, a string, a nested list, a nested map")
   (is (ds-to-json ds-1) json-1 "ds-to-json")
   (is (ds-list ds-2)
-      '(:map 
-        "a" 1 
-        "b" 2 
-        "c" (:list 1 2 (:map 
-                        "e" 4 
+      '(:map
+        "a" 1
+        "b" 2
+        "c" (:list 1 2 (:map
+                        "e" 4
                         "f" (:list "one" "two" "three")))
         "d" "five")
       "ds-from-json with more deeply nested structures")
   (is (ds-get ds-2 "c" 2 "f" 1) "two"
-  "ds-get against a deeply-nested ds-to-json structure"))
+      "ds-get against a deeply-nested ds-to-json structure"))
 
 ;; sorted-hash representation
-(is (comparable-hash-dump 
+(is (comparable-hash-dump
      (ds '(:map :one 1 :two 2 :three 3 :four 4 :five 5)))
     '((:five 5) (:four 4) (:one 1) (:three 3) (:two 2))
     "comparable-hash-dump with keyword keys")
-(is (comparable-hash-dump 
+(is (comparable-hash-dump
      (ds '(:map :one 1 :two 2 :three 3 :four 4 :five 5))
      :f-sort #'string>)
     (reverse '((:five 5) (:four 4) (:one 1) (:three 3) (:two 2)))
@@ -524,7 +524,7 @@
      :flat t)
     '(:one "1" :three "3" :two "2")
     "hashify-list plist method, strigified values")
-(is (comparable-hash-dump 
+(is (comparable-hash-dump
      (hashify-list '((:a 11 :b 12 :c 13)
                      (:a 21 :b 22 :c 23)
                      (:a 31 :b 32 :c 33)
@@ -554,7 +554,7 @@
           #'string<)
     '("abc" "def" "ghi" "jkl")
     "distinct-elements with strings")
-(is (sort 
+(is (sort
      (mapcar (lambda (x) (format nil "~a" x))
              (distinct-elements '("one" 1 "two" 2 "three" 3 "two" 2 "one" 1)))
      #'string<)
@@ -572,6 +572,7 @@
       (:a 4 :b 5 :c 6)
       (:a 7 :b 8 :c 9))
     "distinct-elements for list with key")
+(is (distinct-elements "donnie") "donie" "distinct-elements string")
 
 ;; hash-values and hash-keys
 (let ((h (ds '(:map :a 1 :b 2 :c 3))))
@@ -581,5 +582,42 @@
   (is (sort (hash-keys h) #'string<)
       '(:a :b :c)
       "hash-keys"))
+
+;; range
+(is (range 1 3) '(1 2 3) "range 1-3")
+(is (range 1 5 :step 2) '(1 3 5) "range 1-5 by 2")
+(is (range 1 5 :filter #'evenp) '(2 4) "range 1-5 even")
+(is (loop for a from 1 to 100
+          for range = (range 1 10 :shuffle t)
+          collect (car range) into heads
+          finally (return
+                    (loop with ref = (car heads)
+                          for head in heads thereis (not (= head ref)))))
+    t
+    "range shuffled")
+
+;; permutations
+(is (all-permutations '(1 2 3))
+    '((1 2 3)
+      (1 3 2)
+      (2 1 3)
+      (2 3 1)
+      (3 1 2)
+      (3 2 1))
+    "all-permutations distinct integers")
+(is (all-permutations-of-string "one")
+    '("one" "oen" "noe" "neo" "eon" "eno")
+    "all-permutations-of-string")
+(is (existing-permutations-of-string
+     "one" (ds '(:map "one" t "neo" t "eon" t)))
+    '("one" "neo" "eon")
+    "existing-permutations-of-string")
+(is (strings-from-chars "ab" 3)
+    '("aaa" "aab" "aba" "abb" "baa" "bab" "bba" "bbb")
+    "strings-from-chars")
+(is (words-from-chars
+     "abc" 3 (ds '(:map "aba" t "bbc" t "cab" t "hello" t "one" t "two" t)))
+    '("aba" "bbc" "cab")
+    "words-from-chars")
 
 (finalize)

@@ -6,6 +6,10 @@
    :digest-sequence
                 :sha512)
   (:export
+   all-permutations
+   all-permutations-of-string
+   comparable-hash-dump
+   existing-permutations-of-string
    distinct-elements
    distinct-values
    ds
@@ -33,7 +37,8 @@
    range
    run-tests
    shuffle
-   comparable-hash-dump
+   strings-from-chars
+   words-from-chars
    timestamp-string
    to-ascii
    universal-time-to-unix-time
