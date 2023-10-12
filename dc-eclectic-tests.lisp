@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 176)
+(plan 178)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -572,5 +572,14 @@
       (:a 4 :b 5 :c 6)
       (:a 7 :b 8 :c 9))
     "distinct-elements for list with key")
+
+;; hash-values and hash-keys
+(let ((h (ds '(:map :a 1 :b 2 :c 3))))
+  (is (sort (hash-values h) #'<)
+      '(1 2 3)
+      "hash-values")
+  (is (sort (hash-keys h) #'string<)
+      '(:a :b :c)
+      "hash-keys"))
 
 (finalize)
