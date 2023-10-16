@@ -546,6 +546,7 @@
     "b81c15aafc9935e7138b5c09fc775e66275739370493c06051fea29f5cc6c32a"
     "hash-hmac-256")
 
+
 ;; distinct-elements
 (is (sort (distinct-elements '(1 2 3 4 3 2 1)) #'<)
     '(1 2 3 4)
@@ -612,12 +613,12 @@
      "one" (ds '(:map "one" t "neo" t "eon" t)))
     '("one" "neo" "eon")
     "existing-permutations-of-string")
-(is (strings-from-chars "ab" 3)
+(is (n-gram-strings "ab" 3)
     '("aaa" "aab" "aba" "abb" "baa" "bab" "bba" "bbb")
-    "strings-from-chars")
-(is (words-from-chars
+    "n-gram-strings")
+(is (existing-n-gram-strings
      "abc" 3 (ds '(:map "aba" t "bbc" t "cab" t "hello" t "one" t "two" t)))
     '("aba" "bbc" "cab")
-    "words-from-chars")
+    "existing-n-gram-strings")
 
 (finalize)

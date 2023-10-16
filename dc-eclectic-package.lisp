@@ -22,6 +22,7 @@
    ds-set
    ds-to-json
    ds-type
+   existing-n-gram-strings
    filename-only
    flatten
    get-unix-time
@@ -33,6 +34,8 @@
    join-paths
    log-entry
    log-entries
+   n-grams
+   n-gram-strings
    path-only
    range
    run-tests

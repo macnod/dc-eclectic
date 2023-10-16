@@ -4,15 +4,6 @@
 (defvar *unix-epoch-difference* (encode-universal-time 0 0 0 1 1 1970 0))
 (defparameter *debug* nil)
 
-(defun run-tests(&optional (reporter :tap))
-  "Runs all the tests in dc-eclectic-tets.lisp. The reporter can be
-:list, :dot, :tap, or :fiveam. The default is :tap. These tests can
-also be run on the command line with the command 'make test`."
-  (prove:run (merge-pathnames (asdf:system-source-directory :dc-eclectic)
-                              "dc-eclectic-tests.lisp")
-             :reporter reporter))
-
-
 (defun universal-time-to-unix-time (&optional universal-time)
   "Converts universal time to unix time. If you don't provide a universal time,
 this function returns the current unix time.
@@ -823,18 +814,31 @@ orginal string S. For example:
         when (gethash word hash)
           collect word))
 
-(defun strings-from-chars (chars count &optional (prefix ""))
+(defun n-grams-of-list (list count &optional prefix)
   (if (zerop count)
-      prefix
-      (loop for char across chars
-            collect (strings-from-chars
-                     chars
+      (apply #'vector (reverse prefix))
+      (loop for item in list
+            collect (n-grams-of-list 
+                     list 
                      (1- count)
-                     (format nil "~a~a" prefix char))
-              into result
+                     (cons item prefix))
+            into result
             finally (return (flatten result)))))
 
-(defun words-from-chars (chars count hash)
+(defun n-grams (list count)
+  (mapcar (lambda (v) (map 'list 'identity v))
+          (n-grams-of-list list count)))
+
+(defun n-gram-strings (chars count)
+  "Accepts CHARS, a string, and COUNT, an integer, and returns all the
+  possible combinations of length COUNT of the characters in CHARS. For example,
+  (n-gram-strings \"abc\" 3) => '(\"aa\" \"ab\" \"ac\" \"ba\" \"bb\"
+  \"bc\" \"ca\" \"cb\" \"cc\")"
+  (mapcar (lambda (v) (map 'string 'identity v))
+          (n-grams-of-list (map 'list 'identity chars)
+                           count)))
+
+(defun existing-n-gram-strings (chars count hash)
   (remove-if-not (lambda (word)
                    (gethash word hash))
-                 (strings-from-chars chars count)))
+                 (n-gram-strings chars count)))
