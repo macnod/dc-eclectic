@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 188)
+(plan 199)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -584,6 +584,24 @@
       '(:a :b :c)
       "hash-keys"))
 
+;; shuffle
+(let* ((original-list (range 1 100))
+       (original-vector (apply #'vector (range 1 100)))
+       (shuffled-list (shuffle original-list))
+       (shuffled-vector (shuffle original-vector)))
+  (isnt original-list shuffled-list
+        "shuffled <> original")
+  (is (length original-list) (length shuffled-list)
+      "original and shuffled same length")
+  (is (comparable-hash-dump (hashify-list original-list))
+      (comparable-hash-dump (hashify-list shuffled-list))
+      "original and shuffled same elements, same count per element")
+  (is (comparable-hash-dump
+       (hashify-list (map 'list 'identity original-vector)))
+      (comparable-hash-dump
+       (hashify-list (map 'list 'identity shuffled-vector)))
+      "original and shuffled vectors same elements, same count per element"))
+
 ;; range
 (is (range 1 3) '(1 2 3) "range 1-3")
 (is (range 1 5 :step 2) '(1 3 5) "range 1-5 by 2")
@@ -620,5 +638,21 @@
      "abc" 3 (ds '(:map "aba" t "bbc" t "cab" t "hello" t "one" t "two" t)))
     '("aba" "bbc" "cab")
     "existing-n-gram-strings")
+
+;; verify-string
+(is (verify-string "Donnie" "Donnie") t
+    "verify-string 1")
+(is (verify-string "Donnie" "^D.+e$") t
+    "verify-string 2")
+(is (verify-string "Donnie" "^Do") nil
+    "verify-string 3")
+(is (verify-string "Donnie" "e$") nil
+    "verify-string 4")
+(is (verify-string "Donnie" "^d.+") nil
+    "verify-string 5")
+(is (verify-string "Donnie" "^d.+" :ignore-case t) t
+    "verify-string 6")
+(is (verify-string "Donnie" "^.+$") t
+    "verify-string 7")
 
 (finalize)

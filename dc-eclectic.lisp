@@ -186,7 +186,7 @@ path, inserting slashes where necessary."
   "A specifier for the type ds-collection. An item of type ds-collection
 is either an atom or a list. If it is a list, then the first element
 must be the type of the collection, and the type must be one of:
-  :list,
+  :list
   :array
   :map
 
@@ -822,7 +822,7 @@ orginal string S. For example:
                      list 
                      (1- count)
                      (cons item prefix))
-            into result
+              into result
             finally (return (flatten result)))))
 
 (defun n-grams (list count)

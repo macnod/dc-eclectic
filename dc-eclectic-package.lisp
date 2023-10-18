@@ -46,5 +46,6 @@
    to-ascii
    universal-time-to-unix-time
    unix-time-to-universal-time
+   verify-string
    write-log-entry
    ))
