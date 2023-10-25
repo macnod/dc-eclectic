@@ -1,28 +1,21 @@
 (defpackage :dc-eclectic
-  (:use :cl :cl-ppcre :trivial-utf-8 :sb-thread :sb-ext)
+  (:use :cl :cl-ppcre :trivial-utf-8 :sb-thread :sb-ext :dc-ds)
   (:import-from :ironclad
-   :ascii-string-to-byte-array
+                :ascii-string-to-byte-array
                 :byte-array-to-hex-string
-   :digest-sequence
+                :digest-sequence
                 :sha512)
   (:export
    all-permutations
    all-permutations-of-string
    comparable-hash-dump
    existing-permutations-of-string
+   directory-exists-p
    distinct-elements
    distinct-values
-   ds
-   ds-clone
-   ds-from-json
-   ds-get
-   ds-paths
-   ds-list
-   ds-merge
-   ds-set
-   ds-to-json
-   ds-type
    existing-n-gram-strings
+   file-exists-p
+   file-extension
    filename-only
    flatten
    get-unix-time
@@ -31,6 +24,7 @@
    hash-string
    hash-values
    hashify-list
+   index-of-max
    join-paths
    log-entry
    log-entries
@@ -38,6 +32,7 @@
    n-gram-strings
    path-only
    range
+   replace-extension
    run-tests
    shuffle
    strings-from-chars

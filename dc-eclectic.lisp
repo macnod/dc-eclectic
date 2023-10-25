@@ -145,7 +145,6 @@ path, inserting slashes where necessary."
                          "/" "")
                      path)))))
 
-
 (defun path-only (filename)
   "Retrieves the path (path only, without the filename) of FILENAME."
   (declare (type string filename))
@@ -157,7 +156,6 @@ path, inserting slashes where necessary."
               (null (car string-list)))
           "./"
           (elt string-list 0)))))
-
 
 (defun filename-only (filename)
   "Retrieves the filename (filename only, without the path) of FILENAME."
@@ -171,6 +169,59 @@ path, inserting slashes where necessary."
                 (elt parts (1- (length parts)))
                 ""))
           (error "FILENAME must be a string."))))
+
+;; Needs tests
+(defun file-exists-p (path)
+  "Returns a boolean value indicating if the file specified by PATH exists."
+  (let ((path (probe-file path)))
+    (and path
+         (not (equal (file-namestring path) "")))))
+
+;; Needs tests
+(defun directory-exists-p (path)
+  "Returns a boolean value indicating if the directory specified by PATH
+exists."
+  (let ((path (probe-file path)))
+    (and path
+         (not (equal (directory-namestring path) ""))
+         (equal (file-namestring path) ""))))
+
+;; Needs tests
+(defun file-extension (path)
+  "Returns a string consisting of the file extension for the file name
+given in PATH."
+  (multiple-value-bind (a b)
+      (ppcre:scan-to-strings "\\.([a-z0-9]+)$" path)
+    (when a (aref b 0))))
+
+;; Needs tests
+(defun replace-extension (filename new-extension)
+  "This function replaces the file extension in FILENAME with the file
+extension provided in NEW-EXTENSION."
+  (let* ((new-extension (if (scan "^\\." new-extension)
+                            (subseq new-extension 1)
+                            new-extension))
+         (new-filename (multiple-value-bind (a b)
+                           (scan-to-strings "^(.*)\\.[^.]+$" filename)
+                         (declare (ignore a))
+                         (if b (elt b 0) filename))))
+    (when (and new-filename (not (zerop (length new-extension))))
+      (setf new-filename (format nil "~a.~a" new-filename new-extension)))
+    new-filename))
+
+;; Needs tests
+(defgeneric index-of-max (vector)
+  (:method ((vector vector))
+    (index-of-max (map 'list 'identity vector)))
+  (:method ((vector list))
+    (loop with max-index = 0 and max-value = (elt vector 0)
+       for value in vector
+       for index = 0 then (1+ index)
+       when (> value max-value)
+       do 
+         (setf max-index index)
+         (setf max-value value)
+       finally (return max-index))))
 
 (defun ds-collection-p (x)
   "Return T if X is of type ds-collection. See the documentation for
