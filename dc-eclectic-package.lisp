@@ -35,7 +35,10 @@
    replace-extension
    run-tests
    shuffle
+   split-n-trim
    strings-from-chars
+   trim
+   trim-whitespace
    words-from-chars
    timestamp-string
    to-ascii

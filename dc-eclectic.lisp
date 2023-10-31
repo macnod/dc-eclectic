@@ -523,3 +523,33 @@ orginal string S. For example:
   (remove-if-not (lambda (word)
                    (gethash word hash))
                  (n-gram-strings chars count)))
+
+;; Needs tests!
+(defun split-n-trim (string &key (on-regex "\\s+") (fat "^\\s+|\\s+$"))
+  "Splits STRING into substrings on ON-REGEX, then trims FAT from each
+substring.  The ON-REGEX parameter value, which is optional, defaults
+to \"\\s+\", which is to say that the string is split into a list of
+words at the whitespace boundaries.  The default value for FAT, which
+is also optional, \"\\s+|\\s+$\", causes this function to trim
+whitespace from the beggining and end of each substring.  Here's an
+example:
+
+    (split-n-trim \"Hello  beautiful      world!\")
+
+    => '(\"Hello\" \"beautiful\" \"world!\")"
+  (remove-if (lambda (s) (zerop (length s)))
+             (mapcar (lambda (x) (trim x fat))
+                     (split on-regex string))))
+
+;; Needs tests!
+(defun trim (s &optional (fat "^\\s+|\\s+$"))
+  "Trim FAT from the string in S.  The FAT parameter is optional and
+defaults to \"^\\s+|\\s+$\", which means \"Whitespace at the beginning
+or end of the string\"."
+  (regex-replace-all fat s ""))
+
+;; Needs tests!
+(defun trim-whitespace (s)
+	(string-trim '(#\Space #\Newline #\Backspace #\Tab #\Linefeed #\Page #\Return 
+								 #\Rubout)
+							 s))
