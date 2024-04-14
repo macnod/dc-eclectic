@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 100)
+(plan 111)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -133,7 +133,7 @@
 (is (join-paths nil) "" "join-paths with nil")
 (is (join-paths nil "a" "b" "c") "a/b/c" "join-paths with nil and strings")
 (is (join-paths "/" nil "a" "b" "c") "/a/b/c"
-    "join-paths with /, nil and strings")
+    "join-paths with '/', nil, and strings")
 (is (join-paths "a") "a" "join-paths with single string")
 (is (join-paths "/a") "/a" "join-paths with single string that starts with /")
 (is (join-paths "/") "/" "join-paths with single /")
@@ -218,13 +218,19 @@
     '(1 2 2 2 3 1)
     "hashify-list with integer keys and numeric sort")
 (is (comparable-hash-dump
-     (hashify-list '("one" "two" "three")
-                   :method :index)
-     :flat t
-     :f-sort #'<
-     :f-make-sortable #'identity)
-    '(1 "one" 2 "two" 3 "three")
+     (hashify-list '("one" "two" "three") :method :index))
+    '(("one" 0) ("three" 2) ("two" 1))
     "hashify-list index method")
+(is (comparable-hash-dump
+     (hashify-list '((:id "a" :first "Alice" :last "Adams" :age 100)
+                     (:id "b" :first "Bob" :last "Baker" :age 101)
+                     (:id "c" :first "Claire" :last "Clark" :age 102))
+                   :method :index
+                   :plist-key :id))
+    '(("a" (:id "a" :first "Alice" :last "Adams" :age 100))
+      ("b" (:id "b" :first "Bob" :last "Baker" :age 101))
+      ("c" (:id "c" :first "Claire" :last "Clark" :age 102)))
+    "hashify-list index method plist-key")
 (is (comparable-hash-dump
      (hashify-list '(:one 1 :two 2 :three 3 :one 11)
                    :method :plist)
@@ -279,7 +285,7 @@
 ;; distinct-elements
 (is (sort (distinct-elements '(1 2 3 4 3 2 1)) #'<)
     '(1 2 3 4)
-    "distinct-elements with integers")
+    "distinct-elements integers")
 (is (sort (distinct-elements '("abc" "def" "ghi" "jkl" "abc" "def" "ghi" "jkl"))
           #'string<)
     '("abc" "def" "ghi" "jkl")
@@ -384,4 +390,38 @@
 (is (verify-string "Donnie" "^.+$") t
     "verify-string 7")
 
+;; plistp
+(ok (plistp '(:one 1 :two 2 :three 3)))
+(ok (not (plistp '(:one 1 :two :three 3))))
+
+;; file-exists-p and directory-exists-p
+(let* ((root "/tmp/dc-eclectic-tests/")
+       (file-name-1 (format nil "~afile-1.txt" root))
+       (file-name-2 (format nil "~afile-2.txt" root))
+       (dir-name-1 (format nil "~adir-1/" root))
+       (dir-name-2 (format nil "~adir-2/" root)))
+  (when (directory-exists-p root)
+    (uiop:delete-directory-tree (pathname root) :validate t))
+  (ensure-directories-exist dir-name-1)
+  (with-open-file (out file-name-1 :direction :output :if-exists :supersede)
+    (write-line "Hello World!" out))
+  (ok (file-exists-p file-name-1)
+      (format nil "file exists: ~a" file-name-1))
+  (ok (not (file-exists-p file-name-2))
+      (format nil "file does not exists: ~a" file-name-2))
+  (ok (not (file-exists-p dir-name-1))
+      (format nil "file does not exist (it's a directory): ~a" dir-name-1))
+  (ok (not (file-exists-p dir-name-2)) 
+      (format nil "file does not exist: ~a" dir-name-2))
+  (ok (directory-exists-p dir-name-1)
+      (format nil "directory exists: ~a" dir-name-1))
+  (ok (not (directory-exists-p dir-name-2))
+      (format nil "directory does not exist: ~a" dir-name-2))
+  (ok (not (directory-exists-p file-name-1))
+      (format nil "file exists, but it's not a directory: ~a" file-name-1))
+  (ok (not (directory-exists-p file-name-2))
+      (format nil "file does not exist as is not a directory: ~a" file-name-2))
+  (uiop:delete-directory-tree (pathname root) :validate t))
+
+;; All Done!
 (finalize)

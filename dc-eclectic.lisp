@@ -119,31 +119,38 @@ a log entry. Returns the same string that was written to STREAM."
 (defun verify-string (string regex &key ignore-case)
   "Return t if STRING matches the REGEX exactly.  Use the IGNORE-CASE
 parameter if you want case-insensitve matches."
-  (multiple-value-bind (a b)
-      (scan
-       (if ignore-case (concatenate 'string "(?is)" regex) regex)
-       string)
-    (and a b (zerop a) (= b (length string)))))
+  (let ((s (format nil "~a" string)))
+    (multiple-value-bind (a b)
+        (scan (if ignore-case (concatenate 'string "(?is)" regex) regex) s)
+      (and a b (zerop a) (= b (length s))))))
 
+
+;;
+;; BEGIN File and directory utilities
+;;
 
 (defun join-paths (&rest path-parts)
   "Joins parameters (collected in PATH-PARTS) into a unix-like file
 path, inserting slashes where necessary."
-  (cond ((null path-parts) "")
-        ((loop for s in path-parts thereis (not (or (null s) (stringp s))))
-         (error "All path parts must be strings or nil."))
-        (t (let* ((clean-parts (remove-if
-                                (lambda (p) (or (null p) (string= p "")))
-                                (mapcar
-                                 (lambda (s)
-                                   (regex-replace-all "^/+|/+$" s ""))
-                                 path-parts)))
-                  (path (format nil "~{~a~^/~}" clean-parts)))
-             (format nil "~a~a"
-                     (if (and (stringp (car path-parts))
-                              (verify-string (car path-parts) "^/.*$"))
-                         "/" "")
-                     path)))))
+  (when (null path-parts) (return-from join-paths ""))
+  (when (loop for s in path-parts 
+                thereis (not (or (null s) (stringp s) (pathnamep s))))
+    (error "All path parts must be strings, pathname, or NIL."))
+  (let* ((absolute (let ((head (format nil "~a" (car path-parts))))
+                     (when head (verify-string head "^/.*$"))))
+         (clean-parts (remove-if
+                        (lambda (p)
+                          (or (null p) (string= (format nil "~a" p) "")))
+                        (mapcar
+                         (lambda (p)
+                           (let ((s (format nil "~a" p)))
+                             (regex-replace-all "^/+|/+$" s "")))
+                         (remove-if
+                          (lambda (p)
+                            (or (null p) (string= (format nil "~a" p) "")))
+                          path-parts))))
+         (path (format nil "~{~a~^/~}" clean-parts)))
+    (format nil "~a~a" (if absolute "/" "") path)))
 
 (defun path-only (filename)
   "Retrieves the path (path only, without the filename) of FILENAME."
@@ -187,6 +194,14 @@ exists."
          (equal (file-namestring path) ""))))
 
 ;; Needs tests
+(defun path-type (path)
+  "Returns :FILE, :DIRECTORY, or :NOT-FOUND, depending on what PATH
+ points to."
+  (cond ((file-exists-p path) :file)
+        ((directory-exists-p path) :directory)
+        (t :not-found)))
+
+;; Needs tests
 (defun file-extension (path)
   "Returns a string consisting of the file extension for the file name
 given in PATH."
@@ -209,19 +224,30 @@ extension provided in NEW-EXTENSION."
       (setf new-filename (format nil "~a.~a" new-filename new-extension)))
     new-filename))
 
+;;
+;; END File and directory utilities
+;;
+
 ;; Needs tests
-(defgeneric index-of-max (vector)
+(defgeneric index-of-max (list-or-vector)
   (:method ((vector vector))
-    (index-of-max (map 'list 'identity vector)))
-  (:method ((vector list))
-    (loop with max-index = 0 and max-value = (elt vector 0)
-       for value in vector
-       for index = 0 then (1+ index)
-       when (> value max-value)
-       do 
-         (setf max-index index)
-         (setf max-value value)
-       finally (return max-index))))
+    (loop 
+      with index-of-max = 0 and max-value = (aref vector 0)
+      for value across vector
+      for index = 0 then (1+ index)
+      when (> value max-value)
+        do (setf index-of-max index
+                 max-value value)
+      finally (return index-of-max)))
+  (:method ((list list))
+    (loop 
+      with index-of-max = 0 and max-value = (car list)
+      for value in (cdr list)
+      for index = 0 then (1+ index)
+      when (> value max-value)
+        do (setf index-of-max index
+                 max-value value)
+      finally (return index-of-max))))
 
 (defun hash-string (string)
   "Hash STRING using sha-512 and return a hex representation of the hash"
@@ -250,21 +276,39 @@ the elements unique signature."
   (let* ((list (if (vectorp sequence)
                    (map 'list 'identity sequence)
                    sequence))
+         (first (car list))
          (f-key (if (functionp key)
                     key
-                    (cond ((hash-table-p (car list))
+                    (cond ((hash-table-p first)
                            (lambda (x) (gethash key x)))
-                          ((listp (car list))
+                          ((plistp first)
                            (lambda (x) (getf x key)))
                           (t (lambda (x) (funcall key x))))))
+         (f-value (lambda (e k v)
+                    (declare (ignore k v)) e))
          (distinct (hash-values
-                    (hashify-list list :method :index :f-key f-key))))
+                    (hashify-list list :method :custom 
+                                       :f-key f-key 
+                                       :f-value f-value))))
     (cond ((stringp sequence) (map 'string 'identity distinct))
           ((vectorp sequence) (map 'vector 'identity distinct))
           (t distinct))))
 
 (defun distinct-values (list)
   (distinct-elements list))
+
+;; Needs tests
+(defun distinct-strings (list)
+  (when list
+    (loop with sorted = (sort list #'string<)
+          with last-item = nil
+          with result = nil
+          for item in sorted
+          when (not (string= item last-item))
+            do (push item result)
+               (setf last-item item)
+          finally
+             (return (reverse result)))))
 
 (defun hash-values (hash)
   (loop for v being the hash-values in hash collect v))
@@ -282,19 +326,29 @@ SHUFFLE default to nil."
                      when (funcall filter a) collect a)))
     (if shuffle (shuffle range) range)))
 
-(defun shuffle (seq)
+(defun shuffle (seq &optional rstate)
   "Return a sequence with the same elements as the given sequence S, but
 in random order (shuffled)."
   (loop
     with l = (length seq)
     with w = (make-array l :initial-contents seq)
+    with random-function = (if rstate 
+                               (lambda (n) (random n rstate))
+                               #'random)
     for i from 0 below l
-    for r = (random l)
+    for r = (funcall random-function l)
     for h = (aref w i)
     do
        (setf (aref w i) (aref w r))
        (setf (aref w r) h)
     finally (return (if (listp seq) (map 'list 'identity w) w))))
+
+;; Needs test
+(defun choose-one (seq &optional rstate)
+  (when seq
+    (elt seq (if rstate 
+                 (random (length seq) rstate) 
+                 (random (length seq))))))
 
 (defun hashify-list (list
                      &key (method :count)
@@ -307,70 +361,106 @@ in random order (shuffled)."
                                   value))
                        (initial-value 0))
 
-  "Takes a list and returns a hash table, using the specified
-method. Supported methods, specified via the :method key, are :count,
-:plist, :alist, :index, and :custom.
+  "Creates a hash table from LIST and returns the hash table, according to
+METHOD. Supported methods are :COUNT, :PLIST, :ALIST, :INDEX, AND :CUSTOM.
 
-With the :count method, which the function uses by default, the
-function creates a hash table in which the keys are the distinct items
-of the list and the value for each key is the count of that distinct
-element in the list.
+:COUNT
 
-The :alist and :plist methods convert the list into a hash that
-conceptually represent the same map as the list. Alists and plists
-both consist of collections of key/value pairs. Alists look like this:
+    With the :COUNT method, which the function uses by default, the
+    function creates a hash table in which each key is an item of the
+    list and the associated value for each key is the incidence of 
+    the item in the list. For example:
 
-'((key1 . value1) (key2 . value2) (key3 . value3)...)
+    (hashify-list '(7 8 7 7 8 9))
 
-Plists look like this:
+    gives you a hash table that looks like this: 
 
-'(key1 value1 key2 value2 key3 value3 ...)
+    {7: 3, 8: 2, 9: 1}
 
-If a key repeats in one of these lists, its value simply overwrites
-the value of the repeated key.
+:ALIST and :PLIST
 
-The :index method tells this function that you to specify the key with
-one of the f-key, hash-key, and plist-key parameters, and that the
-value should be the list value. By default, the :index method uses a
-1-based counter as the key and the elements of the given list to
-hashify are made into values. Thus, the list '(a b c) becomes the
-hash {1: a, 2: b, 3: c}.
+    The :ALIST and :PLIST methods convert the list into a hash that
+    conceptually represent the same map as the list. Alists and plists
+    both consist of collections of key/value pairs. Alists look like
+    this:
 
-If the objects in the list that you're indexing are hash tables, then
-you can specify the index key with hash-key. That key should be present
-in every object in the list. The key's value becomes the index to the
-object. For example, for a given hash:
+    '((key1 . value1) (key2 . value2) (key3 . value3)...)
 
-[
-  {id: 1, name: \"abc\"},
-  {id: 2, name: \"def\"}
-]
+    Plists look like this:
 
-If you specify :method :index :hash-key \"id\", this function will
-create a hash table that looks like this:
+    '(:key1 value1 :key2 value2 :key3 value3 ...)
 
-{
-  1: {id: 1, name: \"abc\"},
-  2: {id: 2, name: \"def\"}
-}
+    If a key repeats in one of these lists, its value simply
+    overwrites the value of the repeated key. However, you can change
+    that behavior. See the description of the :CUSTOM method for
+    information on how to do that.
 
-If the objects are plists, then you can specify the index with
-plist-key. hash-key and plist-key are just shortcuts to save you from
-having to write some code for f-key. You can specify only one of
-hash-key, plist-key, and f-key.
+:INDEX
 
-The :index method allows you to later look up an element in the list,
-by the given key, in O(1) time.
+    The :index method causes the values in the list to become the keys
+    in the hash table. The value associated with each key should be an
+    increasing integer, starting with 0. Thus, the list '(a b c)
+    becomes the hash {a: 1, b: 2, c: 3}.
 
-The :custom method requires that you provide functions for computing
-the key from the element in the list and for computing the value given
-the element, the computed key, and the existing hash value currently
-associated with the computed key.  If there's no hash value associated
-with the computed key, then the value specified via :initial-value is
-used. The :count, :pairs, and :merged-pairs methods allow you to
-specify functions for computing the key (given the element) and the
-value (given the element, the computed key, and the existing value)."
+    If the objects in the list that you're indexing are hash tables,
+    then you can specify the object key for the value that the
+    function should use as a key in the resulting hash. That object
+    key should be present in every object in the list. This allows
+    you to index a list of hash tables by some specific value in
+    the hash table. Consider the following example:
 
+    [
+      {id: \"a-001\", first: \"john\", last: \"doe\"},
+      {id: \"a-002\", first: \"jane\", last: \"doe\"}
+    ]
+    
+    If you specify :method :index :hash-key \"id\", this function will
+    create a hash table that looks like this:
+    
+    {
+      \"a-001\": {id: \"a-001\", first: \"john\", last: \"doe\"},
+      \"a-002\": {id: \"a-002\", first: \"jane\", last: \"doe\"}
+    }
+
+    And, voilá, you no longer need to iterate through a list to find
+    your object.
+
+    If the objects are plists, and you specify the index with
+    plist-key, you'll see the same behavior with the plist as we
+    demonstrated above for hash tables.  
+
+    HASH-KEY and PLIST-KEY are just shortcuts to save you from having
+    to write some code for F-KEY. You can specify only one of
+    HASH-KEY, PLIST-KEY, and F-KEY.
+
+:CUSTOM
+
+    The :CUSTOM method requires that you provide functions for
+    computing the keys and values that the function inserts into the
+    resulting hash.
+
+    Use F-KEY to provide a function that accepts an element from LIST
+    and returns a computed hash key. Here are some examples F-KEY of
+    acceptable definitions:
+   
+        - #'identity
+        - #'string-upcase
+        - (lambda (x) (zerop (mod x 10)))
+
+    Use F-VALUE to provide a function that accepts an element from LIST,
+    the computed key (which might be different from the element), and
+    the value that's currently associated with the computed key in the
+    resulting hash table. Here are some examples:
+
+        - (lambda (element computed-key value)
+            (declare (ignore element computed-key))
+            value)
+        - (lambda (element computed-key value)
+            (declare (ignore element value))
+            (incf value))
+
+    If there's no hash value associated with the computed key, then
+    the value specified by :INITIAL-VALUE is used."
   (let ((h (make-hash-table :test 'equal))
         (counter 0))
     (case method
@@ -425,19 +515,26 @@ value (given the element, the computed key, and the existing value)."
                 for k-clean = (funcall key-function k-raw)
                 for value-new = (funcall f-value k-raw k-clean value)
                 do (setf (gethash k-clean h) value-new)))
-      (:index (loop with key-function
-                      = (cond (hash-key (lambda (x) (gethash hash-key x)))
-                              (plist-key (lambda (x) (getf x plist-key)))
-                              (alist-key (lambda (x) (cdr (assoc alist-key x))))
-                              (f-key f-key)
-                              (t (lambda (x)
-                                   (declare (ignore x))
-                                   (incf counter))))
-                    for value in list
-                    for k-raw = (funcall key-function value)
-                    for k-clean = k-raw
-                    for value-new = (funcall f-value k-raw k-clean value)
-                    do (setf (gethash k-clean h) value-new))))
+      (:index (loop 
+                with key-function 
+                  = (cond (hash-key (lambda (x) (gethash hash-key x)))
+                          (plist-key (lambda (x) (getf x plist-key)))
+                          (alist-key (lambda (x) (cdr (assoc alist-key x))))
+                          (f-key f-key)
+                          (t #'identity))
+                with value-function 
+                      = (if (equal key-function #'identity)
+                            (lambda (k-raw k-clean value)
+                              (declare (ignore k-raw k-clean value))
+                              (1- (incf counter)))
+                            (lambda (k-raw k-clean value)
+                              (declare (ignore k-raw k-clean))
+                              value))
+                for value in list
+                for k-raw = (funcall key-function value)
+                for k-clean = k-raw
+                for value-new = (funcall value-function k-raw k-clean value)
+                do (setf (gethash k-clean h) value-new))))
     h))
 
 (defun comparable-hash-dump (hash &key
@@ -468,18 +565,20 @@ value (given the element, the computed key, and the existing value)."
 (defun all-permutations-base (list)
   (cond ((null list) nil)
         ((null (cdr list)) (list list))
-        (t (loop for item in list appending
-                                  (mapcar (lambda (sublist) (cons item sublist))
-                                          (all-permutations-base (remove item list)))))))
+        (t (loop 
+             for item in list 
+             appending (mapcar (lambda (sublist) (cons item sublist))
+                               (all-permutations-base (remove item list)))))))
 
 (defun all-permutations (list)
   "Returns a list of every permutation of elements in LIST. For
  example:
     '(1 2 3) -> '((1 2 3) (1 3 2) (2 1 3) (2 3 1) (3 1 2) (3 2 1))"
-  (let ((h (hashify-list list :method :index)))
-    (distinct-values
-     (mapcar (lambda (list) (mapcar (lambda (x) (gethash x h)) list))
-             (all-permutations-base (hash-keys h))))))
+  (let ((v (apply #'vector list)))
+    (distinct-elements
+     (mapcar (lambda (l) (mapcar (lambda (i) (elt v i)) l))
+             (dc-eclectic::all-permutations-base
+              (dc-eclectic::range 0 (1- (length v))))))))
 
 (defun all-permutations-of-string (s)
   "Returns a list of strings representing every permutation of the
@@ -553,3 +652,7 @@ or end of the string\"."
 	(string-trim '(#\Space #\Newline #\Backspace #\Tab #\Linefeed #\Page #\Return 
 								 #\Rubout)
 							 s))
+
+(defun plistp (list)
+  (and (zerop (mod (length list) 2))
+       (loop for x in list by #'cddr always (keywordp x))))

@@ -8,6 +8,7 @@
   (:export
    all-permutations
    all-permutations-of-string
+   choose-one
    comparable-hash-dump
    existing-permutations-of-string
    directory-exists-p
@@ -30,7 +31,9 @@
    log-entries
    n-grams
    n-gram-strings
+   path-type
    path-only
+   plistp
    range
    replace-extension
    run-tests
