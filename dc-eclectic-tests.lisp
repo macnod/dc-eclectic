@@ -12,7 +12,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 111)
+(plan 128)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -152,8 +152,9 @@
     "join-paths with multiple strings starting with empty string")
 (is (join-paths "a" "" "b" "c") "a/b/c"
     "join-paths with multiple strings containing empty string")
-(is-error (join-paths "a" 1 "b") 'error "join-paths with one non-string")
-(is-error (join-paths 1 2 3) 'error "join-paths with all non-string")
+(is (join-paths "/" "a" 1 "b") "/a/1/b" "join-paths with one non-string")
+(is (join-paths "/a" 1 "b") "/a/1/b" "join-paths with one non-string")
+(is (join-paths 1 2 3) "1/2/3" "join-paths with all non-string")
 
 ;; path-only
 (is-error (path-only nil) 'error "path-only with nil")
@@ -423,5 +424,26 @@
       (format nil "file does not exist as is not a directory: ~a" file-name-2))
   (uiop:delete-directory-tree (pathname root) :validate t))
 
+;; index-of-max
+(ok (null (index-of-max nil)) "index-of-max nil")
+(ok (null (index-of-max (vector))) "index-of-max empty vector")
+(ok (zerop (index-of-max '(0))) "index-of-max single element")
+(ok (zerop (index-of-max (vector 0))) "index-of-max single element vector")
+(is (index-of-max '(0 1)) 1 "index-of-max two elements")
+(is (index-of-max (vector 0 1)) 1 "index-of-max two elements vector")
+(ok (zerop (index-of-max '(1 0))) "index-of-max two elements reverse")
+(ok (zerop (index-of-max (vector 1 0))) 
+    "index-of-max two elements reverse vector")
+(is (index-of-max '(-1 1 0)) 1 "index-of-max three elements")
+(is (index-of-max (vector -1 1 0)) 1 "index-of-max three elements vector")
+(ok (zerop (index-of-max '(-1 -2 -3 -9))) "index-of-max all negative")
+(ok (zerop (index-of-max (vector -1 -2 -3 -9))) 
+    "index-of-max all negative vector")
+(is (index-of-max '(-1 -2 -3 0)) 3 "index-of-max one zero")
+(is (index-of-max (vector -1 -2 -3 0)) 3 "index-of-max one zero vector")
+(is (index-of-max '(-9 -2 -3 -1)) 3 "index-of-max all negative reverse")
+(is (index-of-max (vector -9 -2 -3 -1)) 3 
+    "index-of-max all negative reverse vector")
+    
 ;; All Done!
 (finalize)

@@ -133,22 +133,16 @@ parameter if you want case-insensitve matches."
   "Joins parameters (collected in PATH-PARTS) into a unix-like file
 path, inserting slashes where necessary."
   (when (null path-parts) (return-from join-paths ""))
-  (when (loop for s in path-parts 
-                thereis (not (or (null s) (stringp s) (pathnamep s))))
-    (error "All path parts must be strings, pathname, or NIL."))
-  (let* ((absolute (let ((head (format nil "~a" (car path-parts))))
-                     (when head (verify-string head "^/.*$"))))
+  (let* ((parts (loop for part in path-parts
+                      for part-string = (when part (format nil "~a" part))
+                      unless (or (null part-string) (zerop (length part-string)))
+                        collect part-string))
+         (absolute (verify-string (car parts) "^/.*$"))
          (clean-parts (remove-if
-                        (lambda (p)
-                          (or (null p) (string= (format nil "~a" p) "")))
-                        (mapcar
-                         (lambda (p)
-                           (let ((s (format nil "~a" p)))
-                             (regex-replace-all "^/+|/+$" s "")))
-                         (remove-if
-                          (lambda (p)
-                            (or (null p) (string= (format nil "~a" p) "")))
-                          path-parts))))
+                       (lambda (p) (zerop (length p)))
+                       (mapcar
+                        (lambda (p) (regex-replace-all "^/|/$" p ""))
+                        parts)))
          (path (format nil "~{~a~^/~}" clean-parts)))
     (format nil "~a~a" (if absolute "/" "") path)))
 
@@ -231,23 +225,26 @@ extension provided in NEW-EXTENSION."
 ;; Needs tests
 (defgeneric index-of-max (list-or-vector)
   (:method ((vector vector))
-    (loop 
-      with index-of-max = 0 and max-value = (aref vector 0)
-      for value across vector
-      for index = 0 then (1+ index)
-      when (> value max-value)
-        do (setf index-of-max index
-                 max-value value)
-      finally (return index-of-max)))
+    (if (zerop (length vector))
+        nil
+        (loop 
+          with index-of-max = 0 and max-value = (aref vector 0)
+          for value across vector
+          for index = 0 then (1+ index)
+          when (> value max-value)
+            do (setf index-of-max index
+                     max-value value)
+          finally (return index-of-max))))
   (:method ((list list))
-    (loop 
-      with index-of-max = 0 and max-value = (car list)
-      for value in (cdr list)
-      for index = 0 then (1+ index)
-      when (> value max-value)
-        do (setf index-of-max index
-                 max-value value)
-      finally (return index-of-max))))
+    (when list
+      (loop 
+        with index-of-max = 0 and max-value = (car list)
+        for value in (cdr list)
+        for index = 1 then (1+ index)
+        when (> value max-value)
+          do (setf index-of-max index
+                   max-value value)
+        finally (return index-of-max)))))
 
 (defun hash-string (string)
   "Hash STRING using sha-512 and return a hex representation of the hash"
@@ -656,3 +653,41 @@ or end of the string\"."
 (defun plistp (list)
   (and (zerop (mod (length list) 2))
        (loop for x in list by #'cddr always (keywordp x))))
+
+;; Needs tests!
+(defun normalize-list (list &key max min)
+  "Return a new list with new values between 0.0 and 1.0. MAX is the
+largest value that LIST can hold, and MIN is the smallest.  Each new
+value N is computed from the corresponding old value O in LIST, as
+follows: N = (O - MIN) / (MAX - MIN). If you don't provide MAX and
+MIN, this function does an initial pass through list where it sets MAX
+and MIN to the largest number and the smallest number in LIST,
+respectively.  Therefore, you can improve the performance of this
+function if you already know those values. Furthermore, in some cases
+the list may not even contain the values for MAX and MIN that you
+need."
+  (loop 
+    with min-max = (if (and min max)
+                       (cons min max)
+                       (loop for n in list
+                             maximize n into mini
+                             minimize n into maxi
+                             finally (return (cons mini maxi))))
+    with range = (float (- max min))
+    for n in list collect (/ (float (- n min)) range)))
+
+;; Needs tests!
+(defun denormalize-list (list min max &key integer)
+  "Returns a new list with the numbers in LIST, which are
+ floating-point numbers between 0 and 1, expanded to the range MAX -
+ MIN, such that the number 1.0 is converted to MAX, the number 0.0 is
+ converted to MIN, and all the other numbers fall in the range MIN to
+ MAX. INTEGER is T, the new list contains integers. Otherwise, the new
+ list contains floating-point numbers."
+  (if integer
+      (loop with range = (- max min)
+            for o in list
+            collect (truncate (+ (* o range) min)))
+      (loop with range = (- max min)
+            for o in list
+            collect (+ (* o range) min))))

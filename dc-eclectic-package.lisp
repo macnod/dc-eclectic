@@ -11,6 +11,7 @@
    choose-one
    comparable-hash-dump
    existing-permutations-of-string
+   denormalize-list
    directory-exists-p
    distinct-elements
    distinct-values
@@ -31,6 +32,7 @@
    log-entries
    n-grams
    n-gram-strings
+   normalize-list
    path-type
    path-only
    plistp
