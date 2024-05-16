@@ -6,13 +6,19 @@
 (in-package :cl-user)
 (require :dc-eclectic)
 (require :prove)
-(defpackage :dc-eclectic-tests (:use :cl :prove :dc-eclectic :dc-ds))
+(defpackage :dc-eclectic-tests (:use :cl :prove :dc-eclectic :dc-ds :cl-ppcre))
 (in-package :dc-eclectic-tests)
+
+(defun top-of-second ()
+  (loop with reference-timestamp = (timestamp-string)
+        for timestamp = (timestamp-string)
+        while (string= timestamp reference-timestamp)
+        finally (return timestamp)))
 
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 128)
+(plan 137)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -90,44 +96,6 @@
                         :format "Year=%Y; Month=%M; Day=%D")
       "Year=2023; Month=07; Day=18"
       "timestamp-string with reference time (Year=%Y; Month=%M; Day=%D)"))
-
-(let ((timestamp (loop ;; Get a timestamp that starts at the beginning of
-                       ;; a second. This will give us a whole second to
-                       ;; run the log-entry tests.
-                       with reference-timestamp = (timestamp-string)
-                       for timestamp = (timestamp-string)
-                       while (string= timestamp reference-timestamp)
-                       finally (return timestamp))))
-  ;; log-entry tests
-  (is (log-entry "hello world")
-      (format nil "~a hello world~%" timestamp)
-      "log-entry with 1 string")
-  (is (log-entry "hello" "world")
-      (format nil "~a helloworld~%" timestamp)
-      "log-entry with 2 strings")
-  (is (log-entry "hello " "beautiful " "world")
-      (format nil "~a hello beautiful world~%" timestamp)
-      "log-entry with 3 strings")
-
-  ;; log-entries tests
-  (is (log-entries "one" "two" "three")
-      (format nil "~{~a ~a~%~}" (loop for m in (list "one" "two" "three")
-                                      append (list timestamp m)))
-      "log-entries with 3 strings")
-  (is (log-entries (list "one" "two" "three"))
-      (format nil "~{~a ~a~%~}" (loop for m in (list "one" "two" "three")
-                                      append (list timestamp m)))
-      "log-entries with 3 strings in a list")
-  (is (log-entries (list "one" "two" (list "three" (list "four" "five")) "six"))
-      (format nil "~{~a ~a~%~}"
-              (loop for m in (list "one" "two" "three" "four" "five" "six")
-                    append (list timestamp m)))
-      "log-entries with multiple strings in a deeply-nested list")
-  (is (with-output-to-string (s)
-        (write-log-entry s "line 1")
-        (write-log-entry s "line 2"))
-      (format nil "~a line 1~%~a line 2~%" timestamp timestamp)
-      "write-log-entry 2 lines"))
 
 ;; join-paths tests
 (is (join-paths nil) "" "join-paths with nil")
@@ -412,7 +380,7 @@
       (format nil "file does not exists: ~a" file-name-2))
   (ok (not (file-exists-p dir-name-1))
       (format nil "file does not exist (it's a directory): ~a" dir-name-1))
-  (ok (not (file-exists-p dir-name-2)) 
+  (ok (not (file-exists-p dir-name-2))
       (format nil "file does not exist: ~a" dir-name-2))
   (ok (directory-exists-p dir-name-1)
       (format nil "directory exists: ~a" dir-name-1))
@@ -432,18 +400,93 @@
 (is (index-of-max '(0 1)) 1 "index-of-max two elements")
 (is (index-of-max (vector 0 1)) 1 "index-of-max two elements vector")
 (ok (zerop (index-of-max '(1 0))) "index-of-max two elements reverse")
-(ok (zerop (index-of-max (vector 1 0))) 
+(ok (zerop (index-of-max (vector 1 0)))
     "index-of-max two elements reverse vector")
 (is (index-of-max '(-1 1 0)) 1 "index-of-max three elements")
 (is (index-of-max (vector -1 1 0)) 1 "index-of-max three elements vector")
 (ok (zerop (index-of-max '(-1 -2 -3 -9))) "index-of-max all negative")
-(ok (zerop (index-of-max (vector -1 -2 -3 -9))) 
+(ok (zerop (index-of-max (vector -1 -2 -3 -9)))
     "index-of-max all negative vector")
 (is (index-of-max '(-1 -2 -3 0)) 3 "index-of-max one zero")
 (is (index-of-max (vector -1 -2 -3 0)) 3 "index-of-max one zero vector")
 (is (index-of-max '(-9 -2 -3 -1)) 3 "index-of-max all negative reverse")
-(is (index-of-max (vector -9 -2 -3 -1)) 3 
+(is (index-of-max (vector -9 -2 -3 -1)) 3
     "index-of-max all negative reverse vector")
-    
+
+;; choose-one
+(let* ((list '(1 2 3 4 5))
+       (rstate (make-random-state (reference-random-state)))
+       (a (choose-one list rstate)))
+  (ok (loop for a from 1 to 10
+            for choice = (choose-one list)
+            always (and (= (truncate choice) choice)
+                        (>= choice 1)
+                        (<= choice 5)))
+      "choose-one always returns an element of seq")
+  (is 1 a "first call to choose-one with rstate returns same element")
+  (ok (null (choose-one nil)) "choose-one of nil is nil")
+  (ok (loop for a from 1 to 10
+            always (= (choose-one (list a)) a))
+      "choose-one of a single-value list is always the single value"))
+
+;; choose-some
+(ok (loop with list = '(1 2 3 4 5)
+          for a from 1 to 20
+          for choice = (choose-some list 1)
+          always (and (= (length choice) 1)
+                      (>= (car choice) 1)
+                      (<= (car choice) 5)))
+    "choose-some seq 1 always returns a single value from the sequence")
+(is (choose-some '(1 2 3 4 5) 5) '(1 2 3 4 5)
+    "choose-some seq (length seq) always returns a copy of the sequence.")
+(let ((some (sort (choose-some '(1 2 3 4 5) 4) #'<)))
+  (is (sort (distinct-elements some) #'<) some
+      "choose-some returns elements from SEQ that have distinct indexes")
+  (ok (loop for a in some always (and (>= a 1) (<= a 5)))
+      "choose-some returns elements from SEQ")
+  (ok (equal 4 (length some))
+      "choose-some returns the correct number of elements"))
+(ok (null (choose-some '(1 2 3 4 5) 0))
+    "choose-some returns nil if N = 0")
+(ok (null (choose-some '(1 2 3 4 5) -1))
+    "choose-some returns nil if N < 0")
+(ok (null (choose-some nil 2))
+    "choose-some returns nil if SEQ is empty")
+(let ((some (sort (choose-some (vector 1 2 3) 2) #'<)))
+  (ok (or (equalp some (vector 1 2))
+          (equalp some (vector 2 3))
+          (equalp some (vector 1 3)))
+      "choose-some works with vectors"))
+
+
+;; log-entry
+(let ((timestamp (top-of-second)))
+  (is (format nil "~a ~a" timestamp "Hello World")
+      (log-entry "Hello World")
+      "entry - format string only")
+  (is (format nil "~a ~a" timestamp "Hello 10 times, Donnie")
+      (log-entry "Hello ~d times, ~a" 10 "Donnie")
+      "entry - format string with 2 parameters"))
+
+;; log-it
+(let* ((timestamp (top-of-second))
+       (filepath "/tmp/neurons.log")
+       (stream (open filepath
+                     :direction :output
+                     :if-exists :supersede
+                     :if-does-not-exist :create)))
+  (log-it stream "~a ~a ~a" "one" "two" "three")
+  (log-it stream "Hello World!")
+  (log-it stream "~{~d~^, ~}" (list 1 2 3 4 5))
+  (close stream)
+  (let ((log (uiop:read-file-lines "/tmp/neurons.log")))
+    (is (mapcar (lambda (s) (format nil "~a ~a" timestamp s))
+                (list "one two three"
+                      "Hello World!"
+                      "1, 2, 3, 4, 5"))
+        log
+        (format nil "log-it to ~a" filepath))))
+
+
 ;; All Done!
 (finalize)

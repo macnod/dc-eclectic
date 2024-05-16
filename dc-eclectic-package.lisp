@@ -1,5 +1,5 @@
 (defpackage :dc-eclectic
-  (:use :cl :cl-ppcre :trivial-utf-8 :sb-thread :sb-ext :dc-ds)
+  (:use :cl :cl-ppcre :trivial-utf-8 :sb-thread :sb-ext :dc-dlist :dc-ds)
   (:import-from :ironclad
                 :ascii-string-to-byte-array
                 :byte-array-to-hex-string
@@ -9,6 +9,7 @@
    all-permutations
    all-permutations-of-string
    choose-one
+   choose-some
    comparable-hash-dump
    existing-permutations-of-string
    denormalize-list
@@ -29,14 +30,16 @@
    index-of-max
    join-paths
    log-entry
-   log-entries
+   log-it
    n-grams
    n-gram-strings
    normalize-list
    path-type
    path-only
    plistp
+   plist-keys
    range
+   reference-random-state
    replace-extension
    run-tests
    shuffle
@@ -50,5 +53,4 @@
    universal-time-to-unix-time
    unix-time-to-universal-time
    verify-string
-   write-log-entry
    ))
