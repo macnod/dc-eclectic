@@ -4,6 +4,12 @@
 (defparameter *debug* nil)
 (defparameter *log-mutex* (make-mutex :name "dc-eclectic-log"))
 
+(defun mark-time ()
+  (* (get-internal-real-time) 1e-6))
+
+(defun elapsed-time (start-time)
+  (- (* (get-internal-real-time) 1e-6) start-time))
+
 (defun universal-time-to-unix-time (&optional universal-time)
   "Converts universal time to unix time. If you don't provide a universal time,
 this function returns the current unix time.

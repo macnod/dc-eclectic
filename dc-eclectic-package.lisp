@@ -16,6 +16,7 @@
    directory-exists-p
    distinct-elements
    distinct-values
+   elapsed-time
    existing-n-gram-strings
    file-exists-p
    file-extension
@@ -31,6 +32,7 @@
    join-paths
    log-entry
    log-it
+   mark-time
    n-grams
    n-gram-strings
    normalize-list
