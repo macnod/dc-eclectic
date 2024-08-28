@@ -1,14 +1,54 @@
 (in-package :dc-eclectic)
 
-(defvar *unix-epoch-difference* (encode-universal-time 0 0 0 1 1 1970 0))
+(defvar *unix-epoch* (encode-universal-time 0 0 0 1 1 1970 0))
 (defparameter *debug* nil)
 (defparameter *log-mutex* (make-mutex :name "dc-eclectic-log"))
 
+(defparameter *log* nil)
+
+(defun open-log (&key (filepath "/tmp/neurons.log") (append t))
+  "Opens a log file, allowing the DLOG function to cease to be a
+no-op. FILEPATH represents the path to the log file. APPEND indicates
+that if a file exists at FILEPATH, call to dlog should append log
+entries to the end of the existing file. If APPEND is NIL, the file at
+FILEPATH is cleared. Regardless of the value of APPEND, if the file at
+FILEPATH doesn't exist, this function creates it.
+
+If *LOG* is set (if this function was called and CLOSE-LOG was never
+called), then this function does nothing and returns NIL. If *LOG* is
+NIL (if this function has not been called or it was called and then
+CLOSE-LOG was called), then this function opens the log file, sets
+*LOG* to the file stream, and returns the file stream."
+  (unless *log*
+    (setf *log* (open filepath
+                      :direction :output
+                      :if-exists (if append :append :supersede)
+                      :if-does-not-exist :create))))
+
+(defun close-log()
+  "Closes the file stream that was opened by OPEN-LOG. If a file stream
+is not open (if *LOG* is NIL), then this function does nothing and
+returns NIL. If a file stream is open (*LOG* contains a stream), then
+this fucntion closes the stream and returns T."
+  (when *log*
+    (close *log*)
+    (setf *log* nil)
+    t))
+
+(defun dlog (format-string &rest values)
+  "If the log file is open (see OPEN-LOG), this function creates a string
+by calling FORMAT with FORMAT-STRING and with VALUES, writes the
+string to the log stream, and returns the string. If the log file is
+not open, this function does nothing."
+  (when *log*
+    (apply #'log-it (append (list *log* format-string) values))))
+
 (defun mark-time ()
-  (* (get-internal-real-time) 1e-6))
+  (float (/ (get-internal-real-time) internal-time-units-per-second)))
 
 (defun elapsed-time (start-time)
-  (- (* (get-internal-real-time) 1e-6) start-time))
+  (- (/ (get-internal-real-time) internal-time-units-per-second)
+     start-time))
 
 (defun universal-time-to-unix-time (&optional universal-time)
   "Converts universal time to unix time. If you don't provide a universal time,
@@ -20,7 +60,7 @@ this function returns the current unix time.
 * Universal time is the number of seconds elapsed since January 1, 1900 at 00:00:00 UTC
 "
   (let ((universal-time (or universal-time (get-universal-time))))
-    (- universal-time *unix-epoch-difference*)))
+    (- universal-time *unix-epoch*)))
 
 
 (defun unix-time-to-universal-time (&optional unix-time)
@@ -34,7 +74,7 @@ this function returns the current universal time, as an integer.
 1900 at 00:00:00 UTC.
 "
   (let ((unix-time (or unix-time (universal-time-to-unix-time))))
-    (+ unix-time *unix-epoch-difference*)))
+    (+ unix-time *unix-epoch*)))
 
 
 (defun get-unix-time ()
@@ -74,16 +114,16 @@ numbers are 2 digits long, except for the year, which is 4 digits
 long."
   (multiple-value-bind (second minute hour day month year)
       (decode-universal-time universal-time timezone)
-    (let* ((parts (ds (list :map
-                            "%Y" (format nil "~d"     year)
-                            "%M" (format nil "~2,'0d" month)
-                            "%D" (format nil "~2,'0d" day)
-                            "%h" (format nil "~2,'0d" hour)
-                            "%m" (format nil "~2,'0d" minute)
-                            "%s" (format nil "~2,'0d" second))))
+    (let* ((parts (ds:ds (list :map
+                               "%Y" (format nil "~d"     year)
+                               "%M" (format nil "~2,'0d" month)
+                               "%D" (format nil "~2,'0d" day)
+                               "%h" (format nil "~2,'0d" hour)
+                               "%m" (format nil "~2,'0d" minute)
+                               "%s" (format nil "~2,'0d" second))))
            (elements (loop for i from 0 below (length format)
                            for v = (subseq format i (+ i 2))
-                           for fs = (ds-get parts v)
+                           for fs = (ds:pick parts v)
                            collect (if fs (progn (incf i) fs) (subseq v 0 1)))))
       (format nil "~{~a~}" elements))))
 
@@ -120,7 +160,7 @@ but treated as a single element."
 parameter if you want case-insensitve matches."
   (let ((s (format nil "~a" string)))
     (multiple-value-bind (a b)
-        (scan (if ignore-case (concatenate 'string "(?is)" regex) regex) s)
+        (re:scan (if ignore-case (concatenate 'string "(?is)" regex) regex) s)
       (and a b (zerop a) (= b (length s))))))
 
 
@@ -140,7 +180,7 @@ path, inserting slashes where necessary."
          (clean-parts (remove-if
                        (lambda (p) (zerop (length p)))
                        (mapcar
-                        (lambda (p) (regex-replace-all "^/|/$" p ""))
+                        (lambda (p) (re:regex-replace-all "^/|/$" p ""))
                         parts)))
          (path (format nil "~{~a~^/~}" clean-parts)))
     (format nil "~a~a" (if absolute "/" "") path)))
@@ -149,7 +189,7 @@ path, inserting slashes where necessary."
   "Retrieves the path (path only, without the filename) of FILENAME."
   (declare (type string filename))
   (multiple-value-bind (match strings)
-      (scan-to-strings "(.+)\/[^\/]*$" filename)
+      (re:scan-to-strings "(.+)\/[^\/]*$" filename)
     (declare (ignore match))
     (let ((string-list (map 'list 'identity strings)))
       (if (or (null string-list)
@@ -163,7 +203,7 @@ path, inserting slashes where necessary."
       ""
       (if (stringp filename)
           (multiple-value-bind (match parts)
-              (scan-to-strings "((.*)/)?([^\/]*)$" filename)
+              (re:scan-to-strings "((.*)/)?([^\/]*)$" filename)
             (declare (ignore match))
             (if (not (zerop (length parts)))
                 (elt parts (1- (length parts)))
@@ -199,7 +239,7 @@ exists."
   "Returns a string consisting of the file extension for the file name
 given in PATH."
   (multiple-value-bind (a b)
-      (ppcre:scan-to-strings "\\.([a-z0-9]+)$" path)
+      (re:scan-to-strings "\\.([a-z0-9]+)$" path)
     (when a (aref b 0))))
 
 ;; Needs tests
@@ -210,7 +250,7 @@ extension provided in NEW-EXTENSION."
                             (subseq new-extension 1)
                             new-extension))
          (new-filename (multiple-value-bind (a b)
-                           (scan-to-strings "^(.*)\\.[^.]+$" filename)
+                           (re:scan-to-strings "^(.*)\\.[^.]+$" filename)
                          (declare (ignore a))
                          (if b (elt b 0) filename))))
     (when (and new-filename (not (zerop (length new-extension))))
@@ -547,6 +587,11 @@ METHOD. Supported methods are :COUNT, :PLIST, :ALIST, :INDEX, AND :CUSTOM.
                 for k-clean = (funcall key-function k-raw)
                 for value-new = (funcall f-value k-raw k-clean value)
                 do (setf (gethash k-clean h) value-new)))
+      (:lists (loop
+                with key-function = (or f-key #'identity)
+                for value in list
+                for key = (funcall f-key value)
+                do (setf (gethash key h) value)))
       (:index (loop
                 with key-function
                   = (cond (hash-key (lambda (x) (gethash hash-key x)))
@@ -677,7 +722,7 @@ example:
   "Trim FAT from the string in S.  The FAT parameter is optional and
 defaults to \"^\\s+|\\s+$\", which means \"Whitespace at the beginning
 or end of the string\"."
-  (regex-replace-all fat s ""))
+  (re:regex-replace-all fat s ""))
 
 ;; Needs tests!
 (defun trim-whitespace (s)
@@ -685,16 +730,9 @@ or end of the string\"."
 								 #\Rubout)
 							 s))
 
-(defun plistp (plist)
-  (if plist
-      (loop
-        for item in plist
-        for index = 0 then (1+ index)
-        for key-slot = (evenp index)
-        for all-keys = (keywordp item)
-          then (if key-slot (and all-keys (keywordp item)) all-keys)
-        finally (return (and (oddp index) all-keys)))
-      t))
+(defun plistp (list)
+  (and (evenp (length list))
+       (loop for key in list by #'cddr always (keywordp key))))
 
 ;; Needs tests!
 (defun normalize-list (list &key max min)

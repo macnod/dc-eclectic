@@ -1,21 +1,28 @@
 (defpackage :dc-eclectic
-  (:use :cl :cl-ppcre :trivial-utf-8 :sb-thread :sb-ext :dc-dlist :dc-ds)
+  (:use :cl :trivial-utf-8 :sb-thread :sb-ext)
+  (:local-nicknames (:ds :dc-ds)
+                    (:re :ppcre))
   (:import-from :ironclad
                 :ascii-string-to-byte-array
                 :byte-array-to-hex-string
                 :digest-sequence
                 :sha512)
   (:export
+   **inputs-ready**
+   **outputs-ready**
+   *log*
    all-permutations
    all-permutations-of-string
    choose-one
    choose-some
+   close-log
    comparable-hash-dump
    existing-permutations-of-string
    denormalize-list
    directory-exists-p
    distinct-elements
    distinct-values
+   dlog
    elapsed-time
    existing-n-gram-strings
    file-exists-p
@@ -36,6 +43,7 @@
    n-grams
    n-gram-strings
    normalize-list
+   open-log
    path-type
    path-only
    plistp
