@@ -18,7 +18,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 137)
+(plan 144)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -487,6 +487,29 @@
         log
         (format nil "log-it to ~a" filepath))))
 
+;; spew and slurp
+(let* ((string "hello world")
+        (filename "/tmp/hello.txt"))
+  (spew string filename)
+  (ok (uiop:file-exists-p filename) "spew created file")
+  (is (slurp filename) string "slurp returns spewed string")
+  (delete-file filename))
+
+;; freeze and thaw
+(let* ((original (list 1 "one" :one t nil '(2 3 4)))
+        (frozen (freeze original))
+        (thawed (thaw frozen)))
+  (is (length original) (length thawed) "Thawed list has correct length")
+  (is original thawed "Thawed list is the same as original list"))
+
+;; freeze and spew, then slurp and and thaw
+(let* ((filename "/tmp/hello.txt")
+        (original (list "hello" :world)))
+  (spew (freeze original) filename)
+  (let ((thawed (thaw (slurp filename))))
+    (is thawed original)
+    (is (car thawed) "hello")
+    (is (second thawed) :world)))
 
 ;; All Done!
 (finalize)

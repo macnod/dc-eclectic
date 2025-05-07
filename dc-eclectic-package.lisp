@@ -29,6 +29,7 @@
    file-extension
    filename-only
    flatten
+   freeze
    get-unix-time
    hash-hmac-256
    hash-keys
@@ -53,8 +54,11 @@
    replace-extension
    run-tests
    shuffle
+   slurp
+   spew
    split-n-trim
    strings-from-chars
+   thaw
    trim
    trim-whitespace
    words-from-chars

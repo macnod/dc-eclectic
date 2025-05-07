@@ -771,3 +771,22 @@ need."
       (loop with range = (- max min)
             for o in list
             collect (+ (* o range) min))))
+
+(defun slurp (filename)
+  (with-open-file (in filename :direction :input)
+    (let ((contents (make-string (file-length in))))
+      (read-sequence contents in)
+      contents)))
+
+(defun spew (string filename)
+  (with-open-file (out filename
+                    :direction :output
+                    :if-exists :supersede)
+    (write-string string out)))
+
+(defun freeze (object)
+  (prin1-to-string object))
+
+(defun thaw (string)
+  (let ((*read-eval* nil))
+    (read-from-string string)))
