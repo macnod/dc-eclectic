@@ -285,11 +285,15 @@ extension provided in NEW-EXTENSION."
                    max-value value)
         finally (return index-of-max)))))
 
-(defun hash-string (string)
-  "Hash STRING using sha-512 and return a hex representation of the hash"
-  (ironclad:byte-array-to-hex-string
-   (ironclad:digest-sequence
-    'ironclad:sha512 (string-to-utf-8-bytes string))))
+(defun hash-string (string &key (salt "") (size 128))
+  "Hash STRING and return a hex representation of the hash"
+  (subseq
+    (ironclad:byte-array-to-hex-string
+      (ironclad:digest-sequence
+        'ironclad:sha512 
+        (string-to-utf-8-bytes (concatenate 'string salt string))))
+    0
+    size))
 
 (defun hash-hmac-256 (secret text)
   "Hash TEXT using SECRET and hmac-sha-256 and return a hex

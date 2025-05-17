@@ -18,7 +18,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 150)
+(plan 152)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -246,6 +246,13 @@
               "e943809d1c37312838cef4b40665aa2e"
               "02803cc0a206c97bb8a476b1d681ca95"))
     "hash-string")
+(is (hash-string "Donnie" :size 32) 
+  "2daf3ad277939e55520a61187c73abc3"
+  "hash-string truncated to 32 characters")
+(is (hash-string "Donnie" :salt "abc" :size 16)
+  "f524abffea9ae753"
+  "hash-string with salt and truncated to 16 characters")
+  
 (is (hash-hmac-256 "secret" "Donnie")
     "b81c15aafc9935e7138b5c09fc775e66275739370493c06051fea29f5cc6c32a"
     "hash-hmac-256")
