@@ -18,7 +18,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 144)
+(plan 150)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -508,8 +508,26 @@
   (spew (freeze original) filename)
   (let ((thawed (thaw (slurp filename))))
     (is thawed original)
-    (is (car thawed) "hello")
-    (is (second thawed) :world)))
+    (is (car thawed) "hello" "First element of thawed list is \"hello\"")
+    (is (second thawed) :world "Second element of thawed list is :world")))
+
+;; split-n-trim
+(let* ((s1 "one two three")
+        (s2 "  one     two three   ")
+        (s3 "123one456 789two10 1112three14   ")
+        (p1-actual (split-n-trim s1))
+        (p2-actual (split-n-trim s2))
+        (p3-actual (split-n-trim s3 :fat "\\d+"))
+        (expected (list "one" "two" "three")))
+  (is p1-actual expected "split-n-trim words separated by single space")
+  (is p2-actual expected "split-n-trim words separated by multiple spaces")
+  (is p3-actual expected 
+    "split-n-trim words separated by spaces, trimming digits from each word"))
+
+;; trim
+(is "hello" (trim "      hello       ") "trim spaces around a string")
+(is "hello" (trim "01234hello67890" "\\d+") "trim digits around a string")
+(is "hello" (trim "	 	hello 	") "trim whitespace")
 
 ;; All Done!
 (finalize)

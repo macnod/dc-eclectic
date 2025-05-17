@@ -700,7 +700,6 @@ orginal string S. For example:
                    (gethash word hash))
                  (n-gram-strings chars count)))
 
-;; Needs tests!
 (defun split-n-trim (string &key (on-regex "\\s+") (fat "^\\s+|\\s+$"))
   "Splits STRING into substrings on ON-REGEX, then trims FAT from each
 substring.  The ON-REGEX parameter value, which is optional, defaults
@@ -715,16 +714,14 @@ example:
     => '(\"Hello\" \"beautiful\" \"world!\")"
   (remove-if (lambda (s) (zerop (length s)))
              (mapcar (lambda (x) (trim x fat))
-                     (split on-regex string))))
+                     (re:split on-regex string))))
 
-;; Needs tests!
 (defun trim (s &optional (fat "^\\s+|\\s+$"))
   "Trim FAT from the string in S.  The FAT parameter is optional and
 defaults to \"^\\s+|\\s+$\", which means \"Whitespace at the beginning
 or end of the string\"."
   (re:regex-replace-all fat s ""))
 
-;; Needs tests!
 (defun trim-whitespace (s)
 	(string-trim '(#\Space #\Newline #\Backspace #\Tab #\Linefeed #\Page #\Return
 								 #\Rubout)
