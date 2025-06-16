@@ -246,7 +246,7 @@ given in PATH."
 (defun replace-extension (filename new-extension)
   "This function replaces the file extension in FILENAME with the file
 extension provided in NEW-EXTENSION."
-  (let* ((new-extension (if (scan "^\\." new-extension)
+  (let* ((new-extension (if (re:scan "^\\." new-extension)
                             (subseq new-extension 1)
                             new-extension))
          (new-filename (multiple-value-bind (a b)
