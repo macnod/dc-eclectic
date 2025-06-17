@@ -1,4 +1,4 @@
-TESTS_FILE="$(HOME)/common-lisp/dc-eclectic/dc-eclectic-tests.lisp"
+TESTS_FILE="dc-eclectic-tests.lisp"
 LISP=/usr/bin/sbcl
 REPORTER=list
 QUICKLISP_URL=https://beta.quicklisp.org/quicklisp.lisp
