@@ -14,7 +14,7 @@ setup:
 	curl -O $(QUICKLISP_URL)
 	curl -O $(QUICKLISP_ASC_URL)
 	# Verify Quicklisp signature
-  gpg --keyserver keys.openpgp.org --recv-keys 307965AB028B5FF7
+	gpg --keyserver keys.openpgp.org --recv-keys 307965AB028B5FF7
 	gpg --verify quicklisp.lisp.asc quicklisp.lisp
 	# Install Quicklisp
 	$(LISP) --no-userinit --no-sysinit --load quicklisp.lisp \
