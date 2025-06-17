@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install GPG
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnupg sbcl build-essential zlib1g-dev curl
+
+      - name: Run setup and tests
+        run: |
+          make -f .github/workflows/Makefile setup
+          make -f .github/workflows/Makefile test
