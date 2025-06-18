@@ -19,7 +19,7 @@ jobs:
       - name: Install some packages
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -qq -y gnupg sbcl build-essential zlib1g-dev curl \
+          sudo apt-get install -qq -y gnupg build-essential zlib1g-dev curl \
               automake libcurl4-openssl-dev git
 
       - name: Run setup and tests

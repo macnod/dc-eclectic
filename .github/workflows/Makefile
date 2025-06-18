@@ -46,6 +46,6 @@ setup:
 	rm -f quicklisp.lisp quicklisp.lisp.asc
 
 test: setup
-	$(LISP) --eval "(require :prove)" \
-	  --eval "(unless (prove:run (truename \"$(TESTS_FILE)\") :reporter :$(REPORTER)) (sb-ext:exit :code 1))" \
-	  --quit
+	$(ROSWELL) run -- --eval "(require :prove)" \
+		--eval "(unless (prove:run (truename \"$(TESTS_FILE)\") :reporter :$(REPORTER)) (sb-ext:exit :code 1))" \
+		--quit
