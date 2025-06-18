@@ -24,4 +24,4 @@ jobs:
 
       - name: Run setup and tests
         run: |
-          make -f .github/workflow/Makefile test
+          make -f .github/workflows/Makefile test
