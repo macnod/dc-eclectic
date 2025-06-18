@@ -54,6 +54,7 @@ jobs:
       - name: Run setup and tests
         run: |
           # Only run full setup if cache was not hit
+          echo "cache-hit: -->${{ steps.cache-dependencies.outputs.cache-hit }}<--"
           if [ "${{ steps.cache-dependencies.outputs.cache-hit }}" != 'true' ]; then
             echo "Cache miss, running full setup"
             make -f .github/workflows/Makefile setup
