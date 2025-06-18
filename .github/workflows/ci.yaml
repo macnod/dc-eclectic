@@ -43,6 +43,7 @@ jobs:
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           if command -v ros >/dev/null 2>&1; then
+            echo "Roswell found at $(which ros)"
             echo "Roswell home: $(ros run -- --eval '(format t \"~a~%\" (uiop:getenv \"ROSWELL_HOME\"))' --quit)"
           else
             echo "Roswell not found"
@@ -50,7 +51,14 @@ jobs:
 
       - name: Run setup and tests
         run: |
-          make -f .github/workflows/Makefile setup
-          # Debug: Check cache paths
-          ls -l $HOME/.local/bin/ros ~/.roswell
+          export PATH="$HOME/.local/bin:$PATH"
+          # Only run full setup if cache was not hit
+          if [ "${{ steps.cache-dependencies.outputs.cache-hit }}" != "true" ]; then
+            echo "Cache miss, running full setup"
+            make -f .github/workflows/Makefile setup
+          else
+            echo "Cache hit, skipping Roswell installation";
+            # Still install dependencies in case they changed
+            make -f .github/workflows/Makefile install-dependencies;
+          fi
           make -f .github/workflows/Makefile test

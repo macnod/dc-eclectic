@@ -6,9 +6,11 @@ QUICKLISP_ASC_URL=https://beta.quicklisp.org/quicklisp.lisp.asc
 ROSWELL=$(HOME)/.local/bin/ros
 ROSWELL_SRC_DIR=roswell
 
-.PHONY: setup test
+.PHONY: setup install-dependencies test
 
-setup:
+setup: install-roswell install-dependencies
+
+install-roswell:
 	# Download Quicklisp installer and signature
 	curl -O $(QUICKLISP_URL)
 	curl -O $(QUICKLISP_ASC_URL)
@@ -27,6 +29,10 @@ setup:
 	  rm -rf $(ROSWELL_SRC_DIR); \
 	  $(ROSWELL) setup; \
 	fi
+	# Clean up Quicklisp installer files
+	rm -f quicklisp.lisp quicklisp.lisp.asc
+
+install-dependencies:
 	# Install dependencies
 	$(ROSWELL) install cl-ppcre
 	$(ROSWELL) install yason
@@ -36,8 +42,6 @@ setup:
 	$(ROSWELL) install prove
 	$(ROSWELL) install macnod/dc-ds
 	$(ROSWELL) install macnod/dc-dlist
-	# Clean up Quicklisp installer files
-	rm -f quicklisp.lisp quicklisp.lisp.asc
 
 test: setup
 	$(ROSWELL) run -- --eval "(require :prove)" \
