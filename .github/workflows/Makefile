@@ -33,16 +33,12 @@ setup:
 	  rm -rf $(ROSWELL_SRC_DIR); \
 	  $(ROSWELL) setup; \
 	fi
-	# Install Quicklisp dependencies
-	$(LISP) --no-userinit --no-sysinit \
-	  --eval "(load \"$(QUICKLISP_DIR)/setup.lisp\")" \
-	  --eval "(ql:quickload :cl-ppcre)" \
-	  --eval "(ql:quickload :yason)" \
-	  --eval "(ql:quickload :ironclad)" \
-	  --eval "(ql:quickload :trivial-utf-8)" \
-	  --eval "(ql:quickload :cl-csv)" \
-	  --quit
 	# Install dc-ds and dc-dlist using roswell
+	$(ROSWELL) install cl-ppcre
+	$(ROSWELL) install yason
+	$(ROSWELL) install ironclad
+	$(ROSWELL) install trivial-utf-8
+	$(ROSWELL) install cl-csv
 	$(ROSWELL) install macnod/dc-ds
 	$(ROSWELL) install macnod/dc-dlist
 	# Clean up Quicklisp installer files
@@ -53,5 +49,5 @@ test: setup
 	  --eval "(load \"$(QUICKLISP_DIR)/setup.lisp\")" \
 	  --eval "(ql:quickload :prove)" \
 	  --eval "(require :prove)" \
-	  --eval "(unless (prove:run #P\"$(TESTS_FILE)\" :reporter :$(REPORTER)) (sb:ext:exit :code 1))" \
+	  --eval "(unless (prove:run #P\"$(TESTS_FILE)\" :reporter :$(REPORTER)) (sb-ext:exit :code 1))" \
 	  --quit
