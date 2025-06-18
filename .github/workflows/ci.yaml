@@ -54,11 +54,10 @@ jobs:
       - name: Run setup and tests
         run: |
           # Only run full setup if cache was not hit
-          echo "cache-hit: -->${{ steps.cache-dependencies.outputs.cache-hit }}<--"
-          if [ "${{ steps.cache-dependencies.outputs.cache-hit }}" != 'true' ]; then
+          if command -v ros >/dev/null 2>&1; then
+            echo "Cache hit, skipping Roswell installation"
+          else
             echo "Cache miss, running full setup"
             make -f .github/workflows/Makefile setup
-          else
-            echo "Cache hit, skipping Roswell installation";
           fi
           make -f .github/workflows/Makefile test
