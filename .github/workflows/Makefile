@@ -3,8 +3,7 @@ LISP=/usr/bin/sbcl
 REPORTER=list
 QUICKLISP_URL=https://beta.quicklisp.org/quicklisp.lisp
 QUICKLISP_ASC_URL=https://beta.quicklisp.org/quicklisp.lisp.asc
-QUICKLISP_DIR=$(HOME)/quicklisp
-ROSWELL=/usr/local/bin/ros
+ROSWELL=$(HOME)/.local/bin/ros
 ROSWELL_SRC_DIR=roswell
 
 .PHONY: setup test
@@ -21,7 +20,7 @@ setup:
 	  git clone -b release https://github.com/roswell/roswell.git $(ROSWELL_SRC_DIR); \
 	  cd $(ROSWELL_SRC_DIR); \
 	  sh bootstrap; \
-	  ./configure; \
+	  ./configure --prefix=$(HOME)/.local; \
 	  make; \
 	  sudo make install; \
 	  cd ..; \
