@@ -22,6 +22,10 @@ jobs:
           sudo apt-get install -qq -y gnupg build-essential zlib1g-dev curl \
               automake libcurl4-openssl-dev git
 
-      - name: Run setup and tests
+      - name: Run setup
+        run: |
+          make -f .github/workflows/Makefile setup
+
+      - name: Run tests
         run: |
           make -f .github/workflows/Makefile test
