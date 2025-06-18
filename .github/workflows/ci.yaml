@@ -38,6 +38,7 @@ jobs:
             ~/.local/bin/ros
             ~/.local/etc/roswell
             ~/.roswell
+            ~/.cache
           key: ${{ runner.os }}-dependencies-${{ hashFiles('.github/workflows/dependencies.txt') }}-${{ github.run_id }}
           restore-keys: |
             ${{ runner.os }}-dependencies-${{ hashFiles('.github/workflows/dependencies.txt') }}-
