@@ -29,6 +29,7 @@ jobs:
           path: |
             ~/quicklisp
             /usr/local/bin/ros
+            /usr/local/etc/roswell
             ~/.roswell
           key: ${{ runner.os }}-dependencies-${{ hashFiles('.github/workflows/Makefile') }}
           restore-keys: |
