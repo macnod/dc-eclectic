@@ -39,15 +39,13 @@ setup:
 	$(ROSWELL) install ironclad
 	$(ROSWELL) install trivial-utf-8
 	$(ROSWELL) install cl-csv
+	$(ROSWELL) install prove
 	$(ROSWELL) install macnod/dc-ds
 	$(ROSWELL) install macnod/dc-dlist
 	# Clean up Quicklisp installer files
 	rm -f quicklisp.lisp quicklisp.lisp.asc
 
 test: setup
-	$(LISP) --no-userinit --no-sysinit \
-	  --eval "(load \"$(QUICKLISP_DIR)/setup.lisp\")" \
-	  --eval "(ql:quickload :prove)" \
-	  --eval "(require :prove)" \
+	$(LISP) --eval "(require :prove)" \
 	  --eval "(unless (prove:run (truename \"$(TESTS_FILE)\") :reporter :$(REPORTER)) (sb-ext:exit :code 1))" \
 	  --quit
