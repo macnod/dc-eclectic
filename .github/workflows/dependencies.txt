@@ -1,0 +1,8 @@
+cl-ppcre
+yason
+ironclad
+trivial-utf-8
+cl-csv
+prove
+macnod/dc-ds
+macnod/dc-dlist

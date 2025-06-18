@@ -8,6 +8,10 @@ on:
     branches:
       - '*'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -22,7 +26,7 @@ jobs:
           sudo apt-get install -qq -y gnupg build-essential zlib1g-dev curl \
               automake libcurl4-openssl-dev git
 
-      - name: Cache Quicklisp and Roswell
+- name: Cache Quicklisp and Roswell
         id: cache-dependencies
         uses: actions/cache@v4
         with:
@@ -31,17 +35,27 @@ jobs:
             /usr/local/bin/ros
             /usr/local/etc/roswell
             ~/.roswell
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('.github/workflows/Makefile') }}
+          key: ${{ runner.os }}-dependencies-${{ hashFiles('.github/workflows/dependencies.txt') }}-${{ github.run_id }}
           restore-keys: |
+            ${{ runner.os }}-dependencies-${{ hashFiles('.github/workflows/dependencies.txt') }}-
             ${{ runner.os }}-dependencies-
+
+      - name: Verify Quicklisp and Roswell paths
+        run: |
+          if command -v ros >/dev/null 2>&1; then \
+            echo "Quicklisp home: $(ros run -- --eval '(format t \"~a~%\" ql:*quicklisp-home*)' --quit)"; \
+            echo "Roswell home: $(ros run -- --eval '(format t \"~a~%\" (uiop:getenv \"ROSWELL_HOME\"))' --quit)"; \
+          fi
 
       - name: Run setup and tests
         run: |
-          # Skip Roswell installation if cached
-          if ! command -v ros >/dev/null 2>&1; then \
+          # Only run full setup if cache was not hit
+          if [ "${{ steps.cache-dependencies.outputs.cache-hit }}" != "true" ]; then \
             make -f .github/workflows/Makefile setup; \
           else \
-            # Ensure Quicklisp dependencies are installed
+            echo "Cache hit, skipping full setup"; \
             make -f .github/workflows/Makefile setup; \
           fi
+          # Debug: Check cache paths
+          ls -l ~/quicklisp /usr/local/bin/ros /usr/local/etc/roswell ~/.roswell
           make -f .github/workflows/Makefile test

@@ -1,4 +1,3 @@
-# Change-1
 TESTS_FILE="./dc-eclectic-tests.lisp"
 LISP=/usr/bin/sbcl
 REPORTER=list
@@ -29,7 +28,7 @@ setup:
 	  rm -rf $(ROSWELL_SRC_DIR); \
 	  $(ROSWELL) setup; \
 	fi
-	# Install dc-ds and dc-dlist using roswell
+	# Install dependencies
 	$(ROSWELL) install cl-ppcre
 	$(ROSWELL) install yason
 	$(ROSWELL) install ironclad
