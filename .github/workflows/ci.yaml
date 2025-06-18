@@ -57,7 +57,5 @@ jobs:
             make -f .github/workflows/Makefile setup
           else
             echo "Cache hit, skipping Roswell installation";
-            # Still install dependencies in case they changed
-            make -f .github/workflows/Makefile install-dependencies;
           fi
           make -f .github/workflows/Makefile test

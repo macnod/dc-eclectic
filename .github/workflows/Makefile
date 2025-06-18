@@ -43,7 +43,7 @@ install-dependencies:
 	$(ROSWELL) install macnod/dc-ds
 	$(ROSWELL) install macnod/dc-dlist
 
-test: setup
+test:
 	$(ROSWELL) run -- --eval "(require :prove)" \
 		--eval "(unless (prove:run (truename \"$(TESTS_FILE)\") :reporter :$(REPORTER)) (sb-ext:exit :code 1))" \
 		--quit
