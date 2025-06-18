@@ -26,12 +26,11 @@ jobs:
           sudo apt-get install -qq -y gnupg build-essential zlib1g-dev curl \
               automake libcurl4-openssl-dev git
 
-      - name: Cache Quicklisp and Roswell
+      - name: Cache Roswell
         id: cache-dependencies
         uses: actions/cache@v4
         with:
           path: |
-            ~/quicklisp
             /usr/local/bin/ros
             /usr/local/etc/roswell
             ~/.roswell
@@ -40,10 +39,9 @@ jobs:
             ${{ runner.os }}-dependencies-${{ hashFiles('.github/workflows/dependencies.txt') }}-
             ${{ runner.os }}-dependencies-
 
-      - name: Verify Quicklisp and Roswell paths
+      - name: Verify Roswell paths
         run: |
           if command -v ros >/dev/null 2>&1; then \
-            echo "Quicklisp home: $(ros run -- --eval '(format t \"~a~%\" ql:*quicklisp-home*)' --quit)"; \
             echo "Roswell home: $(ros run -- --eval '(format t \"~a~%\" (uiop:getenv \"ROSWELL_HOME\"))' --quit)"; \
           fi
 
@@ -57,5 +55,5 @@ jobs:
             make -f .github/workflows/Makefile setup; \
           fi
           # Debug: Check cache paths
-          ls -l ~/quicklisp /usr/local/bin/ros /usr/local/etc/roswell ~/.roswell
+          ls -l /usr/local/bin/ros /usr/local/etc/roswell ~/.roswell
           make -f .github/workflows/Makefile test
