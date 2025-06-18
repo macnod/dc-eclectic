@@ -3,7 +3,7 @@
 ;; or, from the shell with
 ;;   make test
 ;;
-;; Change 6
+;; Change 7
 ;;
 
 (in-package :cl-user)
