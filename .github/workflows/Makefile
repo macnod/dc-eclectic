@@ -23,7 +23,6 @@ setup:
 	  --quit
 	# Install roswell build dependencies and build from source if not present
 	if ! command -v ros >/dev/null 2>&1; then \
-	  sudo apt-get -y install git build-essential automake libcurl4-openssl-dev; \
 	  git clone -b release https://github.com/roswell/roswell.git $(ROSWELL_SRC_DIR); \
 	  cd $(ROSWELL_SRC_DIR); \
 	  sh bootstrap; \
