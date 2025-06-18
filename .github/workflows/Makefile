@@ -53,5 +53,5 @@ test: setup
 	  --eval "(load \"$(QUICKLISP_DIR)/setup.lisp\")" \
 	  --eval "(ql:quickload :prove)" \
 	  --eval "(require :prove)" \
-	  --eval "(prove:run #P\"$(TESTS_FILE)\" :reporter :$(REPORTER))" \
+	  --eval "(unless (prove:run #P\"$(TESTS_FILE)\" :reporter :$(REPORTER)) (sb:ext:exit :code 1))" \
 	  --quit

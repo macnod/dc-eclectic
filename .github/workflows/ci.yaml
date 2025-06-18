@@ -23,5 +23,6 @@ jobs:
               automake libcurl4-openssl-dev git
 
       - name: Run setup and tests
+        working-directory: .github/workflows
         run: |
-          make -f .github/workflows/Makefile test
+          make test
