@@ -26,6 +26,10 @@ jobs:
           sudo apt-get install -qq -y gnupg build-essential zlib1g-dev curl \
               automake libcurl4-openssl-dev git
 
+      - name: Set up PATH
+        run: |
+          echo "PATH=$HOME/.local/bin:$PATH" >> $GITHUB_ENV
+
       - name: Cache Roswell
         id: cache-dependencies
         uses: actions/cache@v4
@@ -41,7 +45,6 @@ jobs:
 
       - name: Verify Roswell paths
         run: |
-          export PATH="$HOME/.local/bin:$PATH"
           if command -v ros >/dev/null 2>&1; then
             echo "Roswell found at $(which ros)"
           else
@@ -50,9 +53,8 @@ jobs:
 
       - name: Run setup and tests
         run: |
-          export PATH="$HOME/.local/bin:$PATH"
           # Only run full setup if cache was not hit
-          if [ "${{ steps.cache-dependencies.outputs.cache-hit }}" != "true" ]; then
+          if [ "${{ steps.cache-dependencies.outputs.cache-hit }}" != 'true' ]; then
             echo "Cache miss, running full setup"
             make -f .github/workflows/Makefile setup
           else
