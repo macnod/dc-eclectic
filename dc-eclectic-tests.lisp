@@ -2,6 +2,9 @@
 ;;   (prove:run #P"dc-eclectic-tests.lisp")
 ;; or, from the shell with
 ;;   make test
+;;
+;; Change 1
+;;
 
 (in-package :cl-user)
 
