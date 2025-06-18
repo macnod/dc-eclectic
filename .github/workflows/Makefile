@@ -1,3 +1,4 @@
+# Makefile for tests
 TESTS_FILE="./dc-eclectic-tests.lisp"
 LISP=/usr/bin/sbcl
 REPORTER=list
