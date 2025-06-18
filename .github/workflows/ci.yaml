@@ -16,16 +16,31 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install some packages
+      - name: Install system packages
         run: |
           sudo apt-get update -qq
           sudo apt-get install -qq -y gnupg build-essential zlib1g-dev curl \
               automake libcurl4-openssl-dev git
 
-      - name: Run setup
-        run: |
-          make -f .github/workflows/Makefile setup
+      - name: Cache Quicklisp and Roswell
+        id: cache-dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/quicklisp
+            /usr/local/bin/ros
+            ~/.roswell
+          key: ${{ runner.os }}-dependencies-${{ hashFiles('.github/workflows/Makefile') }}
+          restore-keys: |
+            ${{ runner.os }}-dependencies-
 
-      - name: Run tests
+      - name: Run setup and tests
         run: |
+          # Skip Roswell installation if cached
+          if ! command -v ros >/dev/null 2>&1; then \
+            make -f .github/workflows/Makefile setup; \
+          else \
+            # Ensure Quicklisp dependencies are installed
+            make -f .github/workflows/Makefile setup; \
+          fi
           make -f .github/workflows/Makefile test
