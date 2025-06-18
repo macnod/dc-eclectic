@@ -1,4 +1,4 @@
-TESTS_FILE="../../dc-eclectic-tests.lisp"
+TESTS_FILE="./dc-eclectic-tests.lisp"
 LISP=/usr/bin/sbcl
 REPORTER=list
 QUICKLISP_URL=https://beta.quicklisp.org/quicklisp.lisp
@@ -49,5 +49,5 @@ test: setup
 	  --eval "(load \"$(QUICKLISP_DIR)/setup.lisp\")" \
 	  --eval "(ql:quickload :prove)" \
 	  --eval "(require :prove)" \
-	  --eval "(unless (prove:run #P\"$(TESTS_FILE)\" :reporter :$(REPORTER)) (sb-ext:exit :code 1))" \
+	  --eval "(unless (prove:run (truename \"$(TESTS_FILE)\") :reporter :$(REPORTER)) (sb-ext:exit :code 1))" \
 	  --quit
