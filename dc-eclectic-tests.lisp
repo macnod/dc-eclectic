@@ -1,10 +1,16 @@
 ;; Run these tests in the repl with
-;;   (prove:run #P"/home/macnod/common-lisp/dc-eclectic/dc-eclectic-tests.lisp")
+;;   (prove:run #P"dc-eclectic-tests.lisp")
 ;; or, from the shell with
 ;;   make test
+;;
+;; Change 22
+;;
 
 (in-package :cl-user)
-(require :dc-eclectic)
+
+(pushnew (truename ".") asdf:*central-registry* :test #'equal)
+(asdf:load-system :dc-eclectic)
+
 (require :prove)
 (defpackage :dc-eclectic-tests (:use :cl :prove :dc-eclectic :dc-ds :cl-ppcre))
 (in-package :dc-eclectic-tests)
