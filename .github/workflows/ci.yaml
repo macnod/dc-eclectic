@@ -26,7 +26,11 @@ jobs:
         with:
           path: |
             /var/cache/apt
+            !/var/cache/apt/archives/lock
+            !/var/cache/apt/archives/partial
             /var/lib/apt/lists
+            !/var/lib/apt/lists/lock
+            !/var/lib/apt/lists/partial
           key: ${{ runner.os }}-apt-${{ hashFiles('.github/workflows/packages.txt') }}-${{ github.run_id }}
           restore-keys: |
             ${{ runner.os }}-apt-${{ hashFiles('.github/workflows/packages.txt') }}-
@@ -38,6 +42,11 @@ jobs:
           while read -r pkg; do
             sudo apt-get install -qq -y "$pkg"
           done < .github/workflows/packages.txt
+          # Clean up to ensure no lock files or partial downloads remain
+          sudo rm -f /var/cache/apt/archives/lock
+          sudo rm -rf /var/cache/apt/archives/partial
+          sudo rm -f /var/lib/apt/lists/lock
+          sudo rm -rf /var/lib/apt/lists/partial
 
       - name: Set up PATH
         run: |
