@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - ga
+      - '*'
   pull_request:
     branches:
       - '*'
