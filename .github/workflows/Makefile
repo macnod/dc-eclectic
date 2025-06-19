@@ -11,26 +11,18 @@ ROSWELL_SRC_DIR=roswell
 setup: install-roswell install-dependencies
 
 install-roswell:
-	# Download Quicklisp installer and signature
-	curl -O $(QUICKLISP_URL)
-	curl -O $(QUICKLISP_ASC_URL)
-	# Verify Quicklisp signature
-	gpg --keyserver keys.openpgp.org --recv-keys 307965AB028B5FF7
-	gpg --verify quicklisp.lisp.asc quicklisp.lisp
-	# Install roswell build dependencies and build from source if not present
+	# Build from source if Roswell is not present
 	if ! command -v ros >/dev/null 2>&1; then \
-	  git clone -b release https://github.com/roswell/roswell.git $(ROSWELL_SRC_DIR); \
-	  cd $(ROSWELL_SRC_DIR); \
-	  sh bootstrap; \
-	  ./configure --prefix=$(HOME)/.local; \
-	  make; \
-	  make install; \
-	  cd ..; \
-	  rm -rf $(ROSWELL_SRC_DIR); \
-	  $(ROSWELL) setup; \
+		git clone -b release https://github.com/roswell/roswell.git $(ROSWELL_SRC_DIR); \
+		cd $(ROSWELL_SRC_DIR); \
+		sh bootstrap; \
+		./configure --prefix=$(HOME)/.local; \
+		make; \
+		make install; \
+		cd ..; \
+		rm -rf $(ROSWELL_SRC_DIR); \
+		$(ROSWELL) setup; \
 	fi
-	# Clean up Quicklisp installer files
-	rm -f quicklisp.lisp quicklisp.lisp.asc
 
 install-dependencies:
 	# Install dependencies
