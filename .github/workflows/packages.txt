@@ -1,0 +1,7 @@
+automake
+build-essential
+curl
+git
+gnupg
+libcurl4-openssl-dev
+zlib1g-dev
