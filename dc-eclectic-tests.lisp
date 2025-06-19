@@ -3,12 +3,11 @@
 ;; or, from the shell with
 ;;   make test
 ;;
-;; Change 21
+;; Change 22
 ;;
 
 (in-package :cl-user)
 
-;; (require :dc-eclectic)
 (pushnew (truename ".") asdf:*central-registry* :test #'equal)
 (asdf:load-system :dc-eclectic)
 
