@@ -27,11 +27,6 @@ jobs:
           packages: automake build-essential curl git gnupg libcurl4-openssl-dev zlib1g-dev
           version: 1.0
 
-      - name: Install system packages
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -qq -y automake build-essential curl git gnupg libcurl4-openssl-dev zlib1g-dev
-
       - name: Set up PATH
         run: |
           echo "PATH=$HOME/.local/bin:$PATH" >> $GITHUB_ENV
