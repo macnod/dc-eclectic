@@ -3,10 +3,10 @@ name: CI
 on:
   push:
     branches:
-      - '*'
+      - 'master'
   pull_request:
     branches:
-      - '*'
+      - 'master'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
@@ -43,15 +43,6 @@ jobs:
           key: ${{ runner.os }}-dependencies-${{ hashFiles('.github/workflows/dependencies.txt') }}-${{ github.run_id }}
           restore-keys: |
             ${{ runner.os }}-dependencies-${{ hashFiles('.github/workflows/dependencies.txt') }}-
-            ${{ runner.os }}-dependencies-
-
-      - name: Verify Roswell paths
-        run: |
-          if command -v ros >/dev/null 2>&1; then
-            echo "Roswell found at $(which ros)"
-          else
-            echo "Roswell not found"
-          fi
 
       - name: Run setup and tests
         run: |
