@@ -2,7 +2,7 @@
 
 * Overview
 
-DC-Eclectic is a Common Lisp package that provides a collection of utility functions and variables for tasks including logging, time handling, string and list manipulations, file and directory utilities, hashing, permutations, and more. It uses packages like Common Lisp (~cl~), ~trivial-utf-8~, ~sb-thread~, ~sb-ext~, and imports from ~ironclad~ for hashing. Local nicknames are used for ~dc-ds~ (as ~:ds~) and ~ppcre~ (as ~:re~).
+DC-ECLECTIC is a Common Lisp package that provides a collection of utility functions and variables for tasks including logging, time handling, string and list manipulations, file and directory utilities, hashing, permutations, and more. It uses packages like Common Lisp (~cl~), ~trivial-utf-8~, ~sb-thread~, ~sb-ext~, and imports from ~ironclad~ for hashing. Local nicknames are used for ~dc-ds~ (as ~:ds~) and ~ppcre~ (as ~:re~).
 
 The package exports the following symbols, documented below in alphabetical order. Each entry includes the symbol type (function, variable, etc.) where applicable, the function signature (if applicable), and a description based on the source code docstring (if available). Some symbols may lack definitions in the provided source but are exported.
 
