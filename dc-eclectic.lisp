@@ -6,7 +6,7 @@
 
 (defparameter *log* nil)
 
-(defun open-log (&key (filepath "/tmp/neurons.log") (append t))
+(defun open-log (&key (filepath "/tmp/generic.log") (append t))
   "Opens a log file, allowing the DLOG function to cease to be a
 no-op. FILEPATH represents the path to the log file. APPEND indicates
 that if a file exists at FILEPATH, call to dlog should append log
