@@ -8,8 +8,6 @@
                 :digest-sequence
                 :sha512)
   (:export
-   **inputs-ready**
-   **outputs-ready**
    *log*
    all-permutations
    all-permutations-of-string
@@ -50,18 +48,14 @@
    plistp
    plist-keys
    range
-   reference-random-state
    replace-extension
-   run-tests
    shuffle
    slurp
    spew
    split-n-trim
-   strings-from-chars
    thaw
    trim
    trim-whitespace
-   words-from-chars
    timestamp-string
    to-ascii
    universal-time-to-unix-time

@@ -12,14 +12,6 @@ The package exports the following symbols, documented below in alphabetical orde
 
 Variable (~defparameter~). Represents the log file stream. Initially ~NIL~. Set by ~open-log~ and unset by ~close-log~.
 
-** ~**inputs-ready**~
-
-Exported, but no definition or docstring provided in the source.
-
-** ~**outputs-ready**~
-
-Exported, but no definition or docstring provided in the source.
-
 ** ~all-permutations~
 
 Function: ~(ALL-PERMUTATIONS LIST)~
@@ -347,19 +339,11 @@ Function: ~(RANGE START END &KEY (STEP 1) (FILTER #'IDENTITY) SHUFFLE)~
 
 Returns a list of values between ~START~ and ~END~ (inclusive), skipping values by ~STEP~, filtering remaining values with the function in ~FILTER~, and shuffling the remaining values if ~SHUFFLE~ is true. ~STEP~ defaults to 1, ~FILTER~ defaults to allowing all values through, and ~SHUFFLE~ default to nil.
 
-** ~reference-random-state~
-
-Exported, but no definition or docstring provided in the source.
-
 ** ~replace-extension~
 
 Function: ~(REPLACE-EXTENSION FILENAME NEW-EXTENSION)~
 
 This function replaces the file extension in ~FILENAME~ with the file extension provided in ~NEW-EXTENSION~.
-
-** ~run-tests~
-
-Exported, but no definition or docstring provided in the source.
 
 ** ~shuffle~
 
@@ -388,10 +372,6 @@ Splits ~STRING~ into substrings on ~ON-REGEX~, then trims ~FAT~ from each substr
 #+begin_src lisp
 (split-n-trim "Hello  beautiful      world!") => '("Hello" "beautiful" "world!")
 #+end_src
-
-** ~strings-from-chars~
-
-Exported, but no definition or docstring provided in the source.
 
 ** ~thaw~
 
@@ -427,11 +407,11 @@ Trims all whitespace characters from ~S~.
 
 Function: ~(UNIVERSAL-TIME-TO-UNIX-TIME &OPTIONAL UNIVERSAL-TIME)~
 
-Converts universal time to unix time. If you don't provide a universal time, this function returns the current unix time.
+Converts ~UNIVERSAL-TIME~ to unix time. If you don't provide UNIVERSAL-TIME, this function returns the current unix time.
 
-* Unix time is the number of seconds elapsed since the epoch, January 1, 1970 at 00:00:00 UTC.
+Unix time is the number of seconds elapsed since the epoch, January 1, 1970 at 00:00:00 UTC.
 
-* Universal time is the number of seconds elapsed since January 1, 1900 at 00:00:00 UTC.
+~UNIVERSAL-TIME~ is the number of seconds elapsed since January 1, 1900 at 00:00:00 UTC.
 
 ** ~unix-time-to-universal-time~
 
@@ -439,16 +419,12 @@ Function: ~(UNIX-TIME-TO-UNIVERSAL-TIME &OPTIONAL UNIX-TIME)~
 
 Converts unix time to universal time. If you don't provide a unix time, this function returns the current universal time, as an integer.
 
-* Unix time is the number of seconds elapsed since the epoch, January 1, 1970 at 00:00:00 UTC.
+UNIX-TIME is the number of seconds elapsed since the epoch, January 1, 1970 at 00:00:00 UTC.
 
-* Universal time is the number of seconds elapsed since January 1, 1900 at 00:00:00 UTC.
+Universal time is the number of seconds elapsed since January 1, 1900 at 00:00:00 UTC.
 
 ** ~verify-string~
 
 Function: ~(VERIFY-STRING STRING REGEX &KEY IGNORE-CASE)~
 
 Return ~T~ if ~STRING~ matches the ~REGEX~ exactly. Use the ~IGNORE-CASE~ parameter if you want case-insensitive matches.
-
-** ~words-from-chars~
-
-Exported, but no definition or docstring provided in the source.
