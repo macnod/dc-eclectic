@@ -1,4 +1,4 @@
-#+TITLE: DC-Eclectic
+#+TITLE: DC-ECLECTIC
 
 * Overview
 
@@ -6,12 +6,7 @@ DC-Eclectic is a Common Lisp package that provides a collection of utility funct
 
 The package exports the following symbols, documented below in alphabetical order. Each entry includes the symbol type (function, variable, etc.) where applicable, the function signature (if applicable), and a description based on the source code docstring (if available). Some symbols may lack definitions in the provided source but are exported.
 
-* Exported Symbols
-
-** ~*log*~
-
-Variable (~defparameter~). Represents the log file stream. Initially ~NIL~. Set by ~open-log~ and unset by ~close-log~.
-
+* Functions
 ** ~all-permutations~
 
 Function: ~(ALL-PERMUTATIONS LIST)~
