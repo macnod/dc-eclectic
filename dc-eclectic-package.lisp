@@ -48,6 +48,7 @@
    plistp
    plist-keys
    range
+   reference-random-state
    replace-extension
    shuffle
    slurp
