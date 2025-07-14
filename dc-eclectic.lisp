@@ -51,27 +51,27 @@ not open, this function does nothing."
      start-time))
 
 (defun universal-time-to-unix-time (&optional universal-time)
-  "Converts universal time to unix time. If you don't provide a universal time,
+  "Converts UNIVERSAL-TIME to unix time. If you don't provide a universal time,
 this function returns the current unix time.
 
-* Unix time is the number of seconds elapsed since the epoch, January
-  1, 1970 at 00:00:00 UTC.
+Unix time is the number of seconds elapsed since the epoch, January 1, 1970 at
+00:00:00 UTC.
 
-* Universal time is the number of seconds elapsed since January 1, 1900 at 00:00:00 UTC
+Universal is the number of seconds elapsed since January 1, 1900 at 00:00:00 UTC
 "
   (let ((universal-time (or universal-time (get-universal-time))))
     (- universal-time *unix-epoch*)))
 
 
 (defun unix-time-to-universal-time (&optional unix-time)
-  "Converts unix time to universal time. If you don't provide a unix time,
+  "Converts UNIX-TIME to universal time. If you don't provide UNIX-TIME,
 this function returns the current universal time, as an integer.
 
-* Unix time is the number of seconds elapsed since the epoch, January
-1, 1970 at 00:00:00 UTC.
+Unix time is the number of seconds elapsed since the epoch, January 1, 1970 at
+00:00:00 UTC.
 
-* Universal time is the number of seconds elapsed since January 1,
-1900 at 00:00:00 UTC.
+Universal time is the number of seconds elapsed since January 1, 1900 at
+00:00:00 UTC.
 "
   (let ((unix-time (or unix-time (universal-time-to-unix-time))))
     (+ unix-time *unix-epoch*)))
