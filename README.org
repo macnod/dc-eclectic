@@ -51,7 +51,7 @@ This function uses the ~RANDOM~ function, which accepts an optional ~RSTATE~ par
 
 Function: ~(CLOSE-LOG)~
 
-Closes the file stream that was opened by ~OPEN-LOG~. If a file stream is not open (if ~*LOG*~ is ~NIL~), then this function does nothing and returns ~NIL~. If a file stream is open (~*LOG*~ contains a stream), then this function closes the stream and returns ~T~.
+If the log stream is open (see ~OPEN-LOG~), then this function closes the stream and returns T. If the stream is a file stream, the file is closed too. Otherwise, if the log stream is not open, this function does nothing.
 
 ** ~comparable-hash-dump~
 
@@ -83,11 +83,19 @@ Function: ~(DISTINCT-VALUES LIST)~
 
 Alias for ~distinct-elements~.
 
-** ~dlog~
+** ~log-it~
 
-Function: ~(DLOG FORMAT-STRING &REST VALUES)~
+Function: ~(LOG-IT SEVERITY MESSAGE &REST PARAMS)~
 
-If the log file is open (see ~OPEN-LOG~), this function creates a string by calling ~FORMAT~ with ~FORMAT-STRING~ and with ~VALUES~, writes the string to the log stream, and returns the string. If the log file is not open, this function does nothing.
+Computes a log entry string using ~MESSAGE~. Logs the entry when there's an open log (see ~OPEN-LOG~) and ~SEVERITY~ is greather than or equal to the system's log-severity threshold (see ~OPEN-LOG~ and ~SET-LOG-SEVERITY-THRESHOLD~). If ~SEVERITY~ is below the threshold, the entry is not written to the log. Returns the computed log entry.
+
+~SEVERITY~ indicates the severity of the message. It must be one of the following values: ~:error~, ~:warn~, ~:info~, or ~:debug~.
+
+~MESSAGE~ is a string that works just like the ~FORMAT~ function's ~CONTROL-STRING~ parameter.
+
+~PARAMS~ holds the values that ~MESSAGE~ references.
+
+To copmute the log entry, ~MESSAGE~ is prefixed with the current time stamp and ~SEVERITY~.
 
 ** ~elapsed-time~
 
@@ -298,11 +306,17 @@ Return a new list with new values between 0.0 and 1.0. ~MAX~ is the largest valu
 
 ** ~open-log~
 
-Function: ~(OPEN-LOG &KEY (FILEPATH "/tmp/neurons.log") (APPEND T))~
+Function: ~(OPEN-LOG FILE-OR-STREAM &key (APPEND T) (SEVERITY-THRESHOLD :DEBUG)~
 
-Opens a log file, allowing the ~DLOG~ function to cease to be a no-op. ~FILEPATH~ represents the path to the log file. ~APPEND~ indicates that if a file exists at ~FILEPATH~, call to ~dlog~ should append log entries to the end of the existing file. If ~APPEND~ is ~NIL~, the file at ~FILEPATH~ is cleared. Regardless of the value of ~APPEND~, if the file at ~FILEPATH~ doesn't exist, this function creates it.
+Opens a log file or sets up logging to a specified stream, allowing the ~LOG-IT~ function to cease to be a no-op.
 
-If ~*LOG*~ is set (if this function was called and ~CLOSE-LOG~ was never called), then this function does nothing and returns ~NIL~. If ~*LOG*~ is ~NIL~ (if this function has not been called or it was called and then ~CLOSE-LOG~ was called), then this function opens the log file, sets ~*LOG*~ to the file stream, and returns the file stream.
+~FILE-OR-STREAM~ must be a string, a stream, or ~NIL~. If ~FILE-OR-STREAM~ is a string, it is treated as a file path, and this function opens the file and uses that as the stream. If ~FILE-OR-STREAM~ is a stream, such as ~*STANDARD-OUTPUT*~, then this function uses it directly. Finally, if ~FILE-OR-STREAM~ is ~NIL~, then it defaults to ~*STANDARD-OUTPUT*~.
+
+~APPEND~ indicates that if a file exists at ~FILE-OR-STREAM~, calls to ~LOG-IT~ should append log entries to the end of the existing file. If ~APPEND~ is ~NIL~, the file at ~FILE-OR-STREAM~ is cleared. Regardless of the value of ~APPEND~, if the file at ~FILE-OR-STREAM~ doesn't exist, this function creates it. If ~FILE-OR-STREAM~ is a stream, ~APPEND~ has not effect.
+
+~SEVERITY-THRESHOLD~ is ~:debug~, ~:info~, ~:warn~, or ~:error~. See the function ~SET-LOG-SEVERITY-THRESHOLD~ for more information.
+
+If ~*LOG*~ is set (if this function was called and ~CLOSE-LOG~ was never called), then this function does nothing and returns ~NIL~. If ~*LOG*~ is ~NIL~ (if this function has not been called or it was called after a call to ~CLOSE-LOG~), then this function opens the log as described above, sets ~*LOG*~ to the stream, and returns the value of ~*LOG*~.
 
 ** ~path-only~
 

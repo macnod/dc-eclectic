@@ -103,11 +103,10 @@ returns the value of *LOG*."
     (set-log-severity-threshold severity-threshold)
     *log*))
 
-(defun close-log()
-  "Closes the file stream that was opened by OPEN-LOG. If a file stream
-is not open (if *LOG* is NIL), then this function does nothing and returns
-NIL. If a file stream is open (*LOG* contains a stream), then this function
-closes the stream and returns T."
+(defun close-log ()
+  "If the log stream is open (see OPEN-LOG), then this function closes the stream
+and returns T. If the stream is a file stream, the file is closed too.
+Otherwise, if the log stream is not open, this function does nothing."
   (when *log*
     (when *log-is-file*
       (close *log*))
