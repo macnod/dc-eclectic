@@ -5,43 +5,146 @@
 (defparameter *log-mutex* (make-mutex :name "dc-eclectic-log"))
 
 (defparameter *log* nil)
+(defparameter *log-is-file* nil)
+(defparameter *log-severity-map* (list :error 3 :warn 2 :info 1 :debug 0))
+(defparameter *log-severity-threshold* :debug)
 
-(defun open-log (&key (filepath "/tmp/generic.log") (append t))
-  "Opens a log file, allowing the DLOG function to cease to be a
-no-op. FILEPATH represents the path to the log file. APPEND indicates
-that if a file exists at FILEPATH, call to dlog should append log
-entries to the end of the existing file. If APPEND is NIL, the file at
-FILEPATH is cleared. Regardless of the value of APPEND, if the file at
-FILEPATH doesn't exist, this function creates it.
+(defun timestamp-string (&key
+                           (universal-time (get-universal-time))
+                           (timezone 0)
+                           (format "%Y-%M-%DT%h:%m:%s"))
+  "Returns the given time (or the current time, in universal time
+format) formatted according to the FORMAT parameter, followed by an
+optional value for STRING.  If STRING is provided, the function adds a
+space to the result and then appends the string to that.  The FORMAT
+string can contain any characters.  This function will replace the
+format characters Y, M, D, h, m, and s, with numbers representing the
+year,month, day, hour, minute, and second, respectively.  All the
+numbers are 2 digits long, except for the year, which is 4 digits
+long."
+  (multiple-value-bind (second minute hour day month year)
+      (decode-universal-time universal-time timezone)
+    (let* ((parts (ds:ds (list :map
+                               "%Y" (format nil "~d"     year)
+                               "%M" (format nil "~2,'0d" month)
+                               "%D" (format nil "~2,'0d" day)
+                               "%h" (format nil "~2,'0d" hour)
+                               "%m" (format nil "~2,'0d" minute)
+                               "%s" (format nil "~2,'0d" second))))
+           (elements (loop for i from 0 below (length format)
+                           for v = (subseq format i (+ i 2))
+                           for fs = (ds:pick parts v)
+                           collect (if fs (progn (incf i) fs) (subseq v 0 1)))))
+      (format nil "~{~a~}" elements))))
 
-If *LOG* is set (if this function was called and CLOSE-LOG was never
-called), then this function does nothing and returns NIL. If *LOG* is
-NIL (if this function has not been called or it was called and then
-CLOSE-LOG was called), then this function opens the log file, sets
-*LOG* to the file stream, and returns the file stream."
+(defun set-log-severity-threshold (log-severity)
+  "Sets the system's log severity threshold to LOG-SEVERITY, which must be 
+:error, :warn, :info, or :debug.
+
+The LOG-IT function will log any messages with a severity that is equal to or
+greater LOG-SEVERITY. For example, if you call this function with a
+LOG-SEVERITY value of :warn, then subsequent calls to the LOG-IT function
+will result in a log entry when the LOG-IT function's parameter SEVERITY
+is :warn or :error. However, subsequent calls to LOG-IT with a SEVERITY
+value of :info or :debug will not result in a log entry."
+  (unless (getf *log-severity-map* log-severity)
+    (error "~a ':~(~a~)'. Use ~a."
+      "Invalid value for log-severity"
+      log-severity
+      ":error, :warn, :info, or :debug"))
+  (setf *log-severity-threshold* log-severity))
+
+(defun open-log (file-or-stream &key
+                  (append t) 
+                  (severity-threshold :debug))
+  "Opens a log file or sets up logging to a specified stream, allowing the LOG-IT
+function to cease to be a no-op.
+
+FILE-OR-STREAM must be a string, a stream, or NIL. If FILE-OR-STREAM is a
+string, it is treated as a file path, and this function opens the file and uses
+that as the stream. If FILE-OR-STREAM is a stream, such as *STANDARD-OUTPUT*,
+then this function uses it directly. Finally, if FILE-OR-STREAM is NIL, then
+it defaults to *STANDARD-OUTPUT*.
+
+APPEND indicates that if a file exists at FILE-OR-STREAM, calls to LOG-IT should
+append log entries to the end of the existing file. If APPEND is NIL, the file
+at FILE-OR-STREAM is cleared. Regardless of the value of APPEND, if the file at
+FILE-OR-STREAM doesn't exist, this function creates it. If FILE-OR-STREAM is
+a stream, APPEND has not effect.
+
+SEVERITY-THRESHOLD is :debug, :info, :warn, or :error. See the function
+SET-LOG-SEVERITY-THRESHOLD for more information.
+
+If *LOG* is set (if this function was called and CLOSE-LOG was never called),
+then this function does nothing and returns NIL. If *LOG* is NIL (if this
+function has not been called or it was called after a call to CLOSE-LOG), then
+this function opens the log as described above, sets *LOG* to the stream, and
+returns the value of *LOG*."
   (unless *log*
-    (setf *log* (open filepath
-                      :direction :output
-                      :if-exists (if append :append :supersede)
-                      :if-does-not-exist :create))))
+    (cond 
+      ((stringp file-or-stream)
+        (setf
+          *log* (open file-or-stream
+                  :direction :output
+                  :if-exists (if append :append :supersede)
+                  :if-does-not-exist :create)
+          *log-is-file* t))
+      ((streamp file-or-stream)
+        (setf
+          *log* file-or-stream
+          *log-is-file* nil))
+      ((null file-or-stream)
+        (setf
+          *log* *standard-output*
+          *log-is-file* nil))
+      (t
+        (error "Bad file-or-stream value ~a. It must be a string, a stream, or NIL"
+          file-or-stream)))
+    (set-log-severity-threshold severity-threshold)
+    *log*))
 
 (defun close-log()
   "Closes the file stream that was opened by OPEN-LOG. If a file stream
-is not open (if *LOG* is NIL), then this function does nothing and
-returns NIL. If a file stream is open (*LOG* contains a stream), then
-this fucntion closes the stream and returns T."
+is not open (if *LOG* is NIL), then this function does nothing and returns
+NIL. If a file stream is open (*LOG* contains a stream), then this function
+closes the stream and returns T."
   (when *log*
-    (close *log*)
-    (setf *log* nil)
+    (when *log-is-file*
+      (close *log*))
+    (setf 
+      *log* nil
+      *log-is-file* nil)
     t))
 
-(defun dlog (format-string &rest values)
-  "If the log file is open (see OPEN-LOG), this function creates a string
-by calling FORMAT with FORMAT-STRING and with VALUES, writes the
-string to the log stream, and returns the string. If the log file is
-not open, this function does nothing."
-  (when *log*
-    (apply #'log-it (append (list *log* format-string) values))))
+(defun log-it (severity message &rest params)
+  "Computes a log entry string using MESSAGE. Logs the entry when there's an open
+log (see OPEN-LOG) and SEVERITY is greather than or equal to the system's
+log-severity threshold (see OPEN-LOG and SET-LOG-SEVERITY-THRESHOLD). If
+SEVERITY is below the threshold, the entry is not written to the log. Returns
+the computed log entry.
+
+SEVERITY indicates the severity of the message. It must be one of the following
+values: :error, :warn, :info, or :debug.
+
+MESSAGE is a string that works just like the FORMAT function's CONTROL-STRING
+parameter.
+
+PARAMS holds the values that MESSAGE references.
+
+To copmute the log entry, MESSAGE is prefixed with the current time stamp and
+SEVERITY."
+  (let* ((message-severity (or (getf *log-severity-map* severity)
+                             (error "Invalid message severity: ~a" severity)))
+          (system-severity (getf *log-severity-map* *log-severity-threshold*))
+          (message-with-severity (format nil "~a [~a] ~a~%" 
+                                   (timestamp-string)
+                                   severity 
+                                   message))
+          (log-entry (apply #'format 
+                       (append `(nil ,message-with-severity) params))))
+    (when (and *log* (>= message-severity system-severity))
+        (format *log* log-entry))
+    log-entry))
 
 (defun mark-time ()
   (float (/ (get-internal-real-time) internal-time-units-per-second)))
@@ -97,54 +200,6 @@ REPLACEMENT-CHAR."
                                      replacement-char
                                      c))))
     (map 'string replacement-function string)))
-
-
-(defun timestamp-string (&key
-                           (universal-time (get-universal-time))
-                           (timezone 0)
-                           (format "%Y-%M-%DT%h:%m:%s"))
-  "Returns the given time (or the current time, in universal time
-format) formatted according to the FORMAT parameter, followed by an
-optional value for STRING.  If STRING is provided, the function adds a
-space to the result and then appends the string to that.  The FORMAT
-string can contain any characters.  This function will replace the
-format characters Y, M, D, h, m, and s, with numbers representing the
-year,month, day, hour, minute, and second, respectively.  All the
-numbers are 2 digits long, except for the year, which is 4 digits
-long."
-  (multiple-value-bind (second minute hour day month year)
-      (decode-universal-time universal-time timezone)
-    (let* ((parts (ds:ds (list :map
-                               "%Y" (format nil "~d"     year)
-                               "%M" (format nil "~2,'0d" month)
-                               "%D" (format nil "~2,'0d" day)
-                               "%h" (format nil "~2,'0d" hour)
-                               "%m" (format nil "~2,'0d" minute)
-                               "%s" (format nil "~2,'0d" second))))
-           (elements (loop for i from 0 below (length format)
-                           for v = (subseq format i (+ i 2))
-                           for fs = (ds:pick parts v)
-                           collect (if fs (progn (incf i) fs) (subseq v 0 1)))))
-      (format nil "~{~a~}" elements))))
-
-(defun log-entry (format-string &rest values)
-  "Creates a string by calling the FORMAT function with FORMAT-STRING and
-VALUES, prepends the result with a timestamp, and returns a string
-that looks like a log entry."
-  (format nil "~a ~a"
-          (timestamp-string)
-          (apply #'format (append (list nil format-string) values))))
-
-(defun log-it (stream format-string &rest values)
-  "Concatenates one or more strings (collected in MESSAGES), precedes
-the result with a timestamp, writes to STREAM a string that looks like
-a log entry. Returns the same string that was written to STREAM."
-  (when stream
-    (with-mutex (*log-mutex*)
-      (let ((entry (apply #'log-entry (cons format-string values))))
-        (write-line entry stream)
-        (force-output stream)
-        entry))))
 
 (defun flatten (l)
   "Given a nested list L, return a flat list. If an array or other
@@ -791,3 +846,42 @@ need."
 (defun thaw (string)
   (let ((*read-eval* nil))
     (read-from-string string)))
+
+(defun getenv (name &key default required (type :string))
+  "Get the value of the environment variable NAME, returning a string or an
+integer, depending on TYPE. If the environment variable is not set, then return
+DEFAULT, which must be of type TYPE. If the environment variable is not set and
+DEFAULT is NIL, then this function returns NIL."
+  (unless (member type '(:string :integer))
+    (error "Invalid type ~a. Use :integer or :string." type))
+  (let ((value (sb-ext:posix-getenv name)))
+    (if value
+      (if (eql type :string)
+        value
+        (handler-case (parse-integer value)
+          (error (condition)
+            (log-it :error "Failed to parse ~s as integer: ~a"
+              value condition)
+            nil)))
+      (cond 
+        ((and required (null default))
+          (error "A value for environment variable ~a is required." name))
+        ((null default)
+          default)
+        ((and (stringp default) (eql type :string))
+          default)
+        ((and (stringp default) (eql type :integer))
+          (handler-case (parse-integer default)
+            (error (condition)
+              (log-it :error "Failed to parse default value ~s as integer: ~a"
+                value condition)
+              nil)))
+        ((integerp default)
+          default)))))
+
+(defun setenv (name value)
+  "Set environment variable NAME to VALUE. VALUE is always converted into a
+string. Returns a string with VALUE."
+  (let ((string-value (format nil "~a" value)))
+    (sb-posix:setenv name string-value 1)
+    string-value))

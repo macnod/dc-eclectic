@@ -24,7 +24,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 152)
+(plan 160)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -471,34 +471,45 @@
           (equalp some (vector 1 3)))
       "choose-some works with vectors"))
 
+;; logging
+;;
+(defun make-log-entry-regex (severity message)
+  (format nil "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2} \\[~a\\] ~a~%$" 
+    severity message))
 
-;; log-entry
-(let ((timestamp (top-of-second)))
-  (is (format nil "~a ~a" timestamp "Hello World")
-      (log-entry "Hello World")
-      "entry - format string only")
-  (is (format nil "~a ~a" timestamp "Hello 10 times, Donnie")
-      (log-entry "Hello ~d times, ~a" 10 "Donnie")
-      "entry - format string with 2 parameters"))
+(defun log-to-stream (severity-threshold severity message)
+  (with-output-to-string (stream)
+    (open-log stream :severity-threshold severity-threshold)
+    (log-it severity message)
+    (close-log)))
 
-;; log-it
-(let* ((timestamp (top-of-second))
-       (filepath "/tmp/neurons.log")
-       (stream (open filepath
-                     :direction :output
-                     :if-exists :supersede
-                     :if-does-not-exist :create)))
-  (log-it stream "~a ~a ~a" "one" "two" "three")
-  (log-it stream "Hello World!")
-  (log-it stream "~{~d~^, ~}" (list 1 2 3 4 5))
-  (close stream)
-  (let ((log (uiop:read-file-lines "/tmp/neurons.log")))
-    (is (mapcar (lambda (s) (format nil "~a ~a" timestamp s))
-                (list "one two three"
-                      "Hello World!"
-                      "1, 2, 3, 4, 5"))
-        log
-        (format nil "log-it to ~a" filepath))))
+;; Prior to a call to open-log, logit returns a string representing the log entry,
+;; but doesn't write to the log.
+(like (log-it :info "Hello World!") 
+  (make-log-entry-regex :info "Hello World!")
+  "log-it with info and message, but no message parameters")
+(like (log-it :error "Hello ~a ~a!" "Beautiful" "World")
+  (make-log-entry-regex :error "Hello Beautiful World!")
+  "log-it with error and message with 2 message parameters")
+;; Log to stream
+(like 
+  (log-to-stream :debug :info "a")
+  (make-log-entry-regex :info "a")
+  "log-it logs to stream")
+;; Log high-severity messages
+(like
+  (log-to-stream :warn :warn "b")
+  (make-log-entry-regex :warn "b")
+  "log-it logs message with severity at severity threshold")
+(like
+  (log-to-stream :warn :error "c")
+  (make-log-entry-regex :error "c")
+  "log-it logs message with severity above the severity threshold")
+;; Ignore low-severity messages
+(like
+  (log-to-stream :warn :info "d")
+  ""
+  "log-it ignores message with severity below the severity threshold")
 
 ;; spew and slurp
 (let* ((string "hello world")
@@ -541,6 +552,18 @@
 (is "hello" (trim "      hello       ") "trim spaces around a string")
 (is "hello" (trim "01234hello67890" "\\d+") "trim digits around a string")
 (is "hello" (trim "	 	hello 	") "trim whitespace")
+
+;; getenv and setenv
+(is (getenv "BOGUS_ENVIRONMENT_VARIABLE" :default "x") "x" 
+  "Read non-set environment variable with default")
+(is (getenv "BOGUS_ENVIRONMENT_VARIABLE" :default 1) 1
+  "Read non-set environment variable with an integer default")
+(is (setenv "BOGUS_ENVIRONMENT_VARIABLE" 1) "1"
+  "Set environment variable")
+(is (getenv "BOGUS_ENVIRONMENT_VARIABLE") "1"
+  "Read set environment variable")
+(is (getenv "BOGUS_ENVIRONMENT_VARIABLE" :type :integer) 1
+  "Read set environment variable as an integer")
 
 ;; All Done!
 (finalize)

@@ -8,7 +8,6 @@
                 :digest-sequence
                 :sha512)
   (:export
-   *log*
    all-permutations
    all-permutations-of-string
    choose-one
@@ -20,7 +19,6 @@
    directory-exists-p
    distinct-elements
    distinct-values
-   dlog
    elapsed-time
    existing-n-gram-strings
    file-exists-p
@@ -29,6 +27,7 @@
    flatten
    freeze
    get-unix-time
+   getenv
    hash-hmac-256
    hash-keys
    hash-string
@@ -36,7 +35,6 @@
    hashify-list
    index-of-max
    join-paths
-   log-entry
    log-it
    mark-time
    n-grams
@@ -50,6 +48,8 @@
    range
    reference-random-state
    replace-extension
+   set-log-severity-threshold
+   setenv
    shuffle
    slurp
    spew
