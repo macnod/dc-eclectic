@@ -131,14 +131,14 @@
 (is (join-paths 1 2 3) "1/2/3" "join-paths with all non-string")
 
 ;; path-only
-(is-error (path-only nil) 'error "path-only with nil")
-(is (path-only "") "./" "path-only with empty string")
-(is (path-only "/") "./" "path-only with /")
+(is (path-only nil) "/" "path-only with nil")
+(is (path-only "") "/" "path-only with empty string")
+(is (path-only "/") "/" "path-only with /")
 (is (path-only "/a/b/c/file.txt") "/a/b/c"
-    "path-only with /a/b/c/file.txt")
+  "path-only with /a/b/c/file.txt")
 (is (path-only "a/b/c/file.txt") "a/b/c"
-    "path-only with a/b/c/file.txt")
-(is (path-only "file.txt") "./" "path-only with file.txt")
+  "path-only with a/b/c/file.txt")
+(is (path-only "file.txt") "/" "path-only with file.txt")
 
 ;; filename-only
 (is (filename-only nil) "" "filename-only with nil")

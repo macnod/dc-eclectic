@@ -241,15 +241,15 @@ path, inserting slashes where necessary."
 
 (defun path-only (filename)
   "Retrieves the path (path only, without the filename) of FILENAME."
-  (declare (type string filename))
+  (declare (type (or string null) filename))
   (multiple-value-bind (match strings)
-      (re:scan-to-strings "(.+)\/[^\/]*$" filename)
+    (re:scan-to-strings "(.+)\/[^\/]*$" filename)
     (declare (ignore match))
     (let ((string-list (map 'list 'identity strings)))
       (if (or (null string-list)
-              (null (car string-list)))
-          "./"
-          (elt string-list 0)))))
+            (null (car string-list)))
+        "/"
+        (elt string-list 0)))))
 
 (defun filename-only (filename)
   "Retrieves the filename (filename only, without the path) of FILENAME."
@@ -263,6 +263,10 @@ path, inserting slashes where necessary."
                 (elt parts (1- (length parts)))
                 ""))
           (error "FILENAME must be a string."))))
+
+;; Needs tests
+(defun leaf-directory-only (path)
+  (car (last (split "/" (string-trim "/" path)))))
 
 ;; Needs tests
 (defun file-exists-p (path)
