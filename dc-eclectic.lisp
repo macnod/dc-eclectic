@@ -264,9 +264,8 @@ path, inserting slashes where necessary."
                 ""))
           (error "FILENAME must be a string."))))
 
-;; Needs tests
 (defun leaf-directory-only (path)
-  (car (last (split "/" (string-trim "/" path)))))
+  (car (last (re:split "/" (string-trim "/" path)))))
 
 ;; Needs tests
 (defun file-exists-p (path)
@@ -427,17 +426,21 @@ SHUFFLE default to nil."
                      when (funcall filter a) collect a)))
     (if shuffle (shuffle range) range)))
 
+(defun rand (value &optional rstate)
+  "When called without RSTATE, this is the same as calling RANDOM with only the
+VALUE parameter. Otherwise, this calls RANDOM with VALUE and RSTATE."
+  (if rstate 
+    (random value rstate)
+    (random value)))
+
 (defun shuffle (seq &optional rstate)
   "Return a sequence with the same elements as the given sequence S, but
 in random order (shuffled)."
   (loop
     with l = (length seq)
     with w = (make-array l :initial-contents seq)
-    with random-function = (if rstate
-                               (lambda (n) (random n rstate))
-                               #'random)
     for i from 0 below l
-    for r = (funcall random-function l)
+    for r = (rand l rstate)
     for h = (aref w i)
     do
        (setf (aref w i) (aref w r))
@@ -447,9 +450,7 @@ in random order (shuffled)."
 ;; Needs test
 (defun choose-one (seq &optional rstate)
   (when seq
-    (elt seq (if rstate
-                 (random (length seq) rstate)
-                 (random (length seq))))))
+    (elt seq (rand (length seq) rstate))))
 
 (defun choose-some (seq n &optional rstate)
   "Choose N elements from SEQ and return a new sequence with those
@@ -471,11 +472,8 @@ RSTATE parameter that you can optionally pass in here."
         (t (loop
              with h = (make-hash-table :test 'equal)
              and l = (length seq)
-             and rand = (if rstate
-                            (lambda (x) (random x rstate))
-                            (lambda (x) (random x)))
              for a from 1 to n
-             for b = (loop for c = (funcall rand l)
+             for b = (loop for c = (rand l rstate)
                            while (gethash c h)
                            finally (setf (gethash c h) t)
                                    (return c))
@@ -888,3 +886,63 @@ string. Returns a string with VALUE."
   (let ((string-value (format nil "~a" value)))
     (sb-posix:setenv name string-value 1)
     string-value))
+
+;; Everything that follows neeeds tests
+
+(defun random-number (&optional (digits 4) rstate)
+  (loop for a from 1 to digits
+    for digit = (1+ (rand 9 rstate)) then (rand 10 rstate)
+    for power from 0 below digits
+    summing (* digit (expt 10 power))))
+
+(defun random-hex-number (&optional (digits 7) (non-zero-start) rstate)
+  (loop with hex-digits = "0123456789abcdef"
+    for a from 1 to digits
+    for digit = (elt hex-digits (if non-zero-start
+                                  (1+ (rand 15 rstate))
+                                  (rand 16 rstate)))
+    then (elt hex-digits (rand 16 rstate))
+    collect digit into number
+    finally (return (map 'string 'identity number))))
+
+(defun random-string (string-length alphabet &optional rstate)
+  (loop with alphabet-length = (length alphabet)
+    for a from 1 to string-length
+    for letter = (elt alphabet (rand alphabet-length rstate))
+    collect letter into string
+    finally (return (map 'string 'identity string))))
+
+(defun ascii-char-range (begin end)
+  (loop for code from (char-code begin) to (char-code end)
+    collect (code-char code) into string
+    finally (return (map 'string 'identity string))))
+
+(defun ascii-alpha-lower ()
+  (ascii-char-range #\a #\z))
+
+(defun ascii-alpha-upper ()
+  (ascii-char-range #\A #\Z))
+
+(defun ascii-alpha ()
+  (concatenate 'string (ascii-alpha-lower) (ascii-alpha-upper)))
+
+(defun ascii-numeric ()
+  (ascii-char-range #\0 #\9))
+
+(defun ascii-alpha-num-lower ()
+  (concatenate 'string (ascii-alpha-lower) (ascii-numeric)))
+
+(defun ascii-alpha-num-upper ()
+  (concatenate 'string (ascii-alpha-upper) (ascii-numeric)))
+
+(defun ascii-alpha-num ()
+  (concatenate 'string (ascii-alpha) (ascii-numeric)))
+
+(defun uuid (&optional rstate)
+  (format nil "~{~a~^-~}"
+    (list
+      (random-hex-number 8 t rstate)
+      (random-hex-number 4 nil rstate)
+      (random-hex-number 4 nil rstate)
+      (random-hex-number 4 nil rstate)
+      (random-hex-number 12 nil rstate))))

@@ -10,17 +10,25 @@
   (:export
     all-permutations
     all-permutations-of-string
+    ascii-alpha
+    ascii-alpha-lower
+    ascii-alpha-num
+    ascii-alpha-num-lower
+    ascii-alpha-num-upper
+    ascii-alpha-upper
+    ascii-char-range
+    ascii-numeric
     choose-one
     choose-some
     close-log
     comparable-hash-dump
-    existing-permutations-of-string
     denormalize-list
     directory-exists-p
     distinct-elements
     distinct-values
     elapsed-time
     existing-n-gram-strings
+    existing-permutations-of-string
     file-exists-p
     file-extension
     filename-only
@@ -38,14 +46,18 @@
     leaf-directory-only
     log-it
     mark-time
-    n-grams
     n-gram-strings
+    n-grams
     normalize-list
     open-log
-    path-type
     path-only
-    plistp
+    path-type
     plist-keys
+    plistp
+    rand
+    random-hex-number
+    random-number
+    random-string
     range
     reference-random-state
     replace-extension
@@ -56,11 +68,12 @@
     spew
     split-n-trim
     thaw
-    trim
-    trim-whitespace
     timestamp-string
     to-ascii
+    trim
+    trim-whitespace
     universal-time-to-unix-time
     unix-time-to-universal-time
+    uuid
     verify-string
     ))

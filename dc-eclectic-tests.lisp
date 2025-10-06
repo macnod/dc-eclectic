@@ -24,7 +24,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 160)
+(plan 176)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -405,6 +405,15 @@
       (format nil "file does not exist as is not a directory: ~a" file-name-2))
   (uiop:delete-directory-tree (pathname root) :validate t))
 
+;; directory-leaf-only
+(is (leaf-directory-only "/") nil "leaf-directory-only / is nil")
+(is (leaf-directory-only "/one") "one" "leaf-directory-only /one is one")
+(is (leaf-directory-only "/one/") "one" "leaf-directory-only /one/ is one")
+(is (leaf-directory-only "/one/abc.txt") "abc.txt" 
+  "leaf-directory-only /one/abc.txt is abc.txt")
+(is (leaf-directory-only "/one/two/three/four") "four"
+  "leaf-directory-only /one/two/three/four is four")
+
 ;; index-of-max
 (ok (null (index-of-max nil)) "index-of-max nil")
 (ok (null (index-of-max (vector))) "index-of-max empty vector")
@@ -564,6 +573,35 @@
   "Read set environment variable")
 (is (getenv "BOGUS_ENVIRONMENT_VARIABLE" :type :integer) 1
   "Read set environment variable as an integer")
+
+;; rand
+(let ((rstate1 (reference-random-state))
+       (rstate2 (reference-random-state)))
+  (isnt (random 1000000) (random 1000000))
+  (is (random 1000000 rstate1) (random 1000000 rstate2)))
+
+;; Other random things
+(is (length (format nil "~a" (random-number 1))) 1
+  "random-number produces a 1-digit number")
+(is (length (format nil "~a" (random-number))) 4
+  "random-number produces a 4-digit number")
+(is (length (format nil "~a" (random-number 10))) 10
+  "random-number produces a 10-digit number")
+(like (random-hex-number 10) "^[a-f0-9]{10}$"
+  "random-hex-number produces a good hex number")
+(like (random-string 10 "abc") "^[a-c]{10}$"
+  "random-string works")
+(like (random-string 10 (ascii-alpha-num-lower))
+  "^[a-z0-9]{10}"
+  "random-string with ascii-alpha-num-lower")
+(like (random-string 10 (ascii-alpha-num-upper))
+  "^[A-Z0-9]{10}"
+  "random-string with ascii-alpha-num-upper")
+(like (random-string 10 (ascii-numeric))
+  "^[0-9]{10}"
+  "random-string with ascii-numeric")
+(like (uuid) "^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$"
+  "uuid works")
 
 ;; All Done!
 (finalize)
