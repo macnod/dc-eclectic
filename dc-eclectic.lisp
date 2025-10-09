@@ -892,7 +892,7 @@ string. Returns a string with VALUE."
 (defun random-number (&optional (digits 4) rstate)
   (loop for a from 1 to digits
     for digit = (1+ (rand 9 rstate)) then (rand 10 rstate)
-    for power from 0 below digits
+    for power downfrom (1- digits) to 0
     summing (* digit (expt 10 power))))
 
 (defun random-hex-number (&optional (digits 7) (non-zero-start) rstate)
