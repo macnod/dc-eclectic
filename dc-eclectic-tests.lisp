@@ -24,7 +24,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 176)
+(plan 179)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
