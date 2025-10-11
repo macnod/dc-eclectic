@@ -45,6 +45,7 @@
     join-paths
     leaf-directory-only
     log-it
+    log-it-lazy
     mark-time
     n-gram-strings
     n-grams

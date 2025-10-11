@@ -252,13 +252,13 @@
               "e943809d1c37312838cef4b40665aa2e"
               "02803cc0a206c97bb8a476b1d681ca95"))
     "hash-string")
-(is (hash-string "Donnie" :size 32) 
+(is (hash-string "Donnie" :size 32)
   "2daf3ad277939e55520a61187c73abc3"
   "hash-string truncated to 32 characters")
 (is (hash-string "Donnie" :salt "abc" :size 16)
   "f524abffea9ae753"
   "hash-string with salt and truncated to 16 characters")
-  
+
 (is (hash-hmac-256 "secret" "Donnie")
     "b81c15aafc9935e7138b5c09fc775e66275739370493c06051fea29f5cc6c32a"
     "hash-hmac-256")
@@ -409,7 +409,7 @@
 (is (leaf-directory-only "/") nil "leaf-directory-only / is nil")
 (is (leaf-directory-only "/one") "one" "leaf-directory-only /one is one")
 (is (leaf-directory-only "/one/") "one" "leaf-directory-only /one/ is one")
-(is (leaf-directory-only "/one/abc.txt") "abc.txt" 
+(is (leaf-directory-only "/one/abc.txt") "abc.txt"
   "leaf-directory-only /one/abc.txt is abc.txt")
 (is (leaf-directory-only "/one/two/three/four") "four"
   "leaf-directory-only /one/two/three/four is four")
@@ -483,7 +483,7 @@
 ;; logging
 ;;
 (defun make-log-entry-regex (severity message)
-  (format nil "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2} \\[~a\\] ~a~%$" 
+  (format nil "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2} \\[~a\\] ~a~%$"
     severity message))
 
 (defun log-to-stream (severity-threshold severity message)
@@ -494,14 +494,14 @@
 
 ;; Prior to a call to open-log, logit returns a string representing the log entry,
 ;; but doesn't write to the log.
-(like (log-it :info "Hello World!") 
+(like (log-it :info "Hello World!")
   (make-log-entry-regex :info "Hello World!")
   "log-it with info and message, but no message parameters")
 (like (log-it :error "Hello ~a ~a!" "Beautiful" "World")
   (make-log-entry-regex :error "Hello Beautiful World!")
   "log-it with error and message with 2 message parameters")
 ;; Log to stream
-(like 
+(like
   (log-to-stream :debug :info "a")
   (make-log-entry-regex :info "a")
   "log-it logs to stream")
@@ -519,6 +519,17 @@
   (log-to-stream :warn :info "d")
   ""
   "log-it ignores message with severity below the severity threshold")
+
+;; log-it-lazy does nothing when severity is below threshold
+(defparameter x nil)
+(with-output-to-string (log)
+  (open-log log :severity-threshold :info)
+  (let ((message-function (lambda () (setf x t) "Hello")))
+    (log-it-lazy :debug message-function)
+    (ok (not x) "log-it-lazy :debug does not call message-function")
+    (log-it-lazy :warn message-function)
+    (ok x "log-it-lazy :warn calls message function")
+    (close-log)))
 
 ;; spew and slurp
 (let* ((string "hello world")
@@ -554,7 +565,7 @@
         (expected (list "one" "two" "three")))
   (is p1-actual expected "split-n-trim words separated by single space")
   (is p2-actual expected "split-n-trim words separated by multiple spaces")
-  (is p3-actual expected 
+  (is p3-actual expected
     "split-n-trim words separated by spaces, trimming digits from each word"))
 
 ;; trim
@@ -563,7 +574,7 @@
 (is "hello" (trim "	 	hello 	") "trim whitespace")
 
 ;; getenv and setenv
-(is (getenv "BOGUS_ENVIRONMENT_VARIABLE" :default "x") "x" 
+(is (getenv "BOGUS_ENVIRONMENT_VARIABLE" :default "x") "x"
   "Read non-set environment variable with default")
 (is (getenv "BOGUS_ENVIRONMENT_VARIABLE" :default 1) 1
   "Read non-set environment variable with an integer default")
