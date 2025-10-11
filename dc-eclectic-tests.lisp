@@ -521,15 +521,23 @@
   "log-it ignores message with severity below the severity threshold")
 
 ;; log-it-lazy does nothing when severity is below threshold
-(defparameter x nil)
-(with-output-to-string (log)
-  (open-log log :severity-threshold :info)
-  (let ((message-function (lambda () (setf x t) "Hello")))
-    (log-it-lazy :debug message-function)
-    (ok (not x) "log-it-lazy :debug does not call message-function")
-    (log-it-lazy :warn message-function)
-    (ok x "log-it-lazy :warn calls message function")
+(defparameter *x* nil)
+(defparameter *msg* "hello")
+(defparameter *log-a*
+  (with-output-to-string (log)
+    (open-log log :severity-threshold :info)
+    (let ((*msg*-function (lambda () (setf *x* t) *msg*)))
+      (log-it-lazy :debug *msg*-function)
+      (ok (not *x*) "log-it-lazy :debug does not call *msg*-function")
+      (log-it-lazy :warn *msg*-function)
+      (ok *x* "log-it-lazy :warn calls *msg* function")
+      (close-log))))
+(defparameter *log-b*
+  (with-output-to-string (log)
+    (open-log log :severity-threshold :info)
+    (log-it :warn *msg*)
     (close-log)))
+(is *log-a* *log-b* "log-it and log-it-lazy produce same log entry")
 
 ;; spew and slurp
 (let* ((string "hello world")

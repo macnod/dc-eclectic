@@ -177,11 +177,6 @@ For more information, see OPEN-LOG, LOG-IT, SET-LOG-SEVERITY-THRESHOLD."
                          (funcall message-function))))
         (format *log* log-entry)))))
 
-
-
-
-
-
 (defun mark-time ()
   (float (/ (get-internal-real-time) internal-time-units-per-second)))
 
