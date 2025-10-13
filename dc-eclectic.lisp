@@ -84,7 +84,7 @@ returns the value of *LOG*."
     (cond
       ((stringp file-or-stream)
         (setf
-          *log* (open file-or-stream
+          *log* (open (make-path-name file-or-stream)
                   :direction :output
                   :if-exists (if append :append :supersede)
                   :if-does-not-exist :create)
