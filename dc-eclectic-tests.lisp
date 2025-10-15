@@ -24,7 +24,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 179)
+(plan 180)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -486,20 +486,19 @@
   (format nil "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2} \\[~a\\] ~a~%$"
     severity message))
 
-(defun log-to-stream (severity-threshold severity message)
+(defun log-to-stream (severity-threshold severity message &optional jsonl)
   (with-output-to-string (stream)
-    (open-log stream :severity-threshold severity-threshold)
+    (open-log stream :severity-threshold severity-threshold 
+      :log-format (if jsonl :jsonl :plain))
     (log-it severity message)
     (close-log)))
 
 ;; Prior to a call to open-log, logit returns a string representing the log entry,
 ;; but doesn't write to the log.
-(like (log-it :info "Hello World!")
-  (make-log-entry-regex :info "Hello World!")
-  "log-it with info and message, but no message parameters")
-(like (log-it :error "Hello ~a ~a!" "Beautiful" "World")
-  (make-log-entry-regex :error "Hello Beautiful World!")
-  "log-it with error and message with 2 message parameters")
+(ok (not (log-it :info "Hello World!"))
+  "prior to open-log, log-it with no message parameters returns nil")
+(ok (not (log-it :error "Hello ~a ~a!" "Beautiful" "World"))
+  "prior to open-log, log-it with 2 message parameters returns nil")
 ;; Log to stream
 (like
   (log-to-stream :debug :info "a")
@@ -519,13 +518,17 @@
   (log-to-stream :warn :info "d")
   ""
   "log-it ignores message with severity below the severity threshold")
+;; Try using :jsonl log format
+(like (log-to-stream :info :warn "hello" t)
+  "\\{\"timestamp\":\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\",\"severity\":\"warn\",\"message\":\"hello\"\\}"
+  "log-it with :jsonl format")
 
 ;; log-it-lazy does nothing when severity is below threshold
 (defparameter *x* nil)
 (defparameter *msg* "hello")
 (defparameter *log-a*
   (with-output-to-string (log)
-    (open-log log :severity-threshold :info)
+    (open-log log :severity-threshold :info :log-format :plain)
     (let ((*msg*-function (lambda () (setf *x* t) *msg*)))
       (log-it-lazy :debug *msg*-function)
       (ok (not *x*) "log-it-lazy :debug does not call *msg*-function")
@@ -534,7 +537,7 @@
       (close-log))))
 (defparameter *log-b*
   (with-output-to-string (log)
-    (open-log log :severity-threshold :info)
+    (open-log log :severity-threshold :info :log-format :plain)
     (log-it :warn *msg*)
     (close-log)))
 (is *log-a* *log-b* "log-it and log-it-lazy produce same log entry")

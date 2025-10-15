@@ -6,6 +6,7 @@
 
 (defparameter *log* nil)
 (defparameter *log-is-file* nil)
+(defparameter *log-format* nil)
 (defparameter *log-severity-map* (list :error 3 :warn 2 :info 1 :debug 0))
 (defparameter *log-severity-threshold* :debug)
 
@@ -55,6 +56,7 @@ value of :info or :debug will not result in a log entry."
   (setf *log-severity-threshold* log-severity))
 
 (defun open-log (file-or-stream &key
+                  (log-format :jsonl)
                   (append t)
                   (severity-threshold :debug))
   "Opens a log file or sets up logging to a specified stream, allowing the LOG-IT
@@ -65,6 +67,9 @@ string, it is treated as a file path, and this function opens the file and uses
 that as the stream. If FILE-OR-STREAM is a stream, such as *STANDARD-OUTPUT*,
 then this function uses it directly. Finally, if FILE-OR-STREAM is NIL, then
 it defaults to *STANDARD-OUTPUT*.
+
+LOG-FORMAT can be :jsonl (where each line is a JSON object) or
+:plain (traditional, plain text log line). LOG-FORMAT defaults to :jsonl.
 
 APPEND indicates that if a file exists at FILE-OR-STREAM, calls to LOG-IT should
 append log entries to the end of the existing file. If APPEND is NIL, the file
@@ -81,6 +86,9 @@ function has not been called or it was called after a call to CLOSE-LOG), then
 this function opens the log as described above, sets *LOG* to the stream, and
 returns the value of *LOG*."
   (unless *log*
+    (if (member log-format '(:jsonl :plain))
+      (setf *log-format* log-format)
+      (error "Invalid value '~a' for LOG-FORMAT" log-format))
     (cond
       ((stringp file-or-stream)
         (setf
@@ -119,8 +127,10 @@ Otherwise, if the log stream is not open, this function does nothing."
   "Computes a log entry string using MESSAGE. Logs the entry when there's an open
 log (see OPEN-LOG) and SEVERITY is greather than or equal to the system's
 log-severity threshold (see OPEN-LOG and SET-LOG-SEVERITY-THRESHOLD). If
-SEVERITY is below the threshold, the entry is not written to the log. Returns
-the computed log entry.
+SEVERITY is below the threshold, the entry is not written to the log.
+
+If the entry is logged, this function returns the log entry string. If the entry
+is not logged, the function returns NIL.
 
 SEVERITY indicates the severity of the message. It must be one of the following
 values: :error, :warn, :info, or :debug.
@@ -130,20 +140,30 @@ parameter.
 
 PARAMS holds the values that MESSAGE references.
 
-To copmute the log entry, MESSAGE is prefixed with the current time stamp and
-SEVERITY."
-  (let* ((message-severity (or (getf *log-severity-map* severity)
-                             (error "Invalid message severity: ~a" severity)))
-          (system-severity (getf *log-severity-map* *log-severity-threshold*))
-          (message-with-severity (format nil "~a [~a] ~a~%"
-                                   (timestamp-string)
-                                   severity
-                                   message))
-          (log-entry (apply #'format
-                       (append `(nil ,message-with-severity) params))))
-    (when (and *log* (>= message-severity system-severity))
-        (format *log* log-entry))
-    log-entry))
+The log entry includes the MESSAGE, the current time stamp and SEVERITY."
+  (when *log*
+    (let* ((message-severity (or (getf *log-severity-map* severity)
+                               (error "Invalid message severity: ~a" severity)))
+            (system-severity (getf *log-severity-map* *log-severity-threshold*)))
+      (when (>= message-severity system-severity)
+        (let* ((message-with-params (apply #'format (append `(nil ,message) params)))
+                (log-entry (case *log-format*
+                             (:jsonl
+                               (format nil "~a~%"
+                                 (ds:to-json
+                                   (ds:ds 
+                                     `(:map
+                                        :timestamp ,(timestamp-string)
+                                        :severity ,severity
+                                        :message ,message-with-params)))))
+                             (:plain
+                               (format nil "~a [~a] ~a~%"
+                                 (timestamp-string)
+                                 severity
+                                 message-with-params))
+                             (otherwise (error "Invalid log format")))))
+          (format *log* log-entry)
+          log-entry)))))
 
 (defun log-it-lazy (severity message-function)
   "Works just like LOG-IT, but accepts MESSAGE-FUNCTION instead of a control string
@@ -154,8 +174,8 @@ severity threshold, then this function calls MESSAGE-FUNCTION with no
 parameters, expecting to receive a string that this function then logs and sends
 back as the return value.
 
-Unlike LOG-IT, which always returns the computed log entry, this function
-returns NIL when it doesn't add an entry to the log.
+If the entry is logged, this function returns the log entry string. Otherwise,
+if the entry is not logged, this function returns NIL.
 
 SEVERITY indicates the severity of the message. It must be one of the following
 values: :error, :warn, :inof, or :debug.
@@ -167,15 +187,28 @@ This function prepends the return value of MESSAGE-FUNCTION with the current
 time stamp and SEVERITY.
 
 For more information, see OPEN-LOG, LOG-IT, SET-LOG-SEVERITY-THRESHOLD."
-  (let ((message-severity (or (getf *log-severity-map* severity)
-                            (error "Invalid message severity: ~a" severity)))
-         (system-severity (getf *log-severity-map*  *log-severity-threshold*)))
-    (when (and *log* (>= message-severity system-severity))
-      (let ((log-entry (format nil "~a [~a] ~a~%"
-                         (timestamp-string)
-                         severity
-                         (funcall message-function))))
-        (format *log* log-entry)))))
+  (when *log*
+    (let ((message-severity (or (getf *log-severity-map* severity)
+                              (error "Invalid message severity: ~a" severity)))
+           (system-severity (getf *log-severity-map*  *log-severity-threshold*)))
+      (when (>= message-severity system-severity)
+        (let ((log-entry (case *log-format*
+                           (:jsonl 
+                               (format nil "~a~%"
+                                 (ds:to-json
+                                   (ds:ds
+                                     `(:map
+                                        :timestamp ,(timestamp-string)
+                                        :severity ,severity
+                                        :message ,(funcall message-function))))))
+                           (:plain
+                             (format nil "~a [~a] ~a~%"
+                               (timestamp-string)
+                               severity
+                               (funcall message-function)))
+                           (other (error "Invalid log format")))))
+          (format *log* log-entry)
+          log-entry)))))
 
 (defun mark-time ()
   (float (/ (get-internal-real-time) internal-time-units-per-second)))
