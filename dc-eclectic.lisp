@@ -151,7 +151,7 @@ The log entry includes the MESSAGE, the current time stamp and SEVERITY."
                              (:jsonl
                                (format nil "~a~%"
                                  (ds:to-json
-                                   (ds:ds 
+                                   (ds:ds
                                      `(:map
                                         :timestamp ,(timestamp-string)
                                         :severity ,severity
@@ -193,7 +193,7 @@ For more information, see OPEN-LOG, LOG-IT, SET-LOG-SEVERITY-THRESHOLD."
            (system-severity (getf *log-severity-map*  *log-severity-threshold*)))
       (when (>= message-severity system-severity)
         (let ((log-entry (case *log-format*
-                           (:jsonl 
+                           (:jsonl
                                (format nil "~a~%"
                                  (ds:to-json
                                    (ds:ds

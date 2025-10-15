@@ -488,7 +488,7 @@
 
 (defun log-to-stream (severity-threshold severity message &optional jsonl)
   (with-output-to-string (stream)
-    (open-log stream :severity-threshold severity-threshold 
+    (open-log stream :severity-threshold severity-threshold
       :log-format (if jsonl :jsonl :plain))
     (log-it severity message)
     (close-log)))
