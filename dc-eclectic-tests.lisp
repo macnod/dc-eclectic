@@ -24,7 +24,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 180)
+(plan 181)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -522,6 +522,22 @@
 (like (log-to-stream :info :warn "hello" t)
   "\\{\"timestamp\":\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\",\"severity\":\"warn\",\"message\":\"hello\"\\}"
   "log-it with :jsonl format")
+
+;; Try logging to a real file
+(let ((log-file (format nil "/tmp/eclectic-test-~a.log" (random-hex-number))))
+  (open-log log-file :append nil)
+  (log-it :info "Test 1")
+  (log-it :info "Test ~d" 2)
+  (log-it-lazy :info (lambda () "Test 3"))
+  (close-log)
+  (like (slurp log-file)
+    (format nil "~{~a~%~}"
+      (list
+        "{\"timestamp\":\"[-:0-9T]+\",\"severity\":\"info\",\"message\":\"Test [1-3]\"}"
+        "{\"timestamp\":\"[-:0-9T]+\",\"severity\":\"info\",\"message\":\"Test [1-3]\"}"
+        "{\"timestamp\":\"[-:0-9T]+\",\"severity\":\"info\",\"message\":\"Test [1-3]\"}"))
+    "log-it writes to files correctly"))
+
 
 ;; log-it-lazy does nothing when severity is below threshold
 (defparameter *x* nil)

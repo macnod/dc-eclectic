@@ -62,11 +62,11 @@ value of :info or :debug will not result in a log entry."
   "Opens a log file or sets up logging to a specified stream, allowing the LOG-IT
 function to cease to be a no-op.
 
-FILE-OR-STREAM must be a string, a stream, or NIL. If FILE-OR-STREAM is a
-string, it is treated as a file path, and this function opens the file and uses
-that as the stream. If FILE-OR-STREAM is a stream, such as *STANDARD-OUTPUT*,
-then this function uses it directly. Finally, if FILE-OR-STREAM is NIL, then
-it defaults to *STANDARD-OUTPUT*.
+FILE-OR-STREAM must be a string, a pathname, a stream, or NIL. If FILE-OR-STREAM
+is a string or a pathname, it is treated as a file path, and this function opens
+the file and uses that as the stream. If FILE-OR-STREAM is a stream, such as
+*STANDARD-OUTPUT*, then this function uses it directly. Finally, if
+FILE-OR-STREAM is NIL, then it defaults to *STANDARD-OUTPUT*.
 
 LOG-FORMAT can be :jsonl (where each line is a JSON object) or
 :plain (traditional, plain text log line). LOG-FORMAT defaults to :jsonl.
@@ -92,7 +92,7 @@ returns the value of *LOG*."
     (cond
       ((stringp file-or-stream)
         (setf
-          *log* (open (make-path-name file-or-stream)
+          *log* (open (parse-namestring file-or-stream)
                   :direction :output
                   :if-exists (if append :append :supersede)
                   :if-does-not-exist :create)
