@@ -163,6 +163,7 @@ The log entry includes the MESSAGE, the current time stamp and SEVERITY."
                                  message-with-params))
                              (otherwise (error "Invalid log format")))))
           (format *log* log-entry)
+          (force-output *log*)
           log-entry)))))
 
 (defun log-it-lazy (severity message-function)
