@@ -62,6 +62,7 @@
     range
     reference-random-state
     replace-extension
+    root-path
     set-log-severity-threshold
     setenv
     shuffle
