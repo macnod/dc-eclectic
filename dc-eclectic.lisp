@@ -335,6 +335,8 @@ path, inserting slashes where necessary."
 
 ;; Needs tests
 (defun root-path (files)
+  "Given FILES, a list of paths in the form of strings, returns the starting path
+that all the paths have in common."
   (when files
     (loop
       with paths = (mapcar (lambda (d) (re:split "/" (string-trim "/" d))) files)
