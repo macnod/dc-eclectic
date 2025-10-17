@@ -917,21 +917,31 @@ need."
   "Get the value of the environment variable NAME, returning a string or an
 integer, depending on TYPE. If the environment variable is not set, then return
 DEFAULT, which must be of type TYPE. If the environment variable is not set and
-DEFAULT is NIL, then this function returns NIL."
-  (unless (member type '(:string :integer))
+DEFAULT is NIL, then this function returns NIL.
+
+TYPE can be :integer, :string, or :boolean."
+  (unless (member type '(:string :integer :boolean))
     (error "Invalid type ~a. Use :integer or :string." type))
-  (let ((value (sb-ext:posix-getenv name)))
+  (let ((value (trim (sb-ext:posix-getenv name))))
     (if value
-      (if (eql type :string)
-        value
-        (handler-case (parse-integer value)
-          (error (condition)
-            (log-it :error "Failed to parse ~s as integer: ~a"
-              value condition)
-            nil)))
+      (cond
+        ((eql type :string)
+          value)
+        ((eql type :integer)
+          (handler-case (parse-integer value)
+            (error (condition)
+              (log-it :error "Failed to parse ~s as integer: ~a"
+                value condition)
+              nil)))
+        ((and (eql type :boolean) (equal (string-downcase value) "true"))
+          t)
+        ((and (eql type :boolean) (equal (string-downcase value) "false"))
+          nil))
       (cond
         ((and required (null default))
           (error "A value for environment variable ~a is required." name))
+        ((and (member default '(t nil)) (eql type :boolean))
+          default)
         ((null default)
           default)
         ((and (stringp default) (eql type :string))
@@ -948,7 +958,10 @@ DEFAULT is NIL, then this function returns NIL."
 (defun setenv (name value)
   "Set environment variable NAME to VALUE. VALUE is always converted into a
 string. Returns a string with VALUE."
-  (let ((string-value (format nil "~a" value)))
+  (let ((string-value (cond 
+                        ((eq value t) "true")
+                        ((eq value nil) "false")
+                        (t (format nil "~a" value)))))
     (sb-posix:setenv name string-value 1)
     string-value))
 

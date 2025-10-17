@@ -24,7 +24,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 181)
+(plan 187)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -611,6 +611,22 @@
   "Read set environment variable")
 (is (getenv "BOGUS_ENVIRONMENT_VARIABLE" :type :integer) 1
   "Read set environment variable as an integer")
+(is (setenv "BOOLEAN_ENVIRONMENT_VARIABLE" t) "true"
+  "Set boolean environment variable to true")
+(is (getenv "BOOLEAN_ENVIRONMENT_VARIABLE" :type :boolean) t
+  "Read boolean environment variable (true)")
+(is (setenv "BOOLEAN_ENVIRONMENT_VARIABLE" nil) "false"
+  "Set boolean environment variable to false")
+(is (getenv "BOOLEAN_ENVIRONMENT_VARIABLE" :type :boolean) nil
+  "Read boolean environment variable (false)")
+(is (getenv "BOOLEAN_ENVIRONMENT_VARIABLE_X"
+      :type :boolean :default nil)
+  nil
+  "Read boolean environment variable with default (false)")
+(is (getenv "BOOLEAN_ENVIRONMENT_VARIABLE_X"
+      :type :boolean :default t)
+  t
+  "Read boolean environment variable with default (true)")
 
 ;; rand
 (let ((rstate1 (reference-random-state))
