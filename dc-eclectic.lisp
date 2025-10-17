@@ -334,6 +334,21 @@ path, inserting slashes where necessary."
   (car (last (re:split "/" (string-trim "/" path)))))
 
 ;; Needs tests
+(defun root-path (files)
+  (when files
+    (loop
+      with paths = (mapcar (lambda (d) (re:split "/" (string-trim "/" d))) files)
+      for part-index from 0 below (length (car paths))
+      for current-part = (elt (car paths) part-index)
+      for common = (loop
+                     for current-path in (cdr paths) always
+                     (and
+                       (< part-index (length current-path) )
+                       (equal current-part (elt current-path part-index))))
+      when common collect current-part into current-parts
+      finally (return (format nil "/~{~a/~}" current-parts)))))
+
+;; Needs tests
 (defun file-exists-p (path)
   "Returns a boolean value indicating if the file specified by PATH exists."
   (let ((path (probe-file path)))
@@ -959,7 +974,7 @@ TYPE can be :integer, :string, or :boolean."
 (defun setenv (name value)
   "Set environment variable NAME to VALUE. VALUE is always converted into a
 string. Returns a string with VALUE."
-  (let ((string-value (cond 
+  (let ((string-value (cond
                         ((eq value t) "true")
                         ((eq value nil) "false")
                         (t (format nil "~a" value)))))
