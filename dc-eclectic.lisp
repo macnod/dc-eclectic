@@ -166,6 +166,35 @@ The log entry includes the MESSAGE, the current time stamp and SEVERITY."
           (force-output *log*)
           log-entry)))))
 
+(defun log-it-pairs (severity &rest plist)
+  (when *log*
+    (let* ((message-severity (or (getf *log-severity-map* severity)
+                               (error "Invalid message severity: ~a" severity)))
+            (system-severity (getf *log-severity-map* *log-severity-threshold*)))
+      (when (>= message-severity system-severity)
+        (let ((log-entry (case *log-format*
+                           (:jsonl
+                             (format nil "~a~%"
+                               (ds:to-json
+                                 (ds:ds
+                                   `(:map
+                                      :timestamp ,(timestamp-string)
+                                      :severity ,severity
+                                      :message (:map ,@plist))))))
+                           (:plain
+                             (format nil "~a [~a] ~a~%"
+                               (timestamp-string)
+                               severity
+                               (loop for k in plist by #'cddr
+                                 for v in (cdr plist) by #'cddr
+                                 collect (format nil "~(~a~)=~a" k v)
+                                 into pairs
+                                 finally 
+                                 (return (format nil "~{~a~^; ~}" pairs))))))))
+          (format *log* log-entry)
+          (force-output *log*)
+          log-entry)))))
+
 (defun log-it-lazy (severity message-function)
   "Works just like LOG-IT, but accepts MESSAGE-FUNCTION instead of a control string
 and parameters. This function is convenient when there's work that the caller
