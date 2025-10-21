@@ -167,6 +167,11 @@ The log entry includes the MESSAGE, the current time stamp and SEVERITY."
           log-entry)))))
 
 (defun log-it-pairs (severity &rest plist)
+  "Works just like LOG-IT, but creates a log entry using PLIST, which consists of key/value pairs. The keys must be keywords and the values can be strings or numbers. For example:
+
+    (log-it-pairs :debug :ip ip-address :port port :error error-string)
+
+PLIST not need include :timestamp or :severity, because those are added by this function."
   (when *log*
     (let* ((message-severity (or (getf *log-severity-map* severity)
                                (error "Invalid message severity: ~a" severity)))
