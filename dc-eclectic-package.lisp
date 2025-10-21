@@ -46,6 +46,7 @@
     leaf-directory-only
     log-it
     log-it-lazy
+    log-it-pairs
     mark-time
     n-gram-strings
     n-grams
