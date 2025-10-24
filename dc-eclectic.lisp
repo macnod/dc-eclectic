@@ -973,7 +973,7 @@ DEFAULT is NIL, then this function returns NIL.
 
 TYPE can be :integer, :string, or :boolean."
   (unless (member type '(:string :integer :boolean))
-    (error "Invalid type ~a. Use :integer or :string." type))
+    (error "Invalid type ~a. Use :integer, :string, or :boolean." type))
   (let ((value (trim (sb-ext:posix-getenv name))))
     (if value
       (cond
@@ -985,10 +985,12 @@ TYPE can be :integer, :string, or :boolean."
               (log-it :error "Failed to parse ~s as integer: ~a"
                 value condition)
               nil)))
-        ((and (eql type :boolean) (equal (string-downcase value) "true"))
-          t)
-        ((and (eql type :boolean) (equal (string-downcase value) "false"))
-          nil))
+        ((and (eql type :boolean))
+          (cond
+            ((equal (string-downcase value) "true") t)
+            ((equal (string-downcase value) "false") nil)
+            ((null value) nil)
+            (t (error "Invalid value for type :boolean: ~a" value)))))
       (cond
         ((and required (null default))
           (error "A value for environment variable ~a is required." name))
