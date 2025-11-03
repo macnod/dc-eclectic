@@ -167,11 +167,15 @@ The log entry includes the MESSAGE, the current time stamp and SEVERITY."
           log-entry)))))
 
 (defun log-it-pairs (severity &rest plist)
-  "Works just like LOG-IT, but creates a log entry using PLIST, which consists of key/value pairs. The keys must be keywords and the values can be strings or numbers. For example:
+  "Works just like LOG-IT, but creates a log entry using PLIST, which consists of
+key/value pairs. The keys must be keywords and the values can be strings,
+numbers, vectors, lists, or hash-tables. For example:
 
     (log-it-pairs :debug :ip ip-address :port port :error error-string)
 
-PLIST not need include :timestamp or :severity, because those are added by this function."
+PLIST should not include :timestamp or :severity, because those are added by
+this function. The information in PLIST is added as the value of a :message
+key."
   (when *log*
     (let* ((message-severity (or (getf *log-severity-map* severity)
                                (error "Invalid message severity: ~a" severity)))
@@ -179,13 +183,24 @@ PLIST not need include :timestamp or :severity, because those are added by this 
       (when (>= message-severity system-severity)
         (let ((log-entry (case *log-format*
                            (:jsonl
-                             (format nil "~a~%"
-                               (ds:to-json
-                                 (ds:ds
-                                   `(:map
-                                      :timestamp ,(timestamp-string)
-                                      :severity ,severity
-                                      :message (:map ,@plist))))))
+                             (loop for k in plist by #'cddr
+                               for v-raw in (cdr plist) by #'cddr
+                               for v = (cond
+                                         ((and v-raw (listp v-raw) (plistp v-raw))
+                                           (cons :map v-raw))
+                                         ((and v-raw (listp v-raw))
+                                           (cons :array v-raw))
+                                         (t v-raw))
+                               appending (list k v) into clean-plist
+                               finally
+                               (return
+                                 (format nil "~a~%"
+                                   (ds:to-json
+                                     (ds:ds
+                                       `(:map
+                                          :timestamp ,(timestamp-string)
+                                          :severity ,severity
+                                          :message (:map ,@clean-plist))))))))
                            (:plain
                              (format nil "~a [~a] ~a~%"
                                (timestamp-string)
@@ -194,7 +209,7 @@ PLIST not need include :timestamp or :severity, because those are added by this 
                                  for v in (cdr plist) by #'cddr
                                  collect (format nil "~(~a~)=~a" k v)
                                  into pairs
-                                 finally 
+                                 finally
                                  (return (format nil "~{~a~^; ~}" pairs))))))))
           (format *log* log-entry)
           (force-output *log*)
