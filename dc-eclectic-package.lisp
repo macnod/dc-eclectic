@@ -24,6 +24,7 @@
     choose-some
     close-log
     comparable-hash-dump
+    copy-file
     denormalize-list
     directory-exists-p
     distinct-elements

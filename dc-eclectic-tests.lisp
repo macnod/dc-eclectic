@@ -24,7 +24,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 193)
+(plan 198)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -666,6 +666,24 @@
 (is (base64-decode nil) "" "nil decodes to empty string")
 (is (base64-encode "") "" "empty string encodesa to empty string")
 (is (base64-decode "") "" "empty string decodes to empty string")
+
+;; copyfile
+(let ((src (format nil "/tmp/~a.txt" (random-string 20 (ascii-alpha-num))))
+       (dest (format nil "/tmp/~a.txt" (random-string 20 (ascii-alpha-num)))))
+  (spew "Message 1" src)
+  (copy-file src dest)
+  (is (slurp src) (slurp dest) "file copied")
+  (spew "Message 2" src)
+  (isnt (slurp src) (slurp dest) "first file changed")
+  (copy-file src dest)
+  (is (slurp src) (slurp dest) "destination file superseded")
+  (spew "Message 3" src)
+  (copy-file src dest :if-exists :append)
+  (is (slurp dest) "Message 2Message 3" "destination file appended")
+  (is-error (copy-file src dest :if-exists :error) 'error
+    "destination file exists and :if-exists is :error")
+  (delete-file src)
+  (delete-file dest))
 
 ;; All Done!
 (finalize)

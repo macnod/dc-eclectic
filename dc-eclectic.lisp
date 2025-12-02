@@ -1103,3 +1103,37 @@ string. Returns a string with VALUE."
   (if base64-encoded-string
     (cl-base64:base64-string-to-string base64-encoded-string)
     ""))
+
+(defun copy-file (source destination &key
+                   (if-exists :supersede)
+                   (buffer-size (* 64 1024)))
+  "Copies SOURCE file to DESTINATION file. If DESTINATION's directories do not
+exist, they are created. IF-EXISTS controls the behavior if DESTINATION already
+exists, and may be :error, :new-version, :rename, :rename-and-delete,
+:overwrite, :append, or :supersede. IF-EXISTS defaults to :supersede.
+BUFFER-SIZE controls the size of the buffer used during the copy operation, and
+defaults to 64 KB. Returns the DESTINATION path."
+  (when (stringp source)
+    (setf source (pathname source)))
+  (when (stringp destination)
+    (setf destination (pathname destination)))
+  (ensure-directories-exist destination)
+  (with-open-file (in source
+                      :direction :input
+                      :element-type '(unsigned-byte 8)
+                      :if-does-not-exist :error)
+    (with-open-file (out destination
+                        :direction :output
+                        :element-type '(unsigned-byte 8)
+                        :if-exists if-exists)
+      (let ((buf (make-array buffer-size :element-type '(unsigned-byte 8))))
+        (loop
+          (let ((pos (read-sequence buf in)))
+            (when (zerop pos)
+              (return))
+            (write-sequence buf out :end pos))))))
+  (let ((mtime (file-write-date source)))
+    (when mtime
+      (ignore-errors
+        (sb-posix:utimes (namestring destination) mtime mtime))))
+  destination)
