@@ -24,7 +24,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 187)
+(plan 193)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -656,6 +656,16 @@
   "random-string with ascii-numeric")
 (like (uuid) "^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$"
   "uuid works")
+
+;; base64
+(is (base64-encode "hello world") "aGVsbG8gd29ybGQ="
+  "base64-encode works")
+(is (base64-decode "aGVsbG8gd29ybGQ=") "hello world"
+  "base64-decode works")
+(is (base64-encode nil) "" "nil encodes to empty string")
+(is (base64-decode nil) "" "nil decodes to empty string")
+(is (base64-encode "") "" "empty string encodesa to empty string")
+(is (base64-decode "") "" "empty string decodes to empty string")
 
 ;; All Done!
 (finalize)

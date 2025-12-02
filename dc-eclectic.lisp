@@ -1093,3 +1093,13 @@ string. Returns a string with VALUE."
       (random-hex-number 4 nil rstate)
       (random-hex-number 4 nil rstate)
       (random-hex-number 12 nil rstate))))
+
+(defun base64-encode (string)
+  (if string
+    (cl-base64:string-to-base64-string string)
+    ""))
+
+(defun base64-decode (base64-encoded-string)
+  (if base64-encoded-string
+    (cl-base64:base64-string-to-string base64-encoded-string)
+    ""))

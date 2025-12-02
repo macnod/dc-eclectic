@@ -18,6 +18,8 @@
     ascii-alpha-upper
     ascii-char-range
     ascii-numeric
+    base64-encode
+    base64-decode
     choose-one
     choose-some
     close-log
