@@ -24,7 +24,7 @@
 (defun run-tests ()
   (prove:run #P"dc-eclectic-tests.lisp"))
 
-(plan 198)
+(plan 204)
 
 ;; universal
 (let* ((universal-time (get-universal-time))
@@ -657,16 +657,6 @@
 (like (uuid) "^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$"
   "uuid works")
 
-;; base64
-(is (base64-encode "hello world") "aGVsbG8gd29ybGQ="
-  "base64-encode works")
-(is (base64-decode "aGVsbG8gd29ybGQ=") "hello world"
-  "base64-decode works")
-(is (base64-encode nil) "" "nil encodes to empty string")
-(is (base64-decode nil) "" "nil decodes to empty string")
-(is (base64-encode "") "" "empty string encodesa to empty string")
-(is (base64-decode "") "" "empty string decodes to empty string")
-
 ;; copyfile
 (let ((src (format nil "/tmp/~a.txt" (random-string 20 (ascii-alpha-num))))
        (dest (format nil "/tmp/~a.txt" (random-string 20 (ascii-alpha-num)))))
@@ -684,6 +674,24 @@
     "destination file exists and :if-exists is :error")
   (delete-file src)
   (delete-file dest))
+
+;; base64-encoding
+(let ((s "Hello, beautiful World!"))
+  (is s (base64-decode (base64-encode s)) "Roundtrip base64-encoding works"))
+(is "x" (base64-decode (base64-encode "x")) "Rountrip for 1 char")
+(is (base64-encode "") "" "base64-encode empty string -> empty string")
+(is (base64-decode "") "" "base64-decode empty string -> empty string")
+(is (base64-encode nil) "" "base64-encode nil -> empty string")
+(is (base64-decode nil) "" "base64-decode nil -> empty string")
+
+;; base62-encoding
+(let ((s "Hello, beautiful World!┼"))
+  (is s (safe-decode (safe-encode s)) "Roundtrip safe-encoding works"))
+(is "x" (safe-decode (safe-encode "x")) "Rountrip for 1 char")
+(is (safe-encode "") "" "safe-encode empty string -> empty string")
+(is (safe-decode "") "" "safe-decode empty string -> empty string")
+(is (safe-encode nil) "" "safe-encode nil -> empty string")
+(is (safe-decode nil) "" "safe-decode nil -> empty string")
 
 ;; All Done!
 (finalize)

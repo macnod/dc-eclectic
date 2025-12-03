@@ -18,13 +18,14 @@
     ascii-alpha-upper
     ascii-char-range
     ascii-numeric
-    base64-encode
     base64-decode
+    base64-encode
     choose-one
     choose-some
     close-log
     comparable-hash-dump
     copy-file
+    define-base-encoder
     denormalize-list
     directory-exists-p
     distinct-elements
@@ -50,6 +51,8 @@
     log-it
     log-it-lazy
     log-it-pairs
+    make-decoder
+    make-encoder
     mark-time
     n-gram-strings
     n-grams
@@ -67,6 +70,8 @@
     reference-random-state
     replace-extension
     root-path
+    safe-encode
+    safe-decode
     set-log-severity-threshold
     setenv
     shuffle

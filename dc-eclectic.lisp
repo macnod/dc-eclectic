@@ -1094,6 +1094,12 @@ string. Returns a string with VALUE."
       (random-hex-number 4 nil rstate)
       (random-hex-number 12 nil rstate))))
 
+;; There's much better encoding code in encoder.lisp, where you can create
+;; encoders with any alphabet, and where multibyte characters are supported.
+;; However, that encoding code is not compatible with the industry-standard
+;; base64-encode. Therefore, these functions remain here.
+;;
+;; BEGIN
 (defun base64-encode (string)
   (if string
     (cl-base64:string-to-base64-string string)
@@ -1103,6 +1109,7 @@ string. Returns a string with VALUE."
   (if base64-encoded-string
     (cl-base64:base64-string-to-string base64-encoded-string)
     ""))
+;; END
 
 (defun copy-file (source destination &key
                    (if-exists :supersede)
