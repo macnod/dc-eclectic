@@ -37,6 +37,6 @@ install-dependencies:
 	$(ROSWELL) install macnod/dc-dlist
 
 test:
-	$(ROSWELL) run -- --eval "(require :prove)" \
+	$(ROSWELL) run -- --disable-debugger --eval "(require :prove)" \
 		--eval "(unless (prove:run (truename \"$(TESTS_FILE)\") :reporter :$(REPORTER)) (sb-ext:exit :code 1))" \
 		--quit
