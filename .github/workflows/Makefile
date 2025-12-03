@@ -30,6 +30,8 @@ install-dependencies:
 	$(ROSWELL) install ironclad
 	$(ROSWELL) install trivial-utf-8
 	$(ROSWELL) install cl-csv
+	$(ROSWELL) install babel
+	$(ROSWELL) install cl-base64
 	$(ROSWELL) install prove
 	$(ROSWELL) install macnod/dc-ds
 	$(ROSWELL) install macnod/dc-dlist
