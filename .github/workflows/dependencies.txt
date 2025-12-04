@@ -4,6 +4,8 @@ yason
 ironclad
 trivial-utf-8
 cl-csv
-prove
+fiveam
+babel
+cl-base64
 macnod/dc-ds
 macnod/dc-dlist
