@@ -16,7 +16,9 @@ CL_PACKAGES=cl-ppcre \
             ironclad \
             trivial-utf-8 \
             cl-csv \
-            prove \
+            fiveam \
+            cl-base64 \
+            babel \
             macnod/dc-ds \
             macnod/dc-dlist
 
@@ -57,9 +59,12 @@ $(CL_PACKAGES):
 
 test:
 	$(ROSWELL) run -- \
-	--eval "(require :prove)" \
-	--eval "(prove:run #P\"dc-eclectic-tests.lisp\" :reporter :list)" \
-	--non-interactive
+	--eval "(asdf:load-system :fiveam)" \
+	--eval "(load #P\"dc-eclectic-tests.lisp\")" \
+	--eval "(setf fiveam:*test-dribble* t)" \
+	--eval "(sb-ext:unlock-package :it.bese.fiveam)" \
+	--eval "(progn (let ((results (fiveam:run!))) (if (or (null results) (and (not (eq results t)) (> (slot-value results 'it.bese.fiveam::failed) 0))) (sb-ext:exit :code 1) (sb-ext:exit :code 0))))" \
+	--quit
 
 clean:
 	rm -f *.installed

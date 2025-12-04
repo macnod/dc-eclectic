@@ -10,8 +10,7 @@ ROSWELL_REPO=https://github.com/roswell/roswell.git
 setup: install-roswell install-dependencies
 
 install-roswell:
-	# Build from source if Roswell is not present
-	if ! command -v ros >/dev/null 2>&1; then \
+	if ! command -v ros >/dev/null 2; then \
 		git clone -b release $(ROSWELL_REPO) $(ROSWELL_SRC_DIR); \
 		cd $(ROSWELL_SRC_DIR); \
 		sh bootstrap; \
@@ -24,7 +23,6 @@ install-roswell:
 	fi
 
 install-dependencies:
-	# Install dependencies
 	$(ROSWELL) install cl-ppcre
 	$(ROSWELL) install yason
 	$(ROSWELL) install ironclad
@@ -32,11 +30,15 @@ install-dependencies:
 	$(ROSWELL) install cl-csv
 	$(ROSWELL) install babel
 	$(ROSWELL) install cl-base64
-	$(ROSWELL) install prove
+	$(ROSWELL) install fiveam
 	$(ROSWELL) install macnod/dc-ds
 	$(ROSWELL) install macnod/dc-dlist
 
 test:
-	$(ROSWELL) run -- --disable-debugger --eval "(require :prove)" \
-		--eval "(unless (prove:run (truename \"$(TESTS_FILE)\") :reporter :$(REPORTER)) (sb-ext:exit :code 1))" \
-		--quit
+	$(ROSWELL) run -- \
+	--eval "(asdf:load-system :fiveam)" \
+	--eval "(load #P\"dc-eclectic-tests.lisp\")" \
+	--eval "(setf fiveam:*test-dribble* t)" \
+	--eval "(sb-ext:unlock-package :it.bese.fiveam)" \
+	--eval "(progn (let ((results (fiveam:run!))) (if (or (null results) (and (not (eq results t)) (> (slot-value results 'it.bese.fiveam::failed) 0))) (sb-ext:exit :code 1) (sb-ext:exit :code 0))))" \
+	--quit
