@@ -16,7 +16,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      ROSWELL_SBCL_VERSION: 2.5.10
+      ROSWELL_SBCL_BIN_VERSION: 2.5.10
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
