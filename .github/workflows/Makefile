@@ -20,6 +20,8 @@ install-roswell:
 		cd ..; \
 		rm -rf $(ROSWELL_SRC_DIR); \
 		$(ROSWELL) setup; \
+		$(ROSWELL) install sbcl/2.5.10; \
+	  $(ROSWELL) use sbcl/2.5.10; \
 	fi
 
 install-dependencies:
