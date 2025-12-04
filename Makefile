@@ -36,17 +36,6 @@ $(APT_PACKAGES):
 install-roswell:
 	curl -L https://github.com/roswell/roswell/releases/download/v23.10.14.114/roswell_23.10.14.114-1_amd64.deb --output roswell.deb
 	sudo dpkg -i roswell.deb
-	# if ! [ -f $(ROSWELL) ]; then \
-	# 	git clone https://github.com/roswell/roswell.git roswell; \
-	# 	cd roswell; \
-	# 	sh bootstrap; \
-	# 	./configure --prefix=$(ROSWELL_PREFIX); \
-	# 	make; \
-	# 	make install; \
-	# 	cd ..; \
-	# 	rm -rf roswell; \
-	# 	$(ROSWELL) setup; \
-	# fi
 
 install-dependencies: $(CL_PACKAGES)
 

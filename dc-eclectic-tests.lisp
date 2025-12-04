@@ -5,7 +5,6 @@
 
 (in-package :cl-user)
 
-(pushnew (truename ".") asdf:*central-registry* :test #'equal)
 (asdf:load-system :dc-eclectic)
 
 (ql:quickload :fiveam :silent t)
