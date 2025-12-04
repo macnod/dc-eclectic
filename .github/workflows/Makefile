@@ -12,7 +12,7 @@ setup: install-roswell install-dependencies
 install-roswell:
 	curl -L https://github.com/roswell/roswell/releases/download/v23.10.14.114/roswell_23.10.14.114-1_amd64.deb --output roswell.deb
 	sudo dpkg -i roswell.deb
-	ros install sbcl/2.5.10
+	ros install sbcl-bin/2.5.10
 	ros use sbcl/2.5.10
 
 install-dependencies:
