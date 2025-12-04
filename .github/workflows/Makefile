@@ -10,17 +10,10 @@ ROSWELL_REPO=https://github.com/roswell/roswell.git
 setup: install-roswell install-dependencies
 
 install-roswell:
-	if ! command -v ros >/dev/null 2; then \
-		git clone -b release $(ROSWELL_REPO) $(ROSWELL_SRC_DIR); \
-		cd $(ROSWELL_SRC_DIR); \
-		sh bootstrap; \
-		./configure --prefix=$(ROSWELL_PREFIX); \
-		make; \
-		make install; \
-		cd ..; \
-		rm -rf $(ROSWELL_SRC_DIR); \
-		$(ROSWELL) setup; \
-	fi
+	curl -L https://github.com/roswell/roswell/releases/download/v23.10.14.114/roswell_23.10.14.114-1_amd64.deb --output roswell.deb
+	sudo dpkg -i roswell.deb
+	$(ROSWELL) install sbcl/2.5.10
+	$(ROSWELL) use sbcl/2.5.10
 
 install-dependencies:
 	$(ROSWELL) install cl-ppcre
