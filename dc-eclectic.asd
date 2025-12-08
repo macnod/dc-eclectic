@@ -4,6 +4,7 @@
   :license "MIT License"
   :depends-on (:cl-ppcre
                 :yason
+                :uiop
                 :ironclad
                 :trivial-utf-8
                 :cl-base64

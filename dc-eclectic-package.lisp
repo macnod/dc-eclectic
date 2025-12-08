@@ -74,6 +74,7 @@
     safe-decode
     set-log-severity-threshold
     setenv
+    shell-command-to-string
     shuffle
     slurp
     spew

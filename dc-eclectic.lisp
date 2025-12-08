@@ -1144,3 +1144,10 @@ defaults to 64 KB. Returns the DESTINATION path."
       (ignore-errors
         (sb-posix:utimes (namestring destination) mtime mtime))))
   destination)
+
+(defun shell-command-to-string (command)
+  (multiple-value-bind (output error-output exit-code)
+    (uiop:run-program command
+      :output :string
+      :error-output :string)
+    (values (trim output) error-output exit-code)))

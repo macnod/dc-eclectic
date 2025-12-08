@@ -741,3 +741,6 @@
     "safe-encode nil -> empty string")
   (fiveam:is (equal (safe-decode nil) "")
     "safe-decode nil -> empty string"))
+
+(fiveam:test shell-command-to-string-tests
+  (is (shell-command-to-string "echo 'hello'") "hello"))
