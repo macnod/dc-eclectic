@@ -1,7 +1,9 @@
 (defpackage :dc-eclectic
   (:use :cl :trivial-utf-8 :sb-thread :sb-ext)
-  (:local-nicknames (:ds :dc-ds)
-                    (:re :ppcre))
+  (:local-nicknames
+    (:ds :dc-ds)
+    (:re :ppcre)
+    (:l :p-log))
   (:import-from :ironclad
                 :ascii-string-to-byte-array
                 :byte-array-to-hex-string

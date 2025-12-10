@@ -697,15 +697,16 @@ TYPE can be :integer, :string, or :boolean."
         ((eql type :integer)
           (handler-case (parse-integer value)
             (error (condition)
-              (log-it :error "Failed to parse ~s as integer: ~a"
-                value condition)
+              (l:perror :status "failed to parse environment var as integer"
+                :value value :condition condition)
               nil)))
         ((and (eql type :boolean))
           (cond
             ((equal (string-downcase value) "true") t)
             ((equal (string-downcase value) "false") nil)
             ((null value) nil)
-            (t (error "Invalid value for type :boolean: ~a" value)))))
+            (t (l:perror :status "invalid value for type :boolean"
+                 :value value)))))
       (cond
         ((and required (null default))
           (error "A value for environment variable ~a is required." name))
@@ -718,8 +719,8 @@ TYPE can be :integer, :string, or :boolean."
         ((and (stringp default) (eql type :integer))
           (handler-case (parse-integer default)
             (error (condition)
-              (log-it :error "Failed to parse default value ~s as integer: ~a"
-                value condition)
+              (l:perror :status "failed to parse default value as integer"
+                :value value :condition condition)
               nil)))
         ((integerp default)
           default)))))

@@ -10,7 +10,9 @@
                 :cl-base64
                 :cl-csv
                 :babel
-                :dc-ds)
+                :dc-ds
+                :p-log
+                :dc-time)
   :serial t
   :components ((:file "dc-eclectic-package")
                 (:file "dc-eclectic")
