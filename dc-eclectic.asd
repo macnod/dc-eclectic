@@ -11,8 +11,8 @@
                 :cl-csv
                 :babel
                 :dc-ds
-                :p-log
-                :dc-time)
+                :dc-time
+                :p-log)
   :serial t
   :components ((:file "dc-eclectic-package")
                 (:file "dc-eclectic")
