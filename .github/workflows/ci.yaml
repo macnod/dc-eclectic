@@ -36,5 +36,10 @@ jobs:
         shell: bash
         run: make install-dependencies
 
+      - name: Cache hit for dependencies
+        if: steps.depcache.outputs.cache-hit == 'true'
+        shell: bash
+        run: echo "✅ Cache hit for dependencies"
+
       - name: Run tests
         run: make test
