@@ -26,6 +26,7 @@ install-dependencies:
 	ros install cl-base64
 	ros install cl-csv
 	ros install babel
+	ros install fiveam
 	ros install macnod/dc-ds
 
 test:
