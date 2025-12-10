@@ -30,7 +30,6 @@
     directory-exists-p
     distinct-elements
     distinct-values
-    elapsed-time
     existing-n-gram-strings
     existing-permutations-of-string
     file-exists-p
@@ -38,7 +37,6 @@
     filename-only
     flatten
     freeze
-    get-unix-time
     getenv
     hash-hmac-256
     hash-keys
@@ -53,7 +51,6 @@
     log-it-pairs
     make-decoder
     make-encoder
-    mark-time
     n-gram-strings
     n-grams
     normalize-list
@@ -80,12 +77,9 @@
     spew
     split-n-trim
     thaw
-    timestamp-string
     to-ascii
     trim
     trim-whitespace
-    universal-time-to-unix-time
-    unix-time-to-universal-time
     uuid
     verify-string
     ))
