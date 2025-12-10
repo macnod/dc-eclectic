@@ -1,19 +1,21 @@
-;; Run these tests in the repl with
-;;   (fiveam:run! :dc-eclectic)
-;; or, from the shell with
-;;   make test
+;; Tests for the dc-eclectic package
 
-(in-package :cl-user)
+(require :cl-ppcre)
+(require :dc-ds)
+(require :dc-time)
+(require :fiveam)
 
+(push (uiop:getcwd) asdf:*central-registry*)
+(ql:register-local-projects)
 (asdf:load-system :dc-eclectic)
 
-(ql:quickload :fiveam :silent t)
-(defpackage :dc-eclectic-tests (:use :cl :fiveam :dc-eclectic :dc-ds :cl-ppcre))
+(defpackage :dc-eclectic-tests (:use :cl :fiveam :dc-eclectic :dc-ds :dc-time))
+
 (in-package :dc-eclectic-tests)
 
-(fiveam:def-suite :dc-eclectic :description "Tests for dc-eclectic")
+(def-suite dc-eclectic-suite :description "Tests for dc-eclectic")
 
-(fiveam:in-suite :dc-eclectic)
+(in-suite dc-eclectic-suite)
 
 (defparameter *x* nil)
 (defparameter *msg* "hello")
@@ -26,209 +28,169 @@
     while (string= timestamp reference-timestamp)
     finally (return timestamp)))
 
-(defun run-tests ()
-  (fiveam:run! :dc-eclectic))
-
-(fiveam:test time-tests
-  (let* ((universal-time (get-universal-time))
-          (unix-time (universal-time-to-unix-time universal-time)))
-    (fiveam:is (equal (unix-time-to-universal-time unix-time) universal-time)
-      "unix-time-to-universal-time")
-    (fiveam:is (equal (universal-time-to-unix-time universal-time) unix-time)
-      "universal-time-to-universal-time")
-    (fiveam:is-true (zerop (universal-time-to-unix-time
-                             (unix-time-to-universal-time 0)))
-      "unix-time universal-time round trip")
-    (fiveam:is-true (<= (get-unix-time) (get-unix-time))
-      "In consecutive calls to get-unix-time, first call <= second call"))
-  (let ((reference-time (unix-time-to-universal-time 1689698048)))
-    (fiveam:is (equal (timestamp-string :universal-time reference-time)
-                 "2023-07-18T16:34:08")
-      "timestamp-string with reference time (in utc, default format)")
-    (fiveam:is (equal (timestamp-string :universal-time (- reference-time (* 7 3600))
-                        :timezone -7)
-                 "2023-07-18T16:34:08")
-      "timestamp-string with reference time (in pst, default format)")
-    (fiveam:is (equal (timestamp-string :universal-time reference-time
-                        :format "%Y-%M-%D")
-                 "2023-07-18")
-      "timestamp-string with reference time (%Y-%M-%D)")
-    (fiveam:is (equal (timestamp-string :universal-time reference-time
-                        :format "%h:%m:%s")
-                 "16:34:08")
-      "timestamp-string with reference time (%h:%m:%s)")
-    (fiveam:is (equal (timestamp-string :universal-time reference-time
-                        :format "%Y%s")
-                 "202308")
-      "timestamp-string with reference time (%Y%s)")
-    (fiveam:is (equal (timestamp-string :universal-time reference-time
-                        :format "Year=%Y; Month=%M; Day=%D")
-                 "Year=2023; Month=07; Day=18")
-      "timestamp-string with reference time (Year=%Y; Month=%M; Day=%D)")))
-
-(fiveam:test toascii-tests
-  (fiveam:is (equal (to-ascii "a") "a")
+(test toascii-tests
+  (is (equal (to-ascii "a") "a")
     "to-ascii with single-ascii-character string")
-  (fiveam:is (equal (to-ascii "abc") "abc")
+  (is (equal (to-ascii "abc") "abc")
     "to-ascii with multi-ascii-character string")
-  (fiveam:is (equal (to-ascii "ñ") "?")
+  (is (equal (to-ascii "ñ") "?")
     "to-ascii with single-non-ascii-character string")
-  (fiveam:is (equal (to-ascii "ñ¼½¾") "????")
+  (is (equal (to-ascii "ñ¼½¾") "????")
     "to-ascii with multi-non-ascii-character string")
-  (fiveam:is (equal (to-ascii "ñ¼½¾abc") "????abc")
+  (is (equal (to-ascii "ñ¼½¾abc") "????abc")
     "to-ascii with multi-non-ascii-character string followed by ascii")
-  (fiveam:is (equal (to-ascii (vector (code-char 129) #\x (code-char 130))
+  (is (equal (to-ascii (vector (code-char 129) #\x (code-char 130))
                       :printable-only nil)
                "x")
     "to-ascii chars above high with printable-only nil")
-  (fiveam:is (equal (to-ascii (vector (code-char 29) #\x (code-char 28))
+  (is (equal (to-ascii (vector (code-char 29) #\x (code-char 28))
                       :printable-only nil)
                "x")
     "to-ascii chars below min with printable-only nil")
-  (fiveam:is (equal (to-ascii (vector (code-char 1000) #\y (code-char 1001))
+  (is (equal (to-ascii (vector (code-char 1000) #\y (code-char 1001))
                       :printable-only nil)
                "?y?")
     "to-ascii non-ascii chars with printable-only nil"))
 
-(fiveam:test flatten-tests
-  (fiveam:is (equal (flatten (list 1 2 (list 3 (list 4 (list 5 6) 7) 8) 9))
+(test flatten-tests
+  (is (equal (flatten (list 1 2 (list 3 (list 4 (list 5 6) 7) 8) 9))
                (list 1 2 3 4 5 6 7 8 9))
     "flatten nested list of integers")
 
-  (fiveam:is (equal (flatten (list 1 2 3))
+  (is (equal (flatten (list 1 2 3))
                (list 1 2 3))
     "flatten already-flat list of integers")
 
-  (fiveam:is (equal (flatten
+  (is (equal (flatten
                       (list "one" "two"
                         (list "three" (list "four" (list "five" "six") "seven") "eight")))
                (list "one" "two" "three" "four" "five" "six" "seven" "eight"))
     "flatten nested list of strings"))
 
-(fiveam:test path-tests
+(test path-tests
   ;; join-paths
-  (fiveam:is (equal (join-paths nil) "")
+  (is (equal (join-paths nil) "")
     "join-paths with nil")
-  (fiveam:is (equal (join-paths nil "a" "b" "c") "a/b/c")
+  (is (equal (join-paths nil "a" "b" "c") "a/b/c")
     "join-paths with nil and strings")
-  (fiveam:is (equal (join-paths "/" nil "a" "b" "c") "/a/b/c")
+  (is (equal (join-paths "/" nil "a" "b" "c") "/a/b/c")
     "join-paths with '/', nil, and strings")
-  (fiveam:is (equal (join-paths "a") "a")
+  (is (equal (join-paths "a") "a")
     "join-paths with single string")
-  (fiveam:is (equal (join-paths "/a") "/a")
+  (is (equal (join-paths "/a") "/a")
     "join-paths with single string that starts with /")
-  (fiveam:is (equal (join-paths "/") "/")
+  (is (equal (join-paths "/") "/")
     "join-paths with single /")
-  (fiveam:is (equal (join-paths "a" "b" "c") "a/b/c")
+  (is (equal (join-paths "a" "b" "c") "a/b/c")
     "join-paths with multiple strings")
-  (fiveam:is (equal (join-paths "/a" "b" "c") "/a/b/c")
+  (is (equal (join-paths "/a" "b" "c") "/a/b/c")
     "join-paths with multiple strings starting with /a")
-  (fiveam:is (equal (join-paths "/" "a" "b" "c") "/a/b/c")
+  (is (equal (join-paths "/" "a" "b" "c") "/a/b/c")
     "join-paths with multiple strings starting with /")
-  (fiveam:is (equal (join-paths "a" "b" "c" nil) "a/b/c")
+  (is (equal (join-paths "a" "b" "c" nil) "a/b/c")
     "join-paths with multiple strings and nil")
-  (fiveam:is (equal (join-paths "a" "b" "c" "") "a/b/c")
+  (is (equal (join-paths "a" "b" "c" "") "a/b/c")
     "join-paths with multiple strings ending in empty string")
-  (fiveam:is (equal (join-paths "a" "b" "c" "/") "a/b/c")
+  (is (equal (join-paths "a" "b" "c" "/") "a/b/c")
     "join-paths with multiple strings ending in /")
-  (fiveam:is (equal (join-paths "" "a" "b" "c") "a/b/c")
+  (is (equal (join-paths "" "a" "b" "c") "a/b/c")
     "join-paths with multiple strings starting with empty string")
-  (fiveam:is (equal (join-paths "a" "" "b" "c") "a/b/c")
+  (is (equal (join-paths "a" "" "b" "c") "a/b/c")
     "join-paths with multiple strings containing empty string")
-  (fiveam:is (equal (join-paths "/" "a" 1 "b") "/a/1/b")
+  (is (equal (join-paths "/" "a" 1 "b") "/a/1/b")
     "join-paths with one non-string")
-  (fiveam:is (equal (join-paths "/a" 1 "b") "/a/1/b")
+  (is (equal (join-paths "/a" 1 "b") "/a/1/b")
     "join-paths with one non-string")
-  (fiveam:is (equal (join-paths 1 2 3) "1/2/3")
+  (is (equal (join-paths 1 2 3) "1/2/3")
     "join-paths with all non-string")
 
   ;; path-only
-  (fiveam:is (equal (path-only nil) "/")
+  (is (equal (path-only nil) "/")
     "path-only with nil")
-  (fiveam:is (equal (path-only "") "/")
+  (is (equal (path-only "") "/")
     "path-only with empty string")
-  (fiveam:is (equal (path-only "/") "/")
+  (is (equal (path-only "/") "/")
     "path-only with /")
-  (fiveam:is (equal (path-only "/a/b/c/file.txt") "/a/b/c")
+  (is (equal (path-only "/a/b/c/file.txt") "/a/b/c")
     "path-only with /a/b/c/file.txt")
-  (fiveam:is (equal (path-only "a/b/c/file.txt") "a/b/c")
+  (is (equal (path-only "a/b/c/file.txt") "a/b/c")
     "path-only with a/b/c/file.txt")
-  (fiveam:is (equal (path-only "file.txt") "/")
+  (is (equal (path-only "file.txt") "/")
     "path-only with file.txt")
 
   ;; filename-only
-  (fiveam:is (equal (filename-only nil) "")
+  (is (equal (filename-only nil) "")
     "filename-only with nil")
-  (fiveam:is (equal (filename-only "/") "")
+  (is (equal (filename-only "/") "")
     "filename-only with /")
-  (fiveam:is (equal (filename-only "/a/b/c/file.txt") "file.txt")
+  (is (equal (filename-only "/a/b/c/file.txt") "file.txt")
     "filename-only with /a/b/c/file.txt")
-  (fiveam:is (equal (filename-only "/file.txt") "file.txt")
+  (is (equal (filename-only "/file.txt") "file.txt")
     "filename-only with /file.txt")
-  (fiveam:is (equal (filename-only "file.txt") "file.txt")
+  (is (equal (filename-only "file.txt") "file.txt")
     "filename-only with file.txt")
-  (fiveam:is (equal (filename-only "") "")
+  (is (equal (filename-only "") "")
     "filename-only with empty string")
-  (fiveam:is (equal (filename-only "file.txt/") "")
+  (is (equal (filename-only "file.txt/") "")
     "filename-only with file.txt/")
 
   ;; directory-leaf-only
-  (fiveam:is (equal (leaf-directory-only "/") nil)
+  (is (equal (leaf-directory-only "/") nil)
     "leaf-directory-only / is nil")
-  (fiveam:is (equal (leaf-directory-only "/one") "one")
+  (is (equal (leaf-directory-only "/one") "one")
     "leaf-directory-only /one is one")
-  (fiveam:is (equal (leaf-directory-only "/one/") "one")
+  (is (equal (leaf-directory-only "/one/") "one")
     "leaf-directory-only /one/ is one")
-  (fiveam:is (equal (leaf-directory-only "/one/abc.txt") "abc.txt")
+  (is (equal (leaf-directory-only "/one/abc.txt") "abc.txt")
     "leaf-directory-only /one/abc.txt is abc.txt")
-  (fiveam:is (equal (leaf-directory-only "/one/two/three/four") "four")
+  (is (equal (leaf-directory-only "/one/two/three/four") "four")
     "leaf-directory-only /one/two/three/four is four"))
 
-(fiveam:test sorted-hash-tests
-  (fiveam:is (equal (comparable-hash-dump
+(test sorted-hash-tests
+  (is (equal (comparable-hash-dump
                       (ds '(:map :one 1 :two 2 :three 3 :four 4 :five 5)))
                '((:five 5) (:four 4) (:one 1) (:three 3) (:two 2)))
     "comparable-hash-dump with keyword keys")
-  (fiveam:is (equal (comparable-hash-dump
+  (is (equal (comparable-hash-dump
                       (ds '(:map :one 1 :two 2 :three 3 :four 4 :five 5))
                       :f-sort #'string>)
                (reverse '((:five 5) (:four 4) (:one 1) (:three 3) (:two 2))))
     "comparable-hash-dump with keyword keys, descending")
-  (fiveam:is (equal (comparable-hash-dump
+  (is (equal (comparable-hash-dump
                       (ds '(:map  5 1   3 2   4 3   1 4   2 5)))
                '((1 4) (2 5) (3 2) (4 3) (5 1)))
     "comparable-hash-dump with integer keys")
-  (fiveam:is (equal (comparable-hash-dump
+  (is (equal (comparable-hash-dump
                       (ds '(:map  5 1   3 2   4 3   1 4   2 5))
                       :f-sort #'<
                       :f-make-sortable #'identity)
                '((1 4) (2 5) (3 2) (4 3) (5 1)))
     "comparable-hash-dump with integer keys, numeric sort")
-  (fiveam:is (equal (comparable-hash-dump
+  (is (equal (comparable-hash-dump
                       (ds '(:map  5 1   3 2   4 3   1 4   2 5))
                       :f-sort #'>
                       :f-make-sortable #'identity)
                (reverse '((1 4) (2 5) (3 2) (4 3) (5 1))))
     "comparable-hash-dump with integer keys, descending numeric sort"))
 
-(fiveam:test hashify-list-tests
-  (fiveam:is (equal (comparable-hash-dump
+(test hashify-list-tests
+  (is (equal (comparable-hash-dump
                       (hashify-list (list :one :two :three :two :one))
                       :flat t)
                '(:one 2 :three 1 :two 2))
     "hashify-list with keyword keys")
-  (fiveam:is (equal (comparable-hash-dump
+  (is (equal (comparable-hash-dump
                       (hashify-list '(1 2 3 2 1))
                       :flat t
                       :f-sort #'<
                       :f-make-sortable #'identity)
                '(1 2 2 2 3 1))
     "hashify-list with integer keys and numeric sort")
-  (fiveam:is (equal (comparable-hash-dump
+  (is (equal (comparable-hash-dump
                       (hashify-list '("one" "two" "three") :method :index))
                '(("one" 0) ("three" 2) ("two" 1)))
     "hashify-list index method")
-  (fiveam:is (equal (comparable-hash-dump
+  (is (equal (comparable-hash-dump
                       (hashify-list '((:id "a" :first "Alice" :last "Adams" :age 100)
                                        (:id "b" :first "Bob" :last "Baker" :age 101)
                                        (:id "c" :first "Claire" :last "Clark" :age 102))
@@ -238,20 +200,20 @@
                   ("b" (:id "b" :first "Bob" :last "Baker" :age 101))
                   ("c" (:id "c" :first "Claire" :last "Clark" :age 102))))
     "hashify-list index method plist-key")
-  (fiveam:is (equal (comparable-hash-dump
+  (is (equal (comparable-hash-dump
                       (hashify-list '(:one 1 :two 2 :three 3 :one 11)
                         :method :plist)
                       :flat t)
                '(:one 11 :three 3 :two 2))
     "hashify-list plist method")
-  (fiveam:is (equal (comparable-hash-dump
+  (is (equal (comparable-hash-dump
                       (hashify-list '(:one 1 :two 2 :three 3)
                         :method :plist
                         :f-key (lambda (k) (format nil "~a" k)))
                       :flat t)
                '("ONE" 1 "THREE" 3 "TWO" 2))
     "hashify-list plist method, stringified keys")
-  (fiveam:is (equal (comparable-hash-dump
+  (is (equal (comparable-hash-dump
                       (hashify-list '(:one 1 :two 2 :three 3)
                         :method :plist
                         :f-value (lambda (r c v)
@@ -260,7 +222,7 @@
                       :flat t)
                '(:one "1" :three "3" :two "2"))
     "hashify-list plist method, strigified values")
-  (fiveam:is (equal (comparable-hash-dump
+  (is (equal (comparable-hash-dump
                       (hashify-list '((:a 11 :b 12 :c 13)
                                        (:a 21 :b 22 :c 23)
                                        (:a 31 :b 32 :c 33)
@@ -270,40 +232,40 @@
                '(((:a 21 :b 22 :c 23) 1) ((:a 31 :b 32 :c 33) 1) ((:a 41 :b 12 :c 43) 2)))
     "hashify-list list of plists, method count, specifying plist-key"))
 
-(fiveam:test hash-string-tests
-  (fiveam:is (equal (hash-string "Donnie")
+(test hash-string-tests
+  (is (equal (hash-string "Donnie")
                (format nil "~{~a~}"
                  '("2daf3ad277939e55520a61187c73abc3"
                     "f09b8759ce41469d67ec7fd8f6930c6c"
                     "e943809d1c37312838cef4b40665aa2e"
                     "02803cc0a206c97bb8a476b1d681ca95")))
     "hash-string")
-  (fiveam:is (equal (hash-string "Donnie" :size 32)
+  (is (equal (hash-string "Donnie" :size 32)
                "2daf3ad277939e55520a61187c73abc3")
     "hash-string truncated to 32 characters")
-  (fiveam:is (equal (hash-string "Donnie" :salt "abc" :size 16)
+  (is (equal (hash-string "Donnie" :salt "abc" :size 16)
                "f524abffea9ae753")
     "hash-string with salt and truncated to 16 characters")
 
-  (fiveam:is (equal (hash-hmac-256 "secret" "Donnie")
+  (is (equal (hash-hmac-256 "secret" "Donnie")
                "b81c15aafc9935e7138b5c09fc775e66275739370493c06051fea29f5cc6c32a")
     "hash-hmac-256"))
 
-(fiveam:test distinct-elements-tests
-  (fiveam:is (equal (sort (distinct-elements '(1 2 3 4 3 2 1)) #'<)
+(test distinct-elements-tests
+  (is (equal (sort (distinct-elements '(1 2 3 4 3 2 1)) #'<)
                '(1 2 3 4))
     "distinct-elements integers")
-  (fiveam:is (equal (sort (distinct-elements '("abc" "def" "ghi" "jkl" "abc" "def" "ghi" "jkl"))
+  (is (equal (sort (distinct-elements '("abc" "def" "ghi" "jkl" "abc" "def" "ghi" "jkl"))
                       #'string<)
                '("abc" "def" "ghi" "jkl"))
     "distinct-elements with strings")
-  (fiveam:is (equal (sort
+  (is (equal (sort
                       (mapcar (lambda (x) (format nil "~a" x))
                         (distinct-elements '("one" 1 "two" 2 "three" 3 "two" 2 "one" 1)))
                       #'string<)
                '("1" "2" "3" "one" "three" "two"))
     "distinct-elements with mixed types")
-  (fiveam:is (equal (sort (distinct-elements '((:a 1 :b 2 :c 3)
+  (is (equal (sort (distinct-elements '((:a 1 :b 2 :c 3)
                                                 (:a 4 :b 5 :c 6)
                                                 (:a 7 :b 8 :c 9)
                                                 (:a 1 :b 2 :c 3)
@@ -315,44 +277,44 @@
                   (:a 4 :b 5 :c 6)
                   (:a 7 :b 8 :c 9)))
     "distinct-elements for list with key")
-  (fiveam:is (equal (distinct-elements "donnie") "donie")
+  (is (equal (distinct-elements "donnie") "donie")
     "distinct-elements string"))
 
-(fiveam:test hash-kv-tests
+(test hash-kv-tests
   (let ((h (ds '(:map :a 1 :b 2 :c 3))))
-    (fiveam:is (equal (sort (hash-values h) #'<)
+    (is (equal (sort (hash-values h) #'<)
                  '(1 2 3))
       "hash-values")
-    (fiveam:is (equal (sort (hash-keys h) #'string<)
+    (is (equal (sort (hash-keys h) #'string<)
                  '(:a :b :c))
       "hash-keys")))
 
-(fiveam:test shuffle-tests
+(test shuffle-tests
   (let* ((original-list (range 1 100))
           (original-vector (apply #'vector (range 1 100)))
           (shuffled-list (shuffle original-list))
           (shuffled-vector (shuffle original-vector)))
-    (fiveam:is-true (not (equal original-list shuffled-list))
+    (is-true (not (equal original-list shuffled-list))
       "shuffled <> original")
-    (fiveam:is (equal (length original-list) (length shuffled-list))
+    (is (equal (length original-list) (length shuffled-list))
       "original and shuffled same length")
-    (fiveam:is (equal (comparable-hash-dump (hashify-list original-list))
+    (is (equal (comparable-hash-dump (hashify-list original-list))
                  (comparable-hash-dump (hashify-list shuffled-list)))
       "original and shuffled same elements, same count per element")
-    (fiveam:is (equal (comparable-hash-dump
+    (is (equal (comparable-hash-dump
                         (hashify-list (map 'list 'identity original-vector)))
                  (comparable-hash-dump
                    (hashify-list (map 'list 'identity shuffled-vector))))
       "original and shuffled vectors same elements, same count per element")))
 
-(fiveam:test range-tests
-  (fiveam:is (equal (range 1 3) '(1 2 3))
+(test range-tests
+  (is (equal (range 1 3) '(1 2 3))
     "range 1-3")
-  (fiveam:is (equal (range 1 5 :step 2) '(1 3 5))
+  (is (equal (range 1 5 :step 2) '(1 3 5))
     "range 1-5 by 2")
-  (fiveam:is (equal (range 1 5 :filter #'evenp) '(2 4))
+  (is (equal (range 1 5 :filter #'evenp) '(2 4))
     "range 1-5 even")
-  (fiveam:is (equal (loop for a from 1 to 100
+  (is (equal (loop for a from 1 to 100
                       for range = (range 1 10 :shuffle t)
                       collect (car range) into heads
                       finally (return
@@ -361,8 +323,8 @@
                t)
     "range shuffled"))
 
-(fiveam:test permutation-tests
-  (fiveam:is (equal (all-permutations '(1 2 3))
+(test permutation-tests
+  (is (equal (all-permutations '(1 2 3))
                '((1 2 3)
                   (1 3 2)
                   (2 1 3)
@@ -370,42 +332,42 @@
                   (3 1 2)
                   (3 2 1)))
     "all-permutations distinct integers")
-  (fiveam:is (equal (all-permutations-of-string "one")
+  (is (equal (all-permutations-of-string "one")
                '("one" "oen" "noe" "neo" "eon" "eno"))
     "all-permutations-of-string")
-  (fiveam:is (equal (existing-permutations-of-string
+  (is (equal (existing-permutations-of-string
                       "one" (ds '(:map "one" t "neo" t "eon" t)))
                '("one" "neo" "eon"))
     "existing-permutations-of-string")
-  (fiveam:is (equal (n-gram-strings "ab" 3)
+  (is (equal (n-gram-strings "ab" 3)
                '("aaa" "aab" "aba" "abb" "baa" "bab" "bba" "bbb"))
     "n-gram-strings")
-  (fiveam:is (equal (existing-n-gram-strings
+  (is (equal (existing-n-gram-strings
                       "abc" 3 (ds '(:map "aba" t "bbc" t "cab" t "hello" t "one" t "two" t)))
                '("aba" "bbc" "cab"))
     "existing-n-gram-strings"))
 
-(fiveam:test verify-string-tests
-  (fiveam:is (equal (verify-string "Donnie" "Donnie") t)
+(test verify-string-tests
+  (is (equal (verify-string "Donnie" "Donnie") t)
     "verify-string 1")
-  (fiveam:is (equal (verify-string "Donnie" "^D.+e$") t)
+  (is (equal (verify-string "Donnie" "^D.+e$") t)
     "verify-string 2")
-  (fiveam:is (equal (verify-string "Donnie" "^Do") nil)
+  (is (equal (verify-string "Donnie" "^Do") nil)
     "verify-string 3")
-  (fiveam:is (equal (verify-string "Donnie" "e$") nil)
+  (is (equal (verify-string "Donnie" "e$") nil)
     "verify-string 4")
-  (fiveam:is (equal (verify-string "Donnie" "^d.+") nil)
+  (is (equal (verify-string "Donnie" "^d.+") nil)
     "verify-string 5")
-  (fiveam:is (equal (verify-string "Donnie" "^d.+" :ignore-case t) t)
+  (is (equal (verify-string "Donnie" "^d.+" :ignore-case t) t)
     "verify-string 6")
-  (fiveam:is (equal (verify-string "Donnie" "^.+$") t)
+  (is (equal (verify-string "Donnie" "^.+$") t)
     "verify-string 7"))
 
-(fiveam:test plistp-tests
-  (fiveam:is-true (plistp '(:one 1 :two 2 :three 3)))
-  (fiveam:is-true (not (plistp '(:one 1 :two :three 3)))))
+(test plistp-tests
+  (is-true (plistp '(:one 1 :two 2 :three 3)))
+  (is-true (not (plistp '(:one 1 :two :three 3)))))
 
-(fiveam:test file-tests
+(test file-tests
   (let* ((root "/tmp/dc-eclectic-tests/")
           (file-name-1 (format nil "~afile-1.txt" root))
           (file-name-2 (format nil "~afile-2.txt" root))
@@ -416,203 +378,132 @@
     (ensure-directories-exist dir-name-1)
     (with-open-file (out file-name-1 :direction :output :if-exists :supersede)
       (write-line "Hello World!" out))
-    (fiveam:is-true (file-exists-p file-name-1)
+    (is-true (file-exists-p file-name-1)
       (format nil "file exists: ~a" file-name-1))
-    (fiveam:is-true (not (file-exists-p file-name-2))
+    (is-true (not (file-exists-p file-name-2))
       (format nil "file does not exists: ~a" file-name-2))
-    (fiveam:is-true (not (file-exists-p dir-name-1))
+    (is-true (not (file-exists-p dir-name-1))
       (format nil "file does not exist (it's a directory): ~a" dir-name-1))
-    (fiveam:is-true (not (file-exists-p dir-name-2))
+    (is-true (not (file-exists-p dir-name-2))
       (format nil "file does not exist: ~a" dir-name-2))
-    (fiveam:is-true (directory-exists-p dir-name-1)
+    (is-true (directory-exists-p dir-name-1)
       (format nil "directory exists: ~a" dir-name-1))
-    (fiveam:is-true (not (directory-exists-p dir-name-2))
+    (is-true (not (directory-exists-p dir-name-2))
       (format nil "directory does not exist: ~a" dir-name-2))
-    (fiveam:is-true (not (directory-exists-p file-name-1))
+    (is-true (not (directory-exists-p file-name-1))
       (format nil "file exists, but it's not a directory: ~a" file-name-1))
-    (fiveam:is-true (not (directory-exists-p file-name-2))
+    (is-true (not (directory-exists-p file-name-2))
       (format nil "file does not exist as is not a directory: ~a" file-name-2))
     (uiop:delete-directory-tree (pathname root) :validate t)))
 
-(fiveam:test index-of-max-tests
-  (fiveam:is-true (null (index-of-max nil))
+(test index-of-max-tests
+  (is-true (null (index-of-max nil))
     "index-of-max nil")
-  (fiveam:is-true (null (index-of-max (vector)))
+  (is-true (null (index-of-max (vector)))
     "index-of-max empty vector")
-  (fiveam:is-true (zerop (index-of-max '(0)))
+  (is-true (zerop (index-of-max '(0)))
     "index-of-max single element")
-  (fiveam:is-true (zerop (index-of-max (vector 0)))
+  (is-true (zerop (index-of-max (vector 0)))
     "index-of-max single element vector")
-  (fiveam:is (equal (index-of-max '(0 1)) 1)
+  (is (equal (index-of-max '(0 1)) 1)
     "index-of-max two elements")
-  (fiveam:is (equal (index-of-max (vector 0 1)) 1)
+  (is (equal (index-of-max (vector 0 1)) 1)
     "index-of-max two elements vector")
-  (fiveam:is-true (zerop (index-of-max '(1 0)))
+  (is-true (zerop (index-of-max '(1 0)))
     "index-of-max two elements reverse")
-  (fiveam:is-true (zerop (index-of-max (vector 1 0)))
+  (is-true (zerop (index-of-max (vector 1 0)))
     "index-of-max two elements reverse vector")
-  (fiveam:is (equal (index-of-max '(-1 1 0)) 1)
+  (is (equal (index-of-max '(-1 1 0)) 1)
     "index-of-max three elements")
-  (fiveam:is (equal (index-of-max (vector -1 1 0)) 1)
+  (is (equal (index-of-max (vector -1 1 0)) 1)
     "index-of-max three elements vector")
-  (fiveam:is-true (zerop (index-of-max '(-1 -2 -3 -9)))
+  (is-true (zerop (index-of-max '(-1 -2 -3 -9)))
     "index-of-max all negative")
-  (fiveam:is-true (zerop (index-of-max (vector -1 -2 -3 -9)))
+  (is-true (zerop (index-of-max (vector -1 -2 -3 -9)))
     "index-of-max all negative vector")
-  (fiveam:is (equal (index-of-max '(-1 -2 -3 0)) 3)
+  (is (equal (index-of-max '(-1 -2 -3 0)) 3)
     "index-of-max one zero")
-  (fiveam:is (equal (index-of-max (vector -1 -2 -3 0)) 3)
+  (is (equal (index-of-max (vector -1 -2 -3 0)) 3)
     "index-of-max one zero vector")
-  (fiveam:is-true (zerop (index-of-max '(9 -2 -3 -1)))
+  (is-true (zerop (index-of-max '(9 -2 -3 -1)))
     "index-of-max all negative reverse")
-  (fiveam:is-true (zerop (index-of-max (vector 9 -2 -3 -1)))
+  (is-true (zerop (index-of-max (vector 9 -2 -3 -1)))
     "index-of-max all negative reverse vector"))
 
-(fiveam:test choose-one-tests
+(test choose-one-tests
   (let* ((list '(1 2 3 4 5))
           (rstate (make-random-state (reference-random-state)))
           (a (choose-one list rstate)))
-    (fiveam:is-true (loop for a from 1 to 10
+    (is-true (loop for a from 1 to 10
                       for choice = (choose-one list)
                       always (and (= (truncate choice) choice)
                                (>= choice 1)
                                (<= choice 5)))
       "choose-one always returns an element of seq")
-    (fiveam:is (equal 1 a)
+    (is (equal 1 a)
       "first call to choose-one with rstate returns same element")
-    (fiveam:is-true (null (choose-one nil))
+    (is-true (null (choose-one nil))
       "choose-one of nil is nil")
-    (fiveam:is-true (loop for a from 1 to 10
+    (is-true (loop for a from 1 to 10
                       always (= (choose-one (list a)) a))
       "choose-one of a single-value list is always the single value")))
 
-(fiveam:test choose-some-tests
-  (fiveam:is-true (loop with list = '(1 2 3 4 5)
+(test choose-some-tests
+  (is-true (loop with list = '(1 2 3 4 5)
                     for a from 1 to 20
                     for choice = (choose-some list 1)
                     always (and (= (length choice) 1)
                              (>= (car choice) 1)
                              (<= (car choice) 5)))
     "choose-some seq 1 always returns a single value from the sequence")
-  (fiveam:is (equal (choose-some '(1 2 3 4 5) 5) '(1 2 3 4 5))
+  (is (equal (choose-some '(1 2 3 4 5) 5) '(1 2 3 4 5))
     "choose-some seq (length seq) always returns a copy of the sequence.")
   (let ((some (sort (choose-some '(1 2 3 4 5) 4) #'<)))
-    (fiveam:is (equal (sort (distinct-elements some) #'<) some)
+    (is (equal (sort (distinct-elements some) #'<) some)
       "choose-some returns elements from SEQ that have distinct indexes")
-    (fiveam:is-true (loop for a in some always (and (>= a 1) (<= a 5)))
+    (is-true (loop for a in some always (and (>= a 1) (<= a 5)))
       "choose-some returns elements from SEQ")
-    (fiveam:is (equal (length some) 4)
+    (is (equal (length some) 4)
       "choose-some returns the correct number of elements"))
-  (fiveam:is-true (null (choose-some '(1 2 3 4 5) 0))
+  (is-true (null (choose-some '(1 2 3 4 5) 0))
     "choose-some returns nil if N = 0")
-  (fiveam:is-true (null (choose-some '(1 2 3 4 5) -1))
+  (is-true (null (choose-some '(1 2 3 4 5) -1))
     "choose-some returns nil if N < 0")
-  (fiveam:is-true (null (choose-some nil 2))
+  (is-true (null (choose-some nil 2))
     "choose-some returns nil if SEQ is empty")
   (let ((some (sort (choose-some (vector 1 2 3) 2) #'<)))
-    (fiveam:is-true (or (equalp some (vector 1 2))
+    (is-true (or (equalp some (vector 1 2))
                       (equalp some (vector 2 3))
                       (equalp some (vector 1 3)))
       "choose-some works with vectors")))
 
-
-(defun make-log-entry-regex (severity message)
-  (format nil "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2} \\[~a\\] ~a~%$"
-    severity message))
-
-(defun log-to-stream (severity-threshold severity message &optional jsonl)
-  (with-output-to-string (stream)
-    (open-log stream :severity-threshold severity-threshold
-      :log-format (if jsonl :jsonl :plain))
-    (log-it severity message)
-    (close-log)))
-
-(fiveam:test logging-tests
-  ;; Prior to a call to open-log, logit returns a string representing the log entry,
-  ;; but doesn't write to the log.
-  (fiveam:is-true (not (log-it :info "Hello World!"))
-    "prior to open-log, log-it with no message parameters returns nil")
-  (fiveam:is-true (not (log-it :error "Hello ~a ~a!" "Beautiful" "World"))
-    "prior to open-log, log-it with 2 message parameters returns nil")
-  ;; Log to stream
-  (fiveam:is-true (cl-ppcre:scan (make-log-entry-regex :info "a")
-                    (log-to-stream :debug :info "a"))
-    "log-it logs to stream")
-  ;; Log high-severity messages
-  (fiveam:is-true (cl-ppcre:scan (make-log-entry-regex :warn "b")
-                    (log-to-stream :warn :warn "b"))
-    "log-it logs message with severity at severity threshold")
-  (fiveam:is-true (cl-ppcre:scan (make-log-entry-regex :error "c")
-                    (log-to-stream :warn :error "c"))
-    "log-it logs message with severity above the severity threshold")
-  ;; Ignore low-severity messages
-  (fiveam:is-true (string= (log-to-stream :warn :info "d") "")
-    "log-it ignores message with severity below the severity threshold")
-  ;; Try using :jsonl log format
-  (fiveam:is-true (cl-ppcre:scan "\\{\"timestamp\":\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\",\"severity\":\"warn\",\"message\":\"hello\"\\}"
-                    (log-to-stream :info :warn "hello" t))
-    "log-it with :jsonl format")
-
-  ;; Try logging to a real file
-  (let ((log-file (format nil "/tmp/eclectic-test-~a.log" (random-hex-number))))
-    (open-log log-file :append nil)
-    (log-it :info "Test 1")
-    (log-it :info "Test ~d" 2)
-    (log-it-lazy :info (lambda () "Test 3"))
-    (close-log)
-    (fiveam:is-true (cl-ppcre:scan (format nil "~{~a~%~}"
-                                     (list
-                                       "{\"timestamp\":\"[-:0-9T]+\",\"severity\":\"info\",\"message\":\"Test [1-3]\"}"
-                                       "{\"timestamp\":\"[-:0-9T]+\",\"severity\":\"info\",\"message\":\"Test [1-3]\"}"
-                                       "{\"timestamp\":\"[-:0-9T]+\",\"severity\":\"info\",\"message\":\"Test [1-3]\"}"))
-                      (slurp log-file))
-      "log-it writes to files correctly"))
-
-  ;; log-it-lazy does nothing when severity is below threshold
-  (setf *log-a*
-    (with-output-to-string (log)
-      (open-log log :severity-threshold :info :log-format :plain)
-      (let ((*msg*-function (lambda () (setf *x* t) *msg*)))
-        (log-it-lazy :debug *msg*-function)
-        (fiveam:is-true (not *x*) "log-it-lazy :debug does not call *msg*-function")
-        (log-it-lazy :warn *msg*-function)
-        (fiveam:is-true *x* "log-it-lazy :warn calls *msg* function")
-        (close-log))))
-  (setf *log-b*
-    (with-output-to-string (log)
-      (open-log log :severity-threshold :info :log-format :plain)
-      (log-it :warn *msg*)
-      (close-log)))
-  (fiveam:is (equal *log-a* *log-b*)
-    "log-it and log-it-lazy produce same log entry"))
-
-(fiveam:test spew-and-slurp-tests
+(test spew-and-slurp-tests
   (let* ((string "hello world")
           (filename "/tmp/hello.txt"))
     (spew string filename)
-    (fiveam:is-true (uiop:file-exists-p filename)
+    (is-true (uiop:file-exists-p filename)
       "spew created file")
-    (fiveam:is (equal (slurp filename) string)
+    (is (equal (slurp filename) string)
       "slurp returns spewed string")
     (delete-file filename))
   (let* ((original (list 1 "one" :one t nil '(2 3 4)))
           (frozen (freeze original))
           (thawed (thaw frozen)))
-    (fiveam:is (equal (length original) (length thawed))
+    (is (equal (length original) (length thawed))
       "Thawed list has correct length")
-    (fiveam:is (equal original thawed)
+    (is (equal original thawed)
       "Thawed list is the same as original list"))
   (let* ((filename "/tmp/hello.txt")
           (original (list "hello" :world)))
     (spew (freeze original) filename)
     (let ((thawed (thaw (slurp filename))))
-      (fiveam:is (equal thawed original))
-      (fiveam:is (equal (car thawed) "hello")
+      (is (equal thawed original))
+      (is (equal (car thawed) "hello")
         "First element of thawed list is \"hello\"")
-      (fiveam:is (equal (second thawed) :world)
+      (is (equal (second thawed) :world)
         "Second element of thawed list is :world"))))
 
-(fiveam:test split-n-trim-tests
+(test split-n-trim-tests
   (let* ((s1 "one two three")
           (s2 "  one     two three   ")
           (s3 "123one456 789two10 1112three14   ")
@@ -620,127 +511,131 @@
           (p2-actual (split-n-trim s2))
           (p3-actual (split-n-trim s3 :fat "\\d+"))
           (expected (list "one" "two" "three")))
-    (fiveam:is (equal p1-actual expected)
+    (is (equal p1-actual expected)
       "split-n-trim words separated by single space")
-    (fiveam:is (equal p2-actual expected)
+    (is (equal p2-actual expected)
       "split-n-trim words separated by multiple spaces")
-    (fiveam:is (equal p3-actual expected)
+    (is (equal p3-actual expected)
       "split-n-trim words separated by spaces, trimming digits from each word")))
 
-(fiveam:test trim-tests
-  (fiveam:is (equal "hello" (trim "      hello       "))
+(test trim-tests
+  (is (equal "hello" (trim "      hello       "))
     "trim spaces around a string")
-  (fiveam:is (equal "hello" (trim "01234hello67890" "\\d+"))
+  (is (equal "hello" (trim "01234hello67890" "\\d+"))
     "trim digits around a string")
-  (fiveam:is (equal "hello" (trim "	 	hello 	"))
+  (is (equal "hello" (trim "	 	hello 	"))
     "trim whitespace"))
 
-(fiveam:test setenv-getenv-tests
-  (fiveam:is (equal (getenv "BOGUS_ENVIRONMENT_VARIABLE" :default "x") "x")
+(test setenv-getenv-tests
+  (is (equal (getenv "BOGUS_ENVIRONMENT_VARIABLE" :default "x") "x")
     "Read non-set environment variable with default")
-  (fiveam:is (equal (getenv "BOGUS_ENVIRONMENT_VARIABLE" :default 1) 1)
+  (is (equal (getenv "BOGUS_ENVIRONMENT_VARIABLE" :default 1) 1)
     "Read non-set environment variable with an integer default")
-  (fiveam:is (equal (setenv "BOGUS_ENVIRONMENT_VARIABLE" 1) "1")
+  (is (equal (setenv "BOGUS_ENVIRONMENT_VARIABLE" 1) "1")
     "Set environment variable")
-  (fiveam:is (equal (getenv "BOGUS_ENVIRONMENT_VARIABLE") "1")
+  (is (equal (getenv "BOGUS_ENVIRONMENT_VARIABLE") "1")
     "Read set environment variable")
-  (fiveam:is (equal (getenv "BOGUS_ENVIRONMENT_VARIABLE" :type :integer) 1)
+  (is (equal (getenv "BOGUS_ENVIRONMENT_VARIABLE" :type :integer) 1)
     "Read set environment variable as an integer")
-  (fiveam:is (equal (setenv "BOOLEAN_ENVIRONMENT_VARIABLE" t) "true")
+  (is (equal (setenv "BOOLEAN_ENVIRONMENT_VARIABLE" t) "true")
     "Set boolean environment variable to true")
-  (fiveam:is (equal (getenv "BOOLEAN_ENVIRONMENT_VARIABLE" :type :boolean) t)
+  (is (equal (getenv "BOOLEAN_ENVIRONMENT_VARIABLE" :type :boolean) t)
     "Read boolean environment variable (true)")
-  (fiveam:is (equal (setenv "BOOLEAN_ENVIRONMENT_VARIABLE" nil) "false")
+  (is (equal (setenv "BOOLEAN_ENVIRONMENT_VARIABLE" nil) "false")
     "Set boolean environment variable to false")
-  (fiveam:is (equal (getenv "BOOLEAN_ENVIRONMENT_VARIABLE" :type :boolean) nil)
+  (is (equal (getenv "BOOLEAN_ENVIRONMENT_VARIABLE" :type :boolean) nil)
     "Read boolean environment variable (false)")
-  (fiveam:is (equal (getenv "BOOLEAN_ENVIRONMENT_VARIABLE_X"
+  (is (equal (getenv "BOOLEAN_ENVIRONMENT_VARIABLE_X"
                       :type :boolean :default nil)
                nil)
     "Read boolean environment variable with default (false)")
-  (fiveam:is (equal (getenv "BOOLEAN_ENVIRONMENT_VARIABLE_X"
+  (is (equal (getenv "BOOLEAN_ENVIRONMENT_VARIABLE_X"
                       :type :boolean :default t)
                t)
     "Read boolean environment variable with default (true)"))
 
-(fiveam:test random-tests
+(test random-tests
   (let ((rstate1 (reference-random-state))
          (rstate2 (reference-random-state)))
-    (fiveam:is-true (not (= (random 1000000) (random 1000000))))
-    (fiveam:is (equal (random 1000000 rstate1) (random 1000000 rstate2))))
+    (is-true (not (= (random 1000000) (random 1000000))))
+    (is (equal (random 1000000 rstate1) (random 1000000 rstate2))))
 
   ;; Other random things
-  (fiveam:is (equal (length (format nil "~a" (random-number 1))) 1)
+  (is (equal (length (format nil "~a" (random-number 1))) 1)
     "random-number produces a 1-digit number")
-  (fiveam:is (equal (length (format nil "~a" (random-number))) 4)
+  (is (equal (length (format nil "~a" (random-number))) 4)
     "random-number produces a 4-digit number")
-  (fiveam:is (equal (length (format nil "~a" (random-number 10))) 10)
+  (is (equal (length (format nil "~a" (random-number 10))) 10)
     "random-number produces a 10-digit number")
-  (fiveam:is-true (cl-ppcre:scan "^[a-f0-9]{10}$" (random-hex-number 10))
+  (is-true (cl-ppcre:scan "^[a-f0-9]{10}$" (random-hex-number 10))
     "random-hex-number produces a good hex number")
-  (fiveam:is-true (cl-ppcre:scan "^[a-c]{10}$" (random-string 10 "abc"))
+  (is-true (cl-ppcre:scan "^[a-c]{10}$" (random-string 10 "abc"))
     "random-string works")
-  (fiveam:is-true (cl-ppcre:scan "^[a-z0-9]{10}" (random-string 10 (ascii-alpha-num-lower)))
+  (is-true (cl-ppcre:scan "^[a-z0-9]{10}" (random-string 10 (ascii-alpha-num-lower)))
     "random-string with ascii-alpha-num-lower")
-  (fiveam:is-true (cl-ppcre:scan "^[A-Z0-9]{10}" (random-string 10 (ascii-alpha-num-upper)))
+  (is-true (cl-ppcre:scan "^[A-Z0-9]{10}" (random-string 10 (ascii-alpha-num-upper)))
     "random-string with ascii-alpha-num-upper")
-  (fiveam:is-true (cl-ppcre:scan "^[0-9]{10}" (random-string 10 (ascii-numeric)))
+  (is-true (cl-ppcre:scan "^[0-9]{10}" (random-string 10 (ascii-numeric)))
     "random-string with ascii-numeric")
-  (fiveam:is-true (cl-ppcre:scan "^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$" (uuid))
+  (is-true (cl-ppcre:scan "^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$" (uuid))
     "uuid works"))
 
-(fiveam:test copy-file-tests
+(test copy-file-tests
   (let ((src (format nil "/tmp/~a.txt" (random-string 20 (ascii-alpha-num))))
          (dest (format nil "/tmp/~a.txt" (random-string 20 (ascii-alpha-num)))))
     (spew "Message 1" src)
     (copy-file src dest)
-    (fiveam:is (equal (slurp src) (slurp dest))
+    (is (equal (slurp src) (slurp dest))
       "file copied")
     (spew "Message 2" src)
-    (fiveam:is-true (not (equal (slurp src) (slurp dest)))
+    (is-true (not (equal (slurp src) (slurp dest)))
       "first file changed")
     (copy-file src dest)
-    (fiveam:is (equal (slurp src) (slurp dest))
+    (is (equal (slurp src) (slurp dest))
       "destination file superseded")
     (spew "Message 3" src)
     (copy-file src dest :if-exists :append)
-    (fiveam:is (equal (slurp dest) "Message 2Message 3")
+    (is (equal (slurp dest) "Message 2Message 3")
       "destination file appended")
-    (fiveam:signals error (copy-file src dest :if-exists :error)
+    (signals error (copy-file src dest :if-exists :error)
       "destination file exists and :if-exists is :error")
     (delete-file src)
     (delete-file dest)))
 
-(fiveam:test base64-tests
+(test base64-tests
   ;; base64-encoding
   (let ((s "Hello, beautiful World!"))
-    (fiveam:is (equal s (base64-decode (base64-encode s)))
+    (is (equal s (base64-decode (base64-encode s)))
       "Roundtrip base64-encoding works"))
-  (fiveam:is (equal "x" (base64-decode (base64-encode "x")))
+  (is (equal "x" (base64-decode (base64-encode "x")))
     "Rountrip for 1 char")
-  (fiveam:is (equal (base64-encode "") "")
+  (is (equal (base64-encode "") "")
     "base64-encode empty string -> empty string")
-  (fiveam:is (equal (base64-decode "") "")
+  (is (equal (base64-decode "") "")
     "base64-decode empty string -> empty string")
-  (fiveam:is (equal (base64-encode nil) "")
+  (is (equal (base64-encode nil) "")
     "base64-encode nil -> empty string")
-  (fiveam:is (equal (base64-decode nil) "")
+  (is (equal (base64-decode nil) "")
     "base64-decode nil -> empty string"))
 
-(fiveam:test encoding-tests
+(test encoding-tests
   (let ((s "Hello, beautiful World!┼"))
-    (fiveam:is (equal s (safe-decode (safe-encode s)))
+    (is (equal s (safe-decode (safe-encode s)))
       "Roundtrip safe-encoding works"))
-  (fiveam:is (equal "x" (safe-decode (safe-encode "x")))
+  (is (equal "x" (safe-decode (safe-encode "x")))
     "Rountrip for 1 char")
-  (fiveam:is (equal (safe-encode "") "")
+  (is (equal (safe-encode "") "")
     "safe-encode empty string -> empty string")
-  (fiveam:is (equal (safe-decode "") "")
+  (is (equal (safe-decode "") "")
     "safe-decode empty string -> empty string")
-  (fiveam:is (equal (safe-encode nil) "")
+  (is (equal (safe-encode nil) "")
     "safe-encode nil -> empty string")
-  (fiveam:is (equal (safe-decode nil) "")
+  (is (equal (safe-decode nil) "")
     "safe-decode nil -> empty string"))
 
-(fiveam:test shell-command-to-string-tests
+(test shell-command-to-string-tests
   (is (shell-command-to-string "echo 'hello'") "hello"))
+
+;;; Run tests
+(unless (run-all-tests)
+  (sb-ext:quit :unix-status 1))

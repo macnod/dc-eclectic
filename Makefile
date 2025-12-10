@@ -1,61 +1,35 @@
-ROSWELL_PREFIX=$(HOME)/.local
-ROSWELL=$(ROSWELL_PREFIX)/bin/ros
-INSTALLED_SYSTEMS=$(HOME)/.roswell/lisp/quicklisp/dists/quicklisp/software
-INSTALLED_LOCAL=$(HOME)/.roswell/local-projects
-
-APT_PACKAGES=automake \
-             build-essential \
-             curl \
-             git \
-             gnupg \
-             libcurl4-openssl-dev \
-             zlib1g-dev
-
-CL_PACKAGES=cl-ppcre \
-            yason \
-            ironclad \
-            trivial-utf-8 \
-            cl-csv \
-            fiveam \
-            cl-base64 \
-            babel \
-            macnod/dc-ds \
-            macnod/dc-dlist
-
-.PHONY: all setup install-apt-packages install-roswell install-dependencies test clean
-
-all: setup test
-
-setup: install-apt-packages install-roswell install-dependencies
-
-install-apt-packages: $(APT_PACKAGES)
-
-$(APT_PACKAGES):
-	@dpkg-query -l --no-pager $@ >/dev/null || sudo apt install $@ -y
+ROSWELL_VERSION := v23.10.14.114
+SBCL_VERSION := 2.5.10
+TEST_FILE := dc-eclectic-tests.lisp
+ROSWELL_BASE_URL := https://github.com/roswell/roswell/releases/download
+ROSWELL_FULL_URL := $(ROSWELL_BASE_URL)/$(ROSWELL_VERSION)/roswell_$(subst v,,$(ROSWELL_VERSION))-1_amd64.deb
 
 install-roswell:
-	curl -L https://github.com/roswell/roswell/releases/download/v23.10.14.114/roswell_23.10.14.114-1_amd64.deb --output roswell.deb
-	sudo dpkg -i roswell.deb
-
-install-dependencies: $(CL_PACKAGES)
-
-$(CL_PACKAGES):
-	@if ! [ -f "$(echo $@ | tr "/" "-").installed" ]; then \
-		$(ROSWELL) install $@; \
-		echo "Writing $(echo $@ | tr '/' '-').installed"; \
-		touch "$(echo $@ | tr '/' '-').installed"; \
+	@if ! which ros > /dev/null 2>&1; then \
+		echo "Roswell not found. Installing..."; \
+		curl -L $(ROSWELL_FULL_URL) --output roswell.deb; \
+		sudo dpkg -i roswell.deb; \
+		ros install sbcl-bin/$(SBCL_VERSION); \
+		ros use sbcl-bin/$(SBCL_VERSION); \
+		echo "Roswell installation complete."; \
 	else \
-		echo "$@ is already installed"; \
+		echo "Roswell already installed. Skipping..."; \
 	fi
+	touch $@
+
+install-dependencies:
+	ros install cl-ppcre
+	ros install yason
+	ros install uiop
+	ros install ironclad
+	ros install trivial-utf-8
+	ros install cl-base64
+	ros install cl-csv
+	ros install babel
+	ros install macnod/dc-ds
 
 test:
-	$(ROSWELL) run -- \
-	--eval "(asdf:load-system :fiveam)" \
-	--eval "(load #P\"dc-eclectic-tests.lisp\")" \
-	--eval "(setf fiveam:*test-dribble* t)" \
-	--eval "(sb-ext:unlock-package :it.bese.fiveam)" \
-	--eval "(progn (let ((results (fiveam:run!))) (if (or (null results) (and (not (eq results t)) (> (slot-value results 'it.bese.fiveam::failed) 0))) (sb-ext:exit :code 1) (sb-ext:exit :code 0))))" \
-	--quit
+	ros run -- --disable-debugger --load "$(TEST_FILE)" --quit
 
-clean:
-	rm -f *.installed
+.PHONY: install-roswell install-dependencies test
+.DEFAULT_GOAL := test
