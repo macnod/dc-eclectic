@@ -26,20 +26,22 @@ jobs:
         uses: actions/cache@v4
         id: depcache
         with:
-          path: ~/.roswell
-          key: dependencies-${{ runner.os }}
+          path: |
+            ~/.roswell
+            ~/.cache/common-lisp
+          key: dependencies-${{ runner.os }}-${{ hashFiles('**/*.lisp', 'Makefile') }}
           restore-keys: |
-            dependencies-${{ runner.os }}
-
-      - name: Install dependencies
-        if: steps.depcache.outputs.cache-hit != 'true'
-        shell: bash
-        run: make install-dependencies
+            dependencies-${{ runner.os }}-
 
       - name: Cache hit for dependencies
         if: steps.depcache.outputs.cache-hit == 'true'
         shell: bash
         run: echo "✅ Cache hit for dependencies"
+
+      - name: Install dependencies
+        if: steps.depcache.outputs.cache-hit != 'true'
+        shell: bash
+        run: make install-dependencies
 
       - name: Run tests
         run: make test
