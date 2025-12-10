@@ -2,14 +2,13 @@
 
 (require :cl-ppcre)
 (require :dc-ds)
-(require :dc-time)
 (require :fiveam)
 
 (push (uiop:getcwd) asdf:*central-registry*)
 (ql:register-local-projects)
 (asdf:load-system :dc-eclectic)
 
-(defpackage :dc-eclectic-tests (:use :cl :fiveam :dc-eclectic :dc-ds :dc-time))
+(defpackage :dc-eclectic-tests (:use :cl :fiveam :dc-eclectic :dc-ds))
 
 (in-package :dc-eclectic-tests)
 
