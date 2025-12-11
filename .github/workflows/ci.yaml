@@ -33,9 +33,9 @@ jobs:
         id: depcache
         with:
           path: |
-            ~/.roswell
+            ~/.roswell/local-projects
             ~/.cache/common-lisp
-          key: dependencies-${{ runner.os }}-${{ hashFiles('**/*.lisp', 'Makefile') }}
+          key: dependencies-${{ runner.os }}-${{ hashFiles('**/*.lisp', '**/*.asd', 'Makefile') }}
           restore-keys: |
             dependencies-${{ runner.os }}-
 

@@ -2,7 +2,9 @@
   :description "Functions that I use in most of my programs."
   :author "Donnie Cameron <macnod@gmail.com>"
   :license "MIT License"
-  :depends-on (:cl-ppcre
+  :depends-on (:dc-time
+                :p-log
+                :cl-ppcre
                 :yason
                 :uiop
                 :ironclad
@@ -10,9 +12,7 @@
                 :cl-base64
                 :cl-csv
                 :babel
-                :dc-ds
-                :dc-time
-                :p-log)
+                :dc-ds)
   :serial t
   :components ((:file "dc-eclectic-package")
                 (:file "dc-eclectic")
