@@ -28,8 +28,8 @@ install-dependencies:
 	ros install babel
 	ros install fiveam
 	ros install macnod/dc-ds
-	ros install macnod/p-log
 	ros install macnod/dc-time
+	ros install macnod/p-log
 
 test:
 	ros run -- --disable-debugger --load "$(TEST_FILE)" --quit
