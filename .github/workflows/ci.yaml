@@ -28,14 +28,14 @@ jobs:
           sbcl-version: 2.5.10
           roswell-version: 23.10.14.114
 
-      - name: Cache Dependencies
+      - name: Cache dependencies
         uses: actions/cache@v4
         id: depcache
         with:
           path: |
             ~/.roswell/local-projects
-            ~/.cache/common-lisp
-          key: dependencies-${{ runner.os }}-${{ hashFiles('**/*.lisp', '**/*.asd', 'Makefile') }}
+            ~/.cache/common-lisp/sbcl-2.5.10.roswell-linux-x64/home/runner/.roswell
+          key: dependencies-${{ runner.os }}-${{ hashFiles('~/.roswell/local-projects/**', '~/.cache/common-lisp/sbcl-2.5.10.roswell-linux-x64/home/runner/.roswell/**') }}
           restore-keys: |
             dependencies-${{ runner.os }}-
 
