@@ -6,7 +6,6 @@
                 :p-log
                 :cl-ppcre
                 :yason
-                :uiop
                 :ironclad
                 :trivial-utf-8
                 :cl-base64

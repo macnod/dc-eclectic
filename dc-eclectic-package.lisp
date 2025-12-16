@@ -78,6 +78,9 @@
     set-log-severity-threshold
     setenv
     shell-command-to-string
+    shell-command-background
+    shell-command-running-p
+    shell-command-wait
     shuffle
     slurp
     spew
