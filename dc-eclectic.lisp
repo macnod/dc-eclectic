@@ -852,3 +852,67 @@ defaults to 64 KB. Returns the DESTINATION path."
       :output :string
       :error-output :string)
     (values (trim output) error-output exit-code)))
+
+;; Background a shell command and support functions
+;; BEGIN
+
+(defun shell-command-background (command &key (wait-interval 0.1))
+  "Run COMMAND in the background. Returns a process-info plist with keys:
+  :pid, :exit-code (nil if running), :output, :error-output, :running-p,
+  :wait-interval (for polling), :status.
+
+  Use (process-info-running-p info), (process-info-wait info),
+  (process-info-exit-code info) to check status."
+  (let* ((start-time (get-universal-time))
+         (process (uiop:launch-program command
+                                       :output :string
+                                       :error-output :string)))
+    (list :pid (uiop:getpid process)
+          :process process
+          :output ""
+          :error-output ""
+          :exit-code nil
+          :start-time start-time
+          :wait-interval wait-interval
+          :status :running)))
+
+(defun process-info-running-p (info)
+  "Returns t if the background process is still running."
+  (and (eq :running (getf info :status))
+       (uiop:process-alive-p (getf info :process))))
+
+(defun process-info-exit-code (info)
+  "Returns exit code or nil if still running."
+  (getf info :exit-code))
+
+(defun process-info-wait (info &optional timeout)
+  "Wait for process to finish (with optional TIMEOUT seconds).
+  Updates INFO with output and exit code. Returns updated INFO."
+  (let ((process (getf info :process))
+        (wait-interval (or (getf info :wait-interval) 0.1))
+        (end-time (when timeout (+ (get-universal-time) timeout))))
+
+    (loop while (and (uiop:process-alive-p process)
+                     (or (not timeout) (< (get-universal-time) end-time)))
+          do (sleep wait-interval))
+
+    (when (uiop:process-alive-p process)
+      (uiop:terminate-process process :code 1))
+
+    (multiple-value-bind (output error-output exit-code)
+        (uiop:process-info-output process)
+      (setf (getf info :output) (trim output)
+            (getf info :error-output) (trim error-output)
+            (getf info :exit-code) exit-code
+            (getf info :status) (if exit-code :finished :terminated))
+      info)))
+
+;; Convenience function
+(defun process-info-result (info)
+  "Get output and exit-code as multiple values."
+  (values (getf info :output)
+          (getf info :error-output)
+          (getf info :exit-code)))
+
+;; END
+;; Background a shell command and support functions
