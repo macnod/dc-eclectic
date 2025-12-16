@@ -636,6 +636,33 @@
 (test shell-command-to-string-tests
   (is (shell-command-to-string "echo 'hello'") "hello"))
 
+(test shell-command-background-tests
+  (let ((info (shell-command-background "echo hello")))
+    (is (equal (getf info :status) :running) "process 1 info contains :status")
+    (sleep 0.1)
+    (is-false (shell-command-running-p info) "process 1 is no longer running")
+    (let ((info (shell-command-wait info)))
+      (is (equal (getf info :output) (format nil "hello~%"))
+            "process 1 output is hello")
+      (is (equal (getf info :error-output) "") "process 1 has no error output")
+      (is (equal (getf info :status) :completed)
+        "process 1 status is completed")
+      (is (equal (getf info :exit-code) 0) "process 1 exit code is 0")))
+  (let* ((info1 (shell-command-background "sleep 1 && echo awake"))
+          (info2 (shell-command-wait info1)))
+    (is (equal (getf info2 :status) :completed) "process 2 status is completed")
+    (is (equal (getf info2 :exit-code) 0) "process 2 exit code is 0")
+    (is (equal (getf info2 :output) (format nil "awake~%"))
+      "process 2 output is awake"))
+  (let* ((info1 (shell-command-background "sleep 10 && echo awake"))
+          (info2 (shell-command-wait info1 1)))
+    (is (equal (getf info2 :status) :terminated)
+      "process 3 status is terminated")
+    (is (equal (getf info2 :exit-code) 15)
+      "process 3 expected exit-code 15, got ~a" (getf info2 :exit-code))
+    (is (equal (getf info2 :output) nil)
+      "process 3 expected output \"\", got ~a" (getf info2 :output))))
+
 ;;; Run tests
 (unless (run-all-tests)
   (sb-ext:quit :unix-status 1))

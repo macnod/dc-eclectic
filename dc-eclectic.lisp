@@ -902,7 +902,6 @@ When the process is terminated due a timeout, INFO is updated with :status
           do (sleep wait-interval))
 
     (when (uiop:process-alive-p process)
-      (format t "terminating~%")
       (uiop:terminate-process process))
 
     (let* ((code (uiop:wait-process process))
@@ -920,6 +919,7 @@ When the process is terminated due a timeout, INFO is updated with :status
                               (loop for line = (read-line s nil nil)
                                 while line collect line into lines
                                 finally (return (format nil "~{~a~^~%~}" lines)))))))
+      (uiop:close-streams process)
       (setf
         (getf info :output) output
         (getf info :error-output) error-output
