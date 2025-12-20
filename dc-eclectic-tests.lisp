@@ -663,6 +663,27 @@
     (is (equal (getf info2 :output) nil)
       "process 3 expected output \"\", got ~a" (getf info2 :output))))
 
+(test safe-sort
+  (let* ((numeric-1 (range 1 10 :shuffle t))
+          (numeric-2 (copy-seq numeric-1))
+          (numeric-3 (safe-sort numeric-1))
+          (alpha-1 (loop for a from 1 to 10
+                     collect (random-string 4 (ascii-alpha))))
+          (alpha-2 (copy-seq alpha-1))
+          (alpha-3 (safe-sort alpha-1))
+          (weird-1 '((1 2 "hello") ("beautiful" 3 4 5) ("world" 6))))
+    (is (equal numeric-1 numeric-2)
+      "expected (~{~a~^, ~}); got (~{~a~^, ~})")
+    (is-true (loop for a in numeric-3 for b in (rest numeric-3)
+               always (< a b))
+      "expected (~{~a~^, ~}) to be sorted")
+    (is (equal alpha-1 alpha-2)
+      "expected (~{~a~^, ~}); got (~{~a~^, ~})")
+    (is-true (loop for s1 in alpha-3 for s2 in (rest alpha-3)
+               always (string< s1 s2))
+      "expected (~{~a~^, ~}) to be sorted")
+    (signals simple-error (safe-sort weird-1))))
+
 ;;; Run tests
 (unless (run-all-tests)
   (sb-ext:quit :unix-status 1))

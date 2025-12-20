@@ -75,6 +75,7 @@
     root-path
     safe-encode
     safe-decode
+    safe-sort
     set-log-severity-threshold
     setenv
     shell-command-to-string

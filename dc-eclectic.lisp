@@ -70,14 +70,16 @@ path, inserting slashes where necessary."
   "Retrieves the filename (filename only, without the path) of FILENAME."
   (if (null filename)
       ""
-      (if (stringp filename)
-          (multiple-value-bind (match parts)
-              (re:scan-to-strings "((.*)/)?([^\/]*)$" filename)
-            (declare (ignore match))
-            (if (not (zerop (length parts)))
-                (elt parts (1- (length parts)))
-                ""))
-          (error "FILENAME must be a string."))))
+    (let ((file (cond
+                  ((stringp filename) filename)
+                  ((pathnamep filename) (namestring filename))
+                  (t (error "FILENAME must be a string or pathname.")))))
+      (multiple-value-bind (match parts)
+        (re:scan-to-strings "((.*)/)?([^\/]*)$" file)
+        (declare (ignore match))
+        (if (zerop (length parts))
+          ""
+          (elt parts (1- (length parts))))))))
 
 (defun leaf-directory-only (path)
   (car (last (re:split "/" (string-trim "/" path)))))
@@ -926,6 +928,21 @@ When the process is terminated due a timeout, INFO is updated with :status
         (getf info :exit-code) exit-code
         (getf info :status) status))
       info))
+
+(defun safe-sort (list &key predicate)
+  "Returns a sorted copy of LIST, without modifying LIST. If PREDICATE is
+not provided, the function determines the type of the first element of the
+list to pick a suitable sort predicate. The function assumes that all the
+elements in LIST are of the same type and that they are either strings,
+keywords, or numbers. The function sorts in ascending order by default.
+If PREDICATE is provided, then the function uses that predicate."
+  (let ((p (or predicate
+             (cond
+               ((stringp (car list)) #'string<)
+               ((keywordp (car list)) #'string<)
+               ((numberp (car list)) #'<)
+               (t (error "Cannot determine sort predicate for LIST"))))))
+    (stable-sort (copy-seq list) p)))
 
 ;; END
 ;; Background a shell command and support functions
