@@ -67,7 +67,7 @@
                (list "one" "two" "three" "four" "five" "six" "seven" "eight"))
     "flatten nested list of strings"))
 
-(test path-tests
+(test join-paths
   ;; join-paths
   (is (equal (join-paths nil) "")
     "join-paths with nil")
@@ -102,23 +102,21 @@
   (is (equal (join-paths "/a" 1 "b") "/a/1/b")
     "join-paths with one non-string")
   (is (equal (join-paths 1 2 3) "1/2/3")
-    "join-paths with all non-string")
+    "join-paths with all non-string"))
 
-  ;; path-only
-  (is (equal (path-only nil) "/")
-    "path-only with nil")
-  (is (equal (path-only "") "/")
-    "path-only with empty string")
-  (is (equal (path-only "/") "/")
-    "path-only with /")
-  (is (equal (path-only "/a/b/c/file.txt") "/a/b/c")
-    "path-only with /a/b/c/file.txt")
-  (is (equal (path-only "a/b/c/file.txt") "a/b/c")
-    "path-only with a/b/c/file.txt")
-  (is (equal (path-only "file.txt") "/")
-    "path-only with file.txt")
+(test path-only
+  (is (equal "" (path-only nil)))
+  (is (equal "" (path-only "")))
+  (is (equal "/" (path-only "/")))
+  (is (equal "/a/b/c/" (path-only "/a/b/c/file.txt")))
+  (is (equal "a/b/c/" (path-only "a/b/c/file.txt")))
+  (is (equal "" (path-only "file.txt")))
+  (is (equal "/" (path-only "/one")))
+  (is (equal "/one/" (path-only "/one/")))
+  (is (equal "/one/" (path-only "/one/two")))
+  (is (equal "/one/two/" (path-only "/one/two/"))))
 
-  ;; filename-only
+(test filename-only
   (is (equal (filename-only nil) "")
     "filename-only with nil")
   (is (equal (filename-only "/") "")
@@ -132,9 +130,9 @@
   (is (equal (filename-only "") "")
     "filename-only with empty string")
   (is (equal (filename-only "file.txt/") "")
-    "filename-only with file.txt/")
+    "filename-only with file.txt/"))
 
-  ;; directory-leaf-only
+(test directory-leaf-only
   (is (equal (leaf-directory-only "/") nil)
     "leaf-directory-only / is nil")
   (is (equal (leaf-directory-only "/one") "one")

@@ -39,7 +39,11 @@ parameter if you want case-insensitve matches."
 
 (defun join-paths (&rest path-parts)
   "Joins parameters (collected in PATH-PARTS) into a unix-like file
-path, inserting slashes where necessary."
+path, inserting slashes where necessary. PATH-PARTS can be strings or
+pathnames. If the first element in PATH-PARTS starts with a slash, the resulting
+path will be absolute; otherwise, it will be relative.  PATH-PARTS elements
+should be strings or pathnames, but this function will try to convert other
+types to strings, if possible. NIL or empty strings are ignored."
   (when (null path-parts) (return-from join-paths ""))
   (let* ((parts (loop for part in path-parts
                       for part-string = (when part (format nil "~a" part))
@@ -55,16 +59,29 @@ path, inserting slashes where necessary."
     (format nil "~a~a" (if absolute "/" "") path)))
 
 (defun path-only (filename)
-  "Retrieves the path (path only, without the filename) of FILENAME."
-  (declare (type (or string null) filename))
-  (multiple-value-bind (match strings)
-    (re:scan-to-strings "(.+)\/[^\/]*$" filename)
-    (declare (ignore match))
-    (let ((string-list (map 'list 'identity strings)))
-      (if (or (null string-list)
-            (null (car string-list)))
-        "/"
-        (elt string-list 0)))))
+  "Retrieves the path (path only, without the filename) of FILENAME. FILENAME
+should be a string, a pathname, or NIL. If FILENAME is NIL or the empty string,
+this function returns the empty string. If FILENAME has no path component, this
+function returns \"/\"."
+  (declare (type (or pathname string null) filename))
+  (if (or (not filename) (zerop (length (format nil "~a" filename))))
+    ""
+    (loop
+      with s = (format nil "~a" filename)
+      with parts = (re:split "/" s)
+      with directory = (unless (zerop (length parts)) (re:scan "/$" s))
+      and absolute = (re:scan "^/" s)
+      for part in (butlast parts)
+      when (and part (not (zerop (length part))))
+      collect part into new-parts
+      finally
+      (return
+        (format nil "~a~{~a/~}~a"
+          (if absolute "/" "")
+          new-parts
+          (if directory
+            (format nil "~a/" (car (last parts)))
+            ""))))))
 
 (defun filename-only (filename)
   "Retrieves the filename (filename only, without the path) of FILENAME."
