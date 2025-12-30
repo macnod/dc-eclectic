@@ -36,6 +36,8 @@
     directory-exists-p
     distinct-elements
     distinct-values
+    exclude
+    exclude-regex
     existing-n-gram-strings
     existing-permutations-of-string
     file-exists-p
@@ -44,6 +46,8 @@
     flatten
     freeze
     getenv
+    has
+    has-some
     hash-hmac-256
     hash-keys
     hash-string
