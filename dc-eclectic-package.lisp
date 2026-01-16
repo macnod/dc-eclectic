@@ -88,6 +88,7 @@
     shell-command-running-p
     shell-command-wait
     shuffle
+    singular
     slurp
     spew
     split-n-trim

@@ -792,6 +792,17 @@
     (is (equal '(:one (vector 2 3 "four")) original))
     (is (equal '(:one (vector 2 3 "Four")) copy))))
 
+(test singular
+  (is (equal "widget" (singular "widgets")))
+  (is (equal "workman" (singular "workmen")))
+  (is (equal "lady" (singular "ladies")))
+  (is (equal "child" (singular "children")))
+  (is (equal "tooth" (singular "teeth")))
+  (is (equal "my_child" (singular "my_children")))
+  (is (equal "directory" (singular "directories")))
+  (is (equal "file" (singular "files")))
+  (is (equal "datum" (singular "data"))))
+
 ;;; Run tests
 (unless (run-all-tests)
   (sb-ext:quit :unix-status 1))

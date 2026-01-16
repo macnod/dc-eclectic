@@ -1025,3 +1025,23 @@ not excluded, even if they match EXCLUDE."
     ((stringp thing) (copy-seq thing))
     ((vectorp thing) (map 'vector #'deep-copy thing))
     (t thing)))
+
+(defun singular (word)
+  "Convert plural to singular form (works most of the time)."
+  (loop with pairs = '(("ies" . "y")
+                        ("ves" . "f")
+                        ("is" . "es")
+                        ("s" . "")
+                        ("men" . "man")
+                        ("children" . "child")
+                        ("feet" . "foot")
+                        ("teeth" . "tooth")
+                        ("mice" . "mouse")
+                        ("people" . "person")
+                        ("data" . "datum"))
+    for pair in pairs
+    for regex = (format nil "~a$" (car pair))
+    for replacement = (cdr pair)
+    when (re:scan regex word)
+    do (return-from singular (re:regex-replace regex word replacement))
+    finally (return word)))
