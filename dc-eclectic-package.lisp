@@ -31,6 +31,7 @@
     close-log
     comparable-hash-dump
     copy-file
+    deep-copy
     define-base-encoder
     denormalize-list
     directory-exists-p
