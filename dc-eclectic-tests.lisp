@@ -783,7 +783,14 @@
     (is (equal '(:one :two (:three (:four :fiver))) copy))
     (setf (cdr copy) nil)
     (is (equal '(:one :two (:three (:four :five))) original))
-    (is (equal '(:one) copy))))
+    (is (equal '(:one) copy)))
+  (let* ((original '(:one (vector 2 3 "four")))
+          (copy (deep-copy original)))
+    (is (equal '(:one (vector 2 3 "four")) original))
+    (is (equal '(:one (vector 2 3 "four")) copy))
+    (setf (elt (second copy) 3) "Four")
+    (is (equal '(:one (vector 2 3 "four")) original))
+    (is (equal '(:one (vector 2 3 "Four")) copy))))
 
 ;;; Run tests
 (unless (run-all-tests)
