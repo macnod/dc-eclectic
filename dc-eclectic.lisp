@@ -1015,3 +1015,13 @@ not excluded, even if they match EXCLUDE."
                  (not (member s exceptions :test 'equal))
                  (re:scan exclude s)))
     reference-list))
+
+(defun deep-copy (thing)
+  "Deep copy THING, recursively copying lists, vectors, and strings."
+  (cond
+    ((null thing) nil)
+    ((consp thing)
+      (cons (deep-copy (car thing)) (deep-copy (cdr thing))))
+    ((stringp thing) (copy-seq thing))
+    ((vectorp thing) (map 'vector #'deep-copy thing))
+    (t thing)))
