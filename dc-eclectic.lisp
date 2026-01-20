@@ -1045,3 +1045,28 @@ not excluded, even if they match EXCLUDE."
     when (re:scan regex word)
     do (return-from singular (re:regex-replace regex word replacement))
     finally (return word)))
+
+(defun tree-get (tree &rest path)
+  "Get value from the TREE structure, at PATH. TREE is a nested data structure
+where each value can be a plist, list, object, t, or nil."
+  (loop for key in path
+        do (etypecase key
+             (integer (progn
+                        (assert (listp tree) (tree) "Expected a list.")
+                        (setf tree (nth key tree))))
+             (symbol (progn
+                       (assert (plistp tree) (tree) "Expected a plist.")
+                       (setf tree (getf tree key)))))
+        finally (return tree)))
+
+(defmacro tree-put (value tree &rest path)
+  "Set VALUE at the location specified by PATH in the TREE structure.
+Expands into a series of `getf` and `nth` calls for efficient access."
+  (let ((place
+          (reduce (lambda (current key)
+                    (etypecase key
+                      (integer `(nth ,key ,current))
+                      (symbol `(getf ,current ,key))))
+                  path
+                  :initial-value tree)))
+    `(setf ,place ,value)))

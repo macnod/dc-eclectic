@@ -25,3 +25,4 @@
 # Makefile
 *.installed
 roswell.deb
+.markdown-preview.html

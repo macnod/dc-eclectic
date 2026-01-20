@@ -94,6 +94,8 @@
     split-n-trim
     thaw
     to-ascii
+    tree-get
+    tree-put
     trim
     trim-whitespace
     uuid

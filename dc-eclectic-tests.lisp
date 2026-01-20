@@ -803,6 +803,55 @@
   (is (equal "file" (singular "files")))
   (is (equal "datum" (singular "data"))))
 
+(test tree-get
+  (let ((tree '(:files
+                 (:enable t
+                   :fields ((:name "size" :type :integer)
+                             (:name "type" :type :text)
+                             (:name "description" :type :text
+                               :default "No description")
+                             (:name "hash" :type :text :unique t)
+                             (:name "xgroup" :type :integer :required t)))
+                 :directories (:enable t :fields nil))))
+    (is-true (tree-get tree :files :enable))
+    (is-true (tree-get tree :directories :enable))
+    (is (equal 5 (length (tree-get tree :files :fields))))
+    (is (equal (tree-get tree :files :fields 0)
+          '(:name "size" :type :integer)))
+    (is (equal (tree-get tree :files :fields 1)
+          '(:name "type" :type :text)))
+    (is (equal (tree-get tree :files :fields 2 :default)
+               "No description"))
+    (is-true (tree-get tree :files :fields 3 :unique))
+    (is-true (tree-get tree :files :fields 4 :required))
+    (is (equal '(:integer :text :text :text :integer)
+          (mapcar (lambda (subtree) (tree-get subtree :type))
+            (tree-get tree :files :fields))))))
+
+(test tree-put
+  (let ((tree '(:files
+                 (:enable t
+                   :fields ((:name "size" :type :integer)
+                             (:name "type" :type :text)
+                             (:name "description" :type :text
+                               :default "No description")
+                             (:name "hash" :type :text :unique t)
+                             (:name "xgroup" :type :integer :required t)))
+                 :directories (:enable t :fields nil))))
+    (let ((copy (deep-copy tree)))
+      (is (equal tree copy))
+      (tree-put "New description" copy :files :fields 2 :default)
+      (is (equal "New description" (tree-get copy :files :fields 2 :default)))
+      (is (equal "No description" (tree-get tree :files :fields 2 :default))))
+    (let ((copy (deep-copy tree)))
+      (is-true (tree-get copy :files :fields 3 :unique))
+      (tree-put nil copy :files :fields 3 :unique)
+      (is-false (tree-get copy :files :fields 3 :unique)))
+    (let ((copy (deep-copy tree)))
+      (is (equal :text (tree-get copy :files :fields 1 :type)))
+      (tree-put :integer copy :files :fields 1 :type)
+      (is (equal :integer (tree-get copy :files :fields 1 :type))))))
+
 ;;; Run tests
 (unless (run-all-tests)
   (sb-ext:quit :unix-status 1))
