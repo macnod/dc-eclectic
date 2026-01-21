@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       disable-cache:
-        description: 'Disable all caching'
+        description: 'Disable caching'
         required: false
         default: 'false'
         type: boolean
@@ -40,12 +40,12 @@ jobs:
             dependencies-${{ runner.os }}-
 
       - name: Cache hit for dependencies
-        if: steps.depcache.outputs.cache-hit == 'true'
+        if: steps.depcache.outputs.cache-hit == 'true' && inputs.disable-cache == 'false'
         shell: bash
         run: echo "✅ Cache hit for dependencies"
 
       - name: Install dependencies
-        if: steps.depcache.outputs.cache-hit != 'true'
+        if: steps.depcache.outputs.cache-hit != 'true' || inputs.disable-cache == 'true'
         shell: bash
         run: make install-dependencies
 
