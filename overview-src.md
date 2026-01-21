@@ -1,0 +1,1 @@
+`dc-eclectic` provides a grab-bag of high-quality utility functions for file operations, string manipulation, hashing, random generation, list processing, path handling, and more. These functions are designed to be practical, performant, and easy to use.
