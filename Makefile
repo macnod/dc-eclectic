@@ -35,5 +35,11 @@ install-dependencies:
 test:
 	ros run -- --disable-debugger --load "$(TEST_FILE)" --quit
 
+docs:
+	ros run -- --disable-debugger \
+      --eval '(asdf:load-system :dc-eclectic :force t)' \
+      --eval "(dc-eclectic::generate-readme)" \
+			--quit;
+
 .PHONY: install-roswell install-dependencies test
 .DEFAULT_GOAL := test
