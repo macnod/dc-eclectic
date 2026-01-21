@@ -144,7 +144,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
     encoding and decoding functions. However, this function doesn't properly handle
     multi-byte characters. Unless you require compatibility with external functions,
     use the other decoding functions in `DC-ECLECTIC`. See [`SAFE-ENCODE`][3763], [`SAFE-DECODE`][4316],
-    and `DEFINE-BASE-ENCODER`.
+    and [`DEFINE-BASE-ENCODER`][e556].
 
 <a id="x-28DC-ECLECTIC-3ABASE64-ENCODE-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:BASE64-ENCODE%20FUNCTION"></a>
@@ -156,7 +156,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
     Lisp. These do not properly handle multibyte characters, so use this function
     only if you need compatibility with popular implementations. `DC-ECLECTIC`
     contains better encoding and decoding functions. See [`SAFE-ENCODE`][3763], [`SAFE-DECODE`][4316],
-    and `DEFINE-BASE-ENCODER`.
+    and [`DEFINE-BASE-ENCODER`][e556].
 
 <a id="x-28DC-ECLECTIC-3ACHOOSE-ONE-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:CHOOSE-ONE%20FUNCTION"></a>
@@ -218,6 +218,27 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 - [function] **DEEP-COPY** *THING*
 
     \[public\] Deep copy `THING`, recursively copying lists, vectors, and strings.
+
+<a id="x-28DC-ECLECTIC-3ADEFINE-BASE-ENCODER-20MGL-PAX-3AMACRO-29"></a>
+<a id="DC-ECLECTIC:DEFINE-BASE-ENCODER%20MGL-PAX:MACRO"></a>
+
+- [macro] **DEFINE-BASE-ENCODER** *NAME ALPHABET*
+
+    \[public\] Creates 2 functions using `NAME` (a symbol), and `ALPHABET` (a string):
+    {NAME}-ENCODE and {NAME-DECODE}. {NAME}-ENCODE takes 1 parameter, `DATA` (a
+    string), and returns the string encoded with `ALPHABET`. {NAME}-DECODE accepts a
+    single parameter (an encoded string) and returns the original strinng. For
+    example, if you need to encode strings using hexadecimal characters, you can
+    call this function as follows:
+    
+        (define-base-encoder hex "0123456789abcdef")
+    
+    That will produce the functions HEX-ENCODE and HEX-DECODE. Those function will
+    work as follows:
+    
+        (hex-encode "Hello World!")             ;; => "48656c6c6f20576f726c6421"
+        (hex-decode "48656c6c6f20576f726c6421") ;; => "Hello World!"
+
 
 <a id="x-28DC-ECLECTIC-3ADENORMALIZE-LIST-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:DENORMALIZE-LIST%20FUNCTION"></a>
@@ -671,14 +692,14 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **SAFE-DECODE** *DATA*
 
-    \[public\] Decodes `DATA` using the `SAFE` alphabet.
+    \[public\] Decodes `DATA` using the SAFE alphabet.
 
 <a id="x-28DC-ECLECTIC-3ASAFE-ENCODE-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:SAFE-ENCODE%20FUNCTION"></a>
 
 - [function] **SAFE-ENCODE** *DATA*
 
-    \[public\] Encodes data using the `SAFE` alphabet.
+    \[public\] Encodes data using the SAFE alphabet.
 
 <a id="x-28DC-ECLECTIC-3ASAFE-SORT-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:SAFE-SORT%20FUNCTION"></a>
@@ -816,6 +837,14 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
     \[public\] Get value from the `TREE` structure, at `PATH`. `TREE` is a nested data
     structure where each value can be a plist, list, object, t, or nil.
 
+<a id="x-28DC-ECLECTIC-3ATREE-PUT-20MGL-PAX-3AMACRO-29"></a>
+<a id="DC-ECLECTIC:TREE-PUT%20MGL-PAX:MACRO"></a>
+
+- [macro] **TREE-PUT** *VALUE TREE &REST PATH*
+
+    \[public\] Set `VALUE` at the location specified by `PATH` in the `TREE` structure.
+    Expands into a series of [`getf`][104a] and [`nth`][1aa3] calls for efficient access.
+
 <a id="x-28DC-ECLECTIC-3ATRIM-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:TRIM%20FUNCTION"></a>
 
@@ -877,7 +906,9 @@ Exported special variables.
 
   [0c8e]: #DC-ECLECTIC:SHELL-COMMAND-BACKGROUND%20FUNCTION "DC-ECLECTIC:SHELL-COMMAND-BACKGROUND FUNCTION"
   [0f15]: #DC-ECLECTIC:SHELL-COMMAND-WAIT%20FUNCTION "DC-ECLECTIC:SHELL-COMMAND-WAIT FUNCTION"
+  [104a]: http://www.lispworks.com/documentation/HyperSpec/Body/f_getf.htm "GETF (MGL-PAX:CLHS FUNCTION)"
   [1219]: #DC-ECLECTIC:@OVERVIEW%20MGL-PAX:SECTION "Overview"
+  [1aa3]: http://www.lispworks.com/documentation/HyperSpec/Body/f_nth.htm "NTH (MGL-PAX:CLHS FUNCTION)"
   [1c3b]: #DC-ECLECTIC:@FUNCTIONS%20MGL-PAX:SECTION "Functions and Macros"
   [1f1d]: http://www.lispworks.com/documentation/HyperSpec/Body/f_random.htm "RANDOM (MGL-PAX:CLHS FUNCTION)"
   [20cd]: #DC-ECLECTIC:FREEZE%20FUNCTION "DC-ECLECTIC:FREEZE FUNCTION"
@@ -891,4 +922,5 @@ Exported special variables.
   [beee]: #DC-ECLECTIC:SHELL-COMMAND-RUNNING-P%20FUNCTION "DC-ECLECTIC:SHELL-COMMAND-RUNNING-P FUNCTION"
   [ce32]: #DC-ECLECTIC:N-GRAMS%20FUNCTION "DC-ECLECTIC:N-GRAMS FUNCTION"
   [dd55]: http://www.lispworks.com/documentation/HyperSpec/Body/t_and.htm "AND (MGL-PAX:CLHS TYPE)"
+  [e556]: #DC-ECLECTIC:DEFINE-BASE-ENCODER%20MGL-PAX:MACRO "DC-ECLECTIC:DEFINE-BASE-ENCODER MGL-PAX:MACRO"
   [ee87]: #DC-ECLECTIC:@VARIABLES%20MGL-PAX:SECTION "Special Variables"
