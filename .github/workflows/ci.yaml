@@ -36,7 +36,7 @@ jobs:
           path: |
             ~/.roswell/local-projects
             ~/.cache/common-lisp/sbcl-2.5.10.roswell-linux-x64/home/runner/.roswell
-          key: dependencies-${{ runner.os }}-${{ hashFiles('~/.roswell/local-projects/**', '~/.cache/common-lisp/sbcl-2.5.10.roswell-linux-x64/home/runner/.roswell/**') }}
+          key: dependencies-${{ runner.os }}-${{ hashFiles('~/.roswell/local-projects/**', '~/.cache/common-lisp/sbcl-2.5.10.roswell-linux-x64/home/runner/.roswell/**', 'Makefile') }}
           restore-keys: |
             dependencies-${{ runner.os }}-
 
