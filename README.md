@@ -52,7 +52,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **ALL-PERMUTATIONS** *LIST*
 
-    \[public\] Returns a list of every permutation of elements in `LIST`. For
+    Returns a list of every permutation of elements in `LIST`. For
     example:
        '(1 2 3) -> '((1 2 3) (1 3 2) (2 1 3) (2 3 1) (3 1 2) (3 2 1))
 
@@ -61,14 +61,14 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **ALL-PERMUTATIONS-BASE** *LIST*
 
-    \[private\] Internal helper function for [`ALL-PERMUTATIONS`][bcd1].
+    :private: Internal helper function for [`ALL-PERMUTATIONS`][bcd1].
 
 <a id="x-28DC-ECLECTIC-3AALL-PERMUTATIONS-OF-STRING-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:ALL-PERMUTATIONS-OF-STRING%20FUNCTION"></a>
 
 - [function] **ALL-PERMUTATIONS-OF-STRING** *S*
 
-    \[public\] Returns a list of strings representing every permutation of the
+    Returns a list of strings representing every permutation of the
     orginal string `S`. For example:
         "abc" -> '("abc" "acb" "bac" "bca" "cab" "cba")
 
@@ -77,14 +77,14 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **ASCII-ALPHA**
 
-    \[public\] Return a string with all the alphabetic ASCII characters.
+    Return a string with all the alphabetic ASCII characters.
 
 <a id="x-28DC-ECLECTIC-3AASCII-ALPHA-LOWER-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:ASCII-ALPHA-LOWER%20FUNCTION"></a>
 
 - [function] **ASCII-ALPHA-LOWER**
 
-    \[public\] Returns a string with all the lower-case alphabetic ASCII
+    Returns a string with all the lower-case alphabetic ASCII
     characters (a-z).
 
 <a id="x-28DC-ECLECTIC-3AASCII-ALPHA-NUM-20FUNCTION-29"></a>
@@ -92,14 +92,14 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **ASCII-ALPHA-NUM**
 
-    \[public\] Returns a string with all the alpha-numeric ASCII characters.
+    Returns a string with all the alpha-numeric ASCII characters.
 
 <a id="x-28DC-ECLECTIC-3AASCII-ALPHA-NUM-LOWER-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:ASCII-ALPHA-NUM-LOWER%20FUNCTION"></a>
 
 - [function] **ASCII-ALPHA-NUM-LOWER**
 
-    \[public\] Returns a string with all the lower-case alpha-numeric ASCII
+    Returns a string with all the lower-case alpha-numeric ASCII
     characters.
 
 <a id="x-28DC-ECLECTIC-3AASCII-ALPHA-NUM-UPPER-20FUNCTION-29"></a>
@@ -107,7 +107,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **ASCII-ALPHA-NUM-UPPER**
 
-    \[public\] Returns a string with all the upper-case alpha-numeric ASCII
+    Returns a string with all the upper-case alpha-numeric ASCII
     characters.
 
 <a id="x-28DC-ECLECTIC-3AASCII-ALPHA-UPPER-20FUNCTION-29"></a>
@@ -115,7 +115,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **ASCII-ALPHA-UPPER**
 
-    \[public\] Returns a string with all the upper-case alphabetic ASCII
+    Returns a string with all the upper-case alphabetic ASCII
     characters (A-Z).
 
 <a id="x-28DC-ECLECTIC-3AASCII-CHAR-RANGE-20FUNCTION-29"></a>
@@ -123,7 +123,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **ASCII-CHAR-RANGE** *BEGIN END*
 
-    \[public\] Returns a string that includes ASCII characters in the ASCII code
+    Returns a string that includes ASCII characters in the ASCII code
     range given by `BEGIN` and `END`.
 
 <a id="x-28DC-ECLECTIC-3AASCII-NUMERIC-20FUNCTION-29"></a>
@@ -131,7 +131,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **ASCII-NUMERIC**
 
-    \[public\] Returns a string with all the ASCII characters that represent
+    Returns a string with all the ASCII characters that represent
     digits.
 
 <a id="x-28DC-ECLECTIC-3ABASE64-DECODE-20FUNCTION-29"></a>
@@ -139,7 +139,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **BASE64-DECODE** *BASE64-ENCODED-STRING*
 
-    \[public\] Decodes `BASE64-ENCODED-STRING` and returns the result. This function
+    Decodes `BASE64-ENCODED-STRING` and returns the result. This function
     is compatible with base64-encode and with popular implementation of base64
     encoding and decoding functions. However, this function doesn't properly handle
     multi-byte characters. Unless you require compatibility with external functions,
@@ -151,7 +151,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **BASE64-ENCODE** *STRING*
 
-    \[public\] Returns a base64-encoded version of `STRING` that that works list like
+    Returns a base64-encoded version of `STRING` that that works list like
     the standard base64-encode implementations in the Linux command line and Emacs
     Lisp. These do not properly handle multibyte characters, so use this function
     only if you need compatibility with popular implementations. `DC-ECLECTIC`
@@ -163,14 +163,14 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **CHOOSE-ONE** *SEQ &OPTIONAL RSTATE*
 
-    \[public\] Returns a random element from `SEQ`.
+    Returns a random element from `SEQ`.
 
 <a id="x-28DC-ECLECTIC-3ACHOOSE-SOME-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:CHOOSE-SOME%20FUNCTION"></a>
 
 - [function] **CHOOSE-SOME** *SEQ N &OPTIONAL RSTATE*
 
-    \[public\] Choose `N` elements from `SEQ` and return a new sequence with those
+    Choose `N` elements from `SEQ` and return a new sequence with those
     elements, with the new sequence having the same type as `SEQ`.
     
     `N` must be an integer that is greater than or equal to 1.
@@ -189,7 +189,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **COMPARABLE-HASH-DUMP** *HASH &KEY (F-SORT \#'STRING\<) (F-MAKE-SORTABLE (LAMBDA (K) (FORMAT NIL "~a" K))) FLAT*
 
-    \[public\] Turns the given hash table into a list of pairs or, if `FLAT` is `T`,
+    Turns the given hash table into a list of pairs or, if `FLAT` is `T`,
     into a plist that represents the hash. In the resulting list, the keys are
     sorted, so that the list can be more easily compared with other lists. `HASH` is
     the hash you want to dump. `F-SORT` is the sort predicate, which defaults to
@@ -205,7 +205,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **COPY-FILE** *SOURCE DESTINATION &KEY (IF-EXISTS :SUPERSEDE) (BUFFER-SIZE (\* 64 1024))*
 
-    \[public\] Copies `SOURCE` file to `DESTINATION` file. If `DESTINATION`'s directories
+    Copies `SOURCE` file to `DESTINATION` file. If `DESTINATION`'s directories
     do not exist, they are created. `IF-EXISTS` controls the behavior if `DESTINATION`
     already exists, and may be :error, :new-version, :rename, :rename-and-delete,
     :overwrite, :append, or :supersede. `IF-EXISTS` defaults to :supersede.
@@ -217,14 +217,14 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **DEEP-COPY** *THING*
 
-    \[public\] Deep copy `THING`, recursively copying lists, vectors, and strings.
+    Deep copy `THING`, recursively copying lists, vectors, and strings.
 
 <a id="x-28DC-ECLECTIC-3ADEFINE-BASE-ENCODER-20MGL-PAX-3AMACRO-29"></a>
 <a id="DC-ECLECTIC:DEFINE-BASE-ENCODER%20MGL-PAX:MACRO"></a>
 
 - [macro] **DEFINE-BASE-ENCODER** *NAME ALPHABET*
 
-    \[public\] Creates 2 functions using `NAME` (a symbol), and `ALPHABET` (a string):
+    Creates 2 functions using `NAME` (a symbol), and `ALPHABET` (a string):
     {NAME}-ENCODE and {NAME-DECODE}. {NAME}-ENCODE takes 1 parameter, `DATA` (a
     string), and returns the string encoded with `ALPHABET`. {NAME}-DECODE accepts a
     single parameter (an encoded string) and returns the original strinng. For
@@ -245,7 +245,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **DENORMALIZE-LIST** *LIST MIN MAX &KEY INTEGER*
 
-    \[public\] Returns a new list with the numbers in `LIST`, which are
+    Returns a new list with the numbers in `LIST`, which are
     floating-point numbers between 0 and 1, expanded to the range `MAX` - `MIN`, such
     that the number 1.0 is converted to `MAX`, the number 0.0 is converted to `MIN`, and
     all the other numbers fall in the range `MIN` to `MAX`. `INTEGER` is `T`, the new list
@@ -256,7 +256,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **DIRECTORY-EXISTS-P** *PATH*
 
-    \[public\] Returns a boolean value indicating if the directory specified by
+    Returns a boolean value indicating if the directory specified by
     `PATH` exists.
 
 <a id="x-28DC-ECLECTIC-3ADISTINCT-ELEMENTS-20FUNCTION-29"></a>
@@ -264,7 +264,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **DISTINCT-ELEMENTS** *SEQUENCE &KEY (KEY \#'IDENTITY)*
 
-    \[public\] Accepts a sequence of elements (list or vector) and returns a new
+    Accepts a sequence of elements (list or vector) and returns a new
     sequence of the same type with distinct elements from the original. If the
     elements in the sequence are hash tables, plists, or objects with methods, then
     you can provide a value or function for the :key parameter.  If you provide a
@@ -278,21 +278,21 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **DISTINCT-STRINGS** *LIST*
 
-    \[public\] Alternative for returning a list of distinct strings.
+    Alternative for returning a list of distinct strings.
 
 <a id="x-28DC-ECLECTIC-3ADISTINCT-VALUES-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:DISTINCT-VALUES%20FUNCTION"></a>
 
 - [function] **DISTINCT-VALUES** *LIST*
 
-    \[public\] Synonym for [`DISTINCT-ELEMENTS`][4836].
+    Synonym for [`DISTINCT-ELEMENTS`][4836].
 
 <a id="x-28DC-ECLECTIC-3AEXCLUDE-20GENERIC-FUNCTION-29"></a>
 <a id="DC-ECLECTIC:EXCLUDE%20GENERIC-FUNCTION"></a>
 
 - [generic-function] **EXCLUDE** *REFERENCE-LIST EXCLUDE*
 
-    \[public\] Returns a list containing the elements of
+    Returns a list containing the elements of
     `REFERENCE-LIST` that are not in `EXCLUDE`. If `EXCLUDE` is a list, this function
     excludes all elements in `EXCLUDE` from `REFERENCE-LIST`. If `EXCLUDE` is a string,
     this function excludes the string from `REFERENCE-LIST`
@@ -302,7 +302,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **EXCLUDE-REGEX** *REFERENCE-LIST EXCLUDE &OPTIONAL EXCEPTIONS*
 
-    \[public\] Returns a list of the elements of `REFERENCE-LIST` that that don't
+    Returns a list of the elements of `REFERENCE-LIST` that that don't
     match the `EXCLUDE` regular expression. However, elements that are not in
     `EXCEPTIONS` are not excluded, even if they match `EXCLUDE`.
 
@@ -311,7 +311,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **EXISTING-N-GRAM-STRINGS** *CHARS COUNT HASH*
 
-    \[public\] Returns all the `COUNT` n-grams for string `CHARS`, but only of n-grams
+    Returns all the `COUNT` n-grams for string `CHARS`, but only of n-grams
     that exist as keys in `HASH`.
 
 <a id="x-28DC-ECLECTIC-3AEXISTING-PERMUTATIONS-OF-STRING-20FUNCTION-29"></a>
@@ -319,7 +319,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **EXISTING-PERMUTATIONS-OF-STRING** *S HASH*
 
-    \[public\] Works just like all-permutations-of-string, but excludes any
+    Works just like all-permutations-of-string, but excludes any
     permutations of `S` that are not among the keys in `HASH`.
 
 <a id="x-28DC-ECLECTIC-3AFILE-EXISTS-P-20FUNCTION-29"></a>
@@ -327,7 +327,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **FILE-EXISTS-P** *PATH*
 
-    \[public\] Returns a boolean value indicating if the file specified by `PATH`
+    Returns a boolean value indicating if the file specified by `PATH`
     exists.
 
 <a id="x-28DC-ECLECTIC-3AFILE-EXTENSION-20FUNCTION-29"></a>
@@ -335,7 +335,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **FILE-EXTENSION** *PATH*
 
-    \[public\] Returns a string consisting of the file extension for the file name
+    Returns a string consisting of the file extension for the file name
     given in `PATH`.
 
 <a id="x-28DC-ECLECTIC-3AFILENAME-ONLY-20FUNCTION-29"></a>
@@ -343,7 +343,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **FILENAME-ONLY** *FILENAME*
 
-    \[public\] Retrieves the filename (filename only, without the path) of
+    Retrieves the filename (filename only, without the path) of
     `FILENAME`.
 
 <a id="x-28DC-ECLECTIC-3AFLATTEN-20FUNCTION-29"></a>
@@ -351,7 +351,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **FLATTEN** *L*
 
-    \[public\] Given a nested list `L`, return a flat list. If an array or other
+    Given a nested list `L`, return a flat list. If an array or other
     sequence is among the elements of `L`, the sequence is not flattened,
     but treated as a single element.
 
@@ -360,14 +360,14 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **FREEZE** *OBJECT*
 
-    \[public\] Stringifies `OBJECT`.
+    Stringifies `OBJECT`.
 
 <a id="x-28DC-ECLECTIC-3AGETENV-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:GETENV%20FUNCTION"></a>
 
 - [function] **GETENV** *NAME &KEY DEFAULT REQUIRED (TYPE :STRING)*
 
-    \[public\] Get the value of the environment variable `NAME`, returning a string
+    Get the value of the environment variable `NAME`, returning a string
     or an integer, depending on `TYPE`. If the environment variable is not set, then
     return `DEFAULT`, which must be of type `TYPE`. If the environment variable is not
     set and `DEFAULT` is `NIL`, then this function returns `NIL`.
@@ -379,7 +379,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [generic-function] **HAS** *REFERENCE-LIST THING*
 
-    \[public\] Returns `T` if `REFERENCE-LIST` contains `THING`. If `THING`
+    Returns `T` if `REFERENCE-LIST` contains `THING`. If `THING`
     is a string, this function checks for that string in `REFERENCE-LIST`. If `THING` is
     a list, this function checks that all elements of `THING` are in `REFERENCE-LIST`.
 
@@ -388,7 +388,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **HAS-SOME** *REFERENCE-LIST QUERY-LIST*
 
-    \[public\] Returns `T` if `REFERENCE-LIST` contains any of the elements in
+    Returns `T` if `REFERENCE-LIST` contains any of the elements in
     `QUERY-LIST`.
 
 <a id="x-28DC-ECLECTIC-3AHASH-HMAC-256-20FUNCTION-29"></a>
@@ -396,7 +396,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **HASH-HMAC-256** *SECRET TEXT*
 
-    \[public\] Hash `TEXT` using `SECRET` and hmac-sha-256 and return a hex
+    Hash `TEXT` using `SECRET` and hmac-sha-256 and return a hex
     representation of the hash
 
 <a id="x-28DC-ECLECTIC-3AHASH-KEYS-20FUNCTION-29"></a>
@@ -404,28 +404,28 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **HASH-KEYS** *HASH*
 
-    \[public\] Returns a list of the keys in hash table `HASH`.
+    Returns a list of the keys in hash table `HASH`.
 
 <a id="x-28DC-ECLECTIC-3AHASH-STRING-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:HASH-STRING%20FUNCTION"></a>
 
 - [function] **HASH-STRING** *STRING &KEY (SALT "") (SIZE 128)*
 
-    \[public\] Hash `STRING` and return a hex representation of the hash
+    Hash `STRING` and return a hex representation of the hash
 
 <a id="x-28DC-ECLECTIC-3AHASH-VALUES-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:HASH-VALUES%20FUNCTION"></a>
 
 - [function] **HASH-VALUES** *HASH*
 
-    \[public\] Returns a list of the values in hash table `HASH`.
+    Returns a list of the values in hash table `HASH`.
 
 <a id="x-28DC-ECLECTIC-3AHASHIFY-LIST-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:HASHIFY-LIST%20FUNCTION"></a>
 
 - [function] **HASHIFY-LIST** *LIST &KEY (METHOD :COUNT) F-KEY HASH-KEY PLIST-KEY ALIST-KEY (F-VALUE (LAMBDA (KEY-RAW KEY-CLEAN VALUE) (DECLARE (IGNORE KEY-RAW KEY-CLEAN)) VALUE)) (INITIAL-VALUE 0)*
 
-    \[public\] Creates a hash table from `LIST` and returns the hash table, according
+    Creates a hash table from `LIST` and returns the hash table, according
     to `METHOD`. Supported methods are `:COUNT`, `:PLIST`, `:ALIST`, `:INDEX`, `AND`([`0`][425d] [`1`][dd55]) `:CUSTOM`.
     
     `:COUNT`
@@ -528,7 +528,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [generic-function] **INDEX-OF-MAX** *LIST-OR-VECTOR*
 
-    \[public\] Returns the index of the largest number in
+    Returns the index of the largest number in
     `LIST-OR-VECTOR`.
 
 <a id="x-28DC-ECLECTIC-3AJOIN-PATHS-20FUNCTION-29"></a>
@@ -536,7 +536,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **JOIN-PATHS** *&REST PATH-PARTS*
 
-    \[public\] Joins parameters (collected in `PATH-PARTS`) into a unix-like file
+    Joins parameters (collected in `PATH-PARTS`) into a unix-like file
     path, inserting slashes where necessary. `PATH-PARTS` can be strings or
     pathnames. If the first element in `PATH-PARTS` starts with a slash, the resulting
     path will be absolute; otherwise, it will be relative.  `PATH-PARTS` elements
@@ -548,7 +548,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **LEAF-DIRECTORY-ONLY** *PATH*
 
-    \[public\] Returns the last part of the directory `PATH`. For example,
+    Returns the last part of the directory `PATH`. For example,
     /home/one/two => two
 
 <a id="x-28DC-ECLECTIC-3AN-GRAM-STRINGS-20FUNCTION-29"></a>
@@ -556,7 +556,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **N-GRAM-STRINGS** *CHARS COUNT*
 
-    \[public\] Accepts `CHARS`, a string, and `COUNT`, an integer, and returns all the
+    Accepts `CHARS`, a string, and `COUNT`, an integer, and returns all the
     possible combinations of length `COUNT` of the characters in `CHARS`. For example,
     (n-gram-strings "abc" 2) => '("aa" "ab" "ac" "ba" "bb"
     "bc" "ca" "cb" "cc")
@@ -566,14 +566,14 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **N-GRAMS** *LIST COUNT*
 
-    \[public\] Returns n-gram lists of length `COUNT` using elements of `LIST`.
+    Returns n-gram lists of length `COUNT` using elements of `LIST`.
 
 <a id="x-28DC-ECLECTIC-3AN-GRAMS-OF-LIST-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:N-GRAMS-OF-LIST%20FUNCTION"></a>
 
 - [function] **N-GRAMS-OF-LIST** *LIST COUNT &OPTIONAL PREFIX*
 
-    \[private\] Returns n-grams of `LIST` each of length `COUNT`, optionally prefixed
+    :private: Returns n-grams of `LIST` each of length `COUNT`, optionally prefixed
     with `PREFIX`. This is helper function for [`N-GRAMS`][ce32] and [`N-GRAM-STRINGS`][7aa8].
 
 <a id="x-28DC-ECLECTIC-3ANORMALIZE-LIST-20FUNCTION-29"></a>
@@ -581,7 +581,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **NORMALIZE-LIST** *LIST &KEY MAX MIN*
 
-    \[public\] Returns a new list with new values between 0.0 and 1.0. `MAX` is the
+    Returns a new list with new values between 0.0 and 1.0. `MAX` is the
     largest value that `LIST` can hold, and `MIN` is the smallest.  Each new value N is
     computed from the corresponding old value O in `LIST`, as follows:
     
@@ -598,7 +598,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **PATH-ONLY** *FILENAME*
 
-    \[public\] Retrieves the path (path only, without the filename) of `FILENAME`.
+    Retrieves the path (path only, without the filename) of `FILENAME`.
     `FILENAME` should be a string, a pathname, or `NIL`. If `FILENAME` is `NIL` or the empty
     string, this function returns the empty string. If `FILENAME` has no path
     component, this function returns "/".
@@ -608,7 +608,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **PATH-TYPE** *PATH*
 
-    \[public\] Returns `:FILE`, `:DIRECTORY`, or `:NOT-FOUND`, depending on what `PATH`
+    Returns `:FILE`, `:DIRECTORY`, or `:NOT-FOUND`, depending on what `PATH`
     points to.
 
 <a id="x-28DC-ECLECTIC-3APLIST-KEYS-20FUNCTION-29"></a>
@@ -616,21 +616,21 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **PLIST-KEYS** *PLIST*
 
-    \[public\] Returns list of the keys in `PLIST`.
+    Returns list of the keys in `PLIST`.
 
 <a id="x-28DC-ECLECTIC-3APLISTP-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:PLISTP%20FUNCTION"></a>
 
 - [function] **PLISTP** *LIST*
 
-    \[public\] Returns `T` if `LIST` is a plist.
+    Returns `T` if `LIST` is a plist.
 
 <a id="x-28DC-ECLECTIC-3ARAND-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:RAND%20FUNCTION"></a>
 
 - [function] **RAND** *VALUE &OPTIONAL RSTATE*
 
-    \[public\] When called without `RSTATE`, this is the same as calling [`RANDOM`][1f1d] with
+    When called without `RSTATE`, this is the same as calling [`RANDOM`][1f1d] with
     only the `VALUE` parameter. Otherwise, this calls `RANDOM` with `VALUE` and `RSTATE`.
 
 <a id="x-28DC-ECLECTIC-3ARANDOM-HEX-NUMBER-20FUNCTION-29"></a>
@@ -638,7 +638,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **RANDOM-HEX-NUMBER** *&OPTIONAL (DIGITS 7) (NON-ZERO-START) RSTATE*
 
-    \[public\] Returns a random hexadecimal number with `DIGITS` digits. If
+    Returns a random hexadecimal number with `DIGITS` digits. If
     `NON-ZERO-START` is specified, then the resulting hexadecimal number starts with
     a character other than 0.
 
@@ -647,14 +647,14 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **RANDOM-NUMBER** *&OPTIONAL (DIGITS 4) RSTATE*
 
-    \[public\] Returns a random integer of `DIGITS` digits.
+    Returns a random integer of `DIGITS` digits.
 
 <a id="x-28DC-ECLECTIC-3ARANDOM-STRING-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:RANDOM-STRING%20FUNCTION"></a>
 
 - [function] **RANDOM-STRING** *STRING-LENGTH ALPHABET &OPTIONAL RSTATE*
 
-    \[public\] Returns a random string of length `STRING-LENGTH`. The string is
+    Returns a random string of length `STRING-LENGTH`. The string is
     constructed from characters in `ALPHABET`. `ALPHABET` is a string. There are
     several functions available for building `ALPHABET`, all starting with the
     prefix 'ASCII-'. For example:
@@ -666,7 +666,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **RANGE** *START END &KEY (STEP 1) (FILTER \#'IDENTITY) SHUFFLE*
 
-    \[public\] Returns a list of values between `START` and `END` (inclusive), skipping
+    Returns a list of values between `START` and `END` (inclusive), skipping
     values by `STEP`, filtering remaining values with the function in `FILTER`, and
     shuffling the remaining values if `SHUFFLE` is true.  `STEP` defaults to 1, `FILTER`
     defaults to allowing all values through, and `SHUFFLE` default to nil.
@@ -676,7 +676,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **REPLACE-EXTENSION** *FILENAME NEW-EXTENSION*
 
-    \[public\] Replaces the file extension in `FILENAME` with the file extension
+    Replaces the file extension in `FILENAME` with the file extension
     provided in `NEW-EXTENSION`.
 
 <a id="x-28DC-ECLECTIC-3AROOT-PATH-20FUNCTION-29"></a>
@@ -684,7 +684,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **ROOT-PATH** *FILES*
 
-    \[public\] Given `FILES`, a list of paths in the form of strings, returns the
+    Given `FILES`, a list of paths in the form of strings, returns the
     starting path that all the paths have in common.
 
 <a id="x-28DC-ECLECTIC-3ASAFE-DECODE-20FUNCTION-29"></a>
@@ -692,21 +692,21 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **SAFE-DECODE** *DATA*
 
-    \[public\] Decodes `DATA` using the SAFE alphabet.
+    Decodes `DATA` using the `SAFE` alphabet.
 
 <a id="x-28DC-ECLECTIC-3ASAFE-ENCODE-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:SAFE-ENCODE%20FUNCTION"></a>
 
 - [function] **SAFE-ENCODE** *DATA*
 
-    \[public\] Encodes data using the SAFE alphabet.
+    Encodes data using the `SAFE` alphabet.
 
 <a id="x-28DC-ECLECTIC-3ASAFE-SORT-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:SAFE-SORT%20FUNCTION"></a>
 
 - [function] **SAFE-SORT** *LIST &KEY PREDICATE*
 
-    \[public\] Returns a sorted copy of `LIST`, without modifying `LIST`. If `PREDICATE`
+    Returns a sorted copy of `LIST`, without modifying `LIST`. If `PREDICATE`
     is not provided, the function determines the type of the first element of the
     list to pick a suitable sort predicate. The function assumes that all the
     elements in `LIST` are of the same type and that they are either strings,
@@ -718,7 +718,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **SETENV** *NAME VALUE*
 
-    \[public\] Set environment variable `NAME` to `VALUE`. `VALUE` is always converted into
+    Set environment variable `NAME` to `VALUE`. `VALUE` is always converted into
     a string. Returns a string with `VALUE`.
 
 <a id="x-28DC-ECLECTIC-3ASHELL-COMMAND-BACKGROUND-20FUNCTION-29"></a>
@@ -726,7 +726,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **SHELL-COMMAND-BACKGROUND** *COMMAND &KEY (WAIT-INTERVAL 0.1)*
 
-    \[public\] Run `COMMAND` in the background. Returns a process-info plist with
+    Run `COMMAND` in the background. Returns a process-info plist with
     keys: :pid, :exit-code (nil if running), :output, :error-output, :running-p,
     :wait-interval (for polling), :status.
     
@@ -739,7 +739,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **SHELL-COMMAND-RUNNING-P** *INFO*
 
-    \[public\] Returns `T` if the background process is still running. `INFO` is the
+    Returns `T` if the background process is still running. `INFO` is the
     object that [`SHELL-COMMAND-BACKGROUND`][0c8e] returns when it starts the process.
 
 <a id="x-28DC-ECLECTIC-3ASHELL-COMMAND-TO-STRING-20FUNCTION-29"></a>
@@ -747,14 +747,14 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **SHELL-COMMAND-TO-STRING** *COMMAND*
 
-    \[public\] Executes `COMMAND` in the shell and returns the output as a string.
+    Executes `COMMAND` in the shell and returns the output as a string.
 
 <a id="x-28DC-ECLECTIC-3ASHELL-COMMAND-WAIT-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:SHELL-COMMAND-WAIT%20FUNCTION"></a>
 
 - [function] **SHELL-COMMAND-WAIT** *INFO &OPTIONAL TIMEOUT*
 
-    \[public\] Wait for process to finish (with optional `TIMEOUT` seconds). `INFO` is
+    Wait for process to finish (with optional `TIMEOUT` seconds). `INFO` is
     the object that [`SHELL-COMMAND-BACKGROUND`][0c8e] returns when Updates `INFO` with output
     and exit code. Returns updated `INFO`. If `TIMEOUT` is ommitted or `NIL`, waits until
     the process finishes, which might be forever if the process is a server process,
@@ -770,7 +770,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **SHUFFLE** *SEQ &OPTIONAL RSTATE*
 
-    \[public\] Return a sequence with the same elements as the given sequence S,
+    Return a sequence with the same elements as the given sequence S,
     but in random order (shuffled).
 
 <a id="x-28DC-ECLECTIC-3ASINGULAR-20FUNCTION-29"></a>
@@ -778,21 +778,21 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **SINGULAR** *WORD*
 
-    \[public\] Convert plural to singular form (works most of the time).
+    Convert plural to singular form (works most of the time).
 
 <a id="x-28DC-ECLECTIC-3ASLURP-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:SLURP%20FUNCTION"></a>
 
 - [function] **SLURP** *FILENAME*
 
-    \[public\] Returns a string with the content of the file at `FILENAME`.
+    Returns a string with the content of the file at `FILENAME`.
 
 <a id="x-28DC-ECLECTIC-3ASPEW-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:SPEW%20FUNCTION"></a>
 
 - [function] **SPEW** *STRING FILENAME*
 
-    \[public\] Write `STRING` to filename, creating the file if necessary, and
+    Write `STRING` to filename, creating the file if necessary, and
     replacing the contents of the file if the file already exists.
 
 <a id="x-28DC-ECLECTIC-3ASPLIT-N-TRIM-20FUNCTION-29"></a>
@@ -800,7 +800,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **SPLIT-N-TRIM** *STRING &KEY (ON-REGEX "\\\\s+") (FAT "^\\\\s+|\\\\s+$")*
 
-    \[public\] Splits `STRING` into substrings on `ON-REGEX`, then trims `FAT` from each
+    Splits `STRING` into substrings on `ON-REGEX`, then trims `FAT` from each
     substring.  The `ON-REGEX` parameter value, which is optional, defaults to
     "\s+", which is to say that the string is split into a list of words at the
     whitespace boundaries.  The default value for `FAT`, which is also optional,
@@ -817,7 +817,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **THAW** *STRING*
 
-    \[public\] Returns an object resulting from the evalation of `STRING`. This
+    Returns an object resulting from the evalation of `STRING`. This
     is the opposite of [`FREEZE`][20cd].
 
 <a id="x-28DC-ECLECTIC-3ATO-ASCII-20FUNCTION-29"></a>
@@ -825,7 +825,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **TO-ASCII** *STRING &KEY (REPLACEMENT-CHAR \#\\?) (PRINTABLE-ONLY T)*
 
-    \[public\] In `STRING`, replaces non-ASCII characters with REPLACEMENT\_CHAR,
+    In `STRING`, replaces non-ASCII characters with REPLACEMENT\_CHAR,
     which defaults to the question mark. If `PRINTABLE-ONLY` is true, only printable
     ASCII characters are kept, with the rest being replaced by `REPLACEMENT-CHAR`.
 
@@ -834,7 +834,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **TREE-GET** *TREE &REST PATH*
 
-    \[public\] Get value from the `TREE` structure, at `PATH`. `TREE` is a nested data
+    Get value from the `TREE` structure, at `PATH`. `TREE` is a nested data
     structure where each value can be a plist, list, object, t, or nil.
 
 <a id="x-28DC-ECLECTIC-3ATREE-PUT-20MGL-PAX-3AMACRO-29"></a>
@@ -842,7 +842,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [macro] **TREE-PUT** *VALUE TREE &REST PATH*
 
-    \[public\] Set `VALUE` at the location specified by `PATH` in the `TREE` structure.
+    Set `VALUE` at the location specified by `PATH` in the `TREE` structure.
     Expands into a series of [`getf`][104a] and [`nth`][1aa3] calls for efficient access.
 
 <a id="x-28DC-ECLECTIC-3ATRIM-20FUNCTION-29"></a>
@@ -850,7 +850,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **TRIM** *S &OPTIONAL (FAT "^\\\\s+|\\\\s+$")*
 
-    \[public\] Trim `FAT` from the string in `S`.  The `FAT` parameter is optional and
+    Trim `FAT` from the string in `S`.  The `FAT` parameter is optional and
     defaults to "^\s+|\s+$", which means "Whitespace at the beginning
     or end of the string".
 
@@ -859,21 +859,21 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **TRIM-WHITESPACE** *S*
 
-    \[public\] Trim Whitespace from the beginning and end of `S`.
+    Trim Whitespace from the beginning and end of `S`.
 
 <a id="x-28DC-ECLECTIC-3AUUID-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:UUID%20FUNCTION"></a>
 
 - [function] **UUID** *&OPTIONAL RSTATE*
 
-    \[public\] Returns a random `UUID` string.
+    Returns a random `UUID` string.
 
 <a id="x-28DC-ECLECTIC-3AVERIFY-STRING-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:VERIFY-STRING%20FUNCTION"></a>
 
 - [function] **VERIFY-STRING** *STRING REGEX &KEY IGNORE-CASE*
 
-    \[public\] Return t if `STRING` matches the `REGEX` exactly.  Use the `IGNORE-CASE`
+    Return t if `STRING` matches the `REGEX` exactly.  Use the `IGNORE-CASE`
     parameter if you want case-insensitve matches.
 
 <a id="x-28DC-ECLECTIC-3A-40VARIABLES-20MGL-PAX-3ASECTION-29"></a>
@@ -888,21 +888,21 @@ Exported special variables.
 
 - [variable] **\*ALPHABET-ALPHANUM\*** *"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"*
 
-    \[public\] Alphabet with all ASCII letters and numbers.
+    Alphabet with all ASCII letters and numbers.
 
 <a id="x-28DC-ECLECTIC-3A-2AALPHABET-BITCOIN-2A-20VARIABLE-29"></a>
 <a id="DC-ECLECTIC:*ALPHABET-BITCOIN*%20VARIABLE"></a>
 
 - [variable] **\*ALPHABET-BITCOIN\*** *"123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"*
 
-    \[public\] Bitcoin alphabet. No zero, no capital 'o' or 'i', and now lowercase 'l'.
+    Bitcoin alphabet. No zero, no capital 'o' or 'i', and now lowercase 'l'.
 
 <a id="x-28DC-ECLECTIC-3A-2AALPHABET-ALPHANUM-UPPER-2A-20VARIABLE-29"></a>
 <a id="DC-ECLECTIC:*ALPHABET-ALPHANUM-UPPER*%20VARIABLE"></a>
 
 - [variable] **\*ALPHABET-ALPHANUM-UPPER\*** *"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"*
 
-    \[public\] Alphabet with uppercase letters and numbers.
+    Alphabet with uppercase letters and numbers.
 
   [0c8e]: #DC-ECLECTIC:SHELL-COMMAND-BACKGROUND%20FUNCTION "DC-ECLECTIC:SHELL-COMMAND-BACKGROUND FUNCTION"
   [0f15]: #DC-ECLECTIC:SHELL-COMMAND-WAIT%20FUNCTION "DC-ECLECTIC:SHELL-COMMAND-WAIT FUNCTION"
