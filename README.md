@@ -56,13 +56,6 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
     example:
        '(1 2 3) -> '((1 2 3) (1 3 2) (2 1 3) (2 3 1) (3 1 2) (3 2 1))
 
-<a id="x-28DC-ECLECTIC-3AALL-PERMUTATIONS-BASE-20FUNCTION-29"></a>
-<a id="DC-ECLECTIC:ALL-PERMUTATIONS-BASE%20FUNCTION"></a>
-
-- [function] **ALL-PERMUTATIONS-BASE** *LIST*
-
-    :private: Internal helper function for [`ALL-PERMUTATIONS`][bcd1].
-
 <a id="x-28DC-ECLECTIC-3AALL-PERMUTATIONS-OF-STRING-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:ALL-PERMUTATIONS-OF-STRING%20FUNCTION"></a>
 
@@ -568,14 +561,6 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
     Returns n-gram lists of length `COUNT` using elements of `LIST`.
 
-<a id="x-28DC-ECLECTIC-3AN-GRAMS-OF-LIST-20FUNCTION-29"></a>
-<a id="DC-ECLECTIC:N-GRAMS-OF-LIST%20FUNCTION"></a>
-
-- [function] **N-GRAMS-OF-LIST** *LIST COUNT &OPTIONAL PREFIX*
-
-    :private: Returns n-grams of `LIST` each of length `COUNT`, optionally prefixed
-    with `PREFIX`. This is helper function for [`N-GRAMS`][ce32] and [`N-GRAM-STRINGS`][7aa8].
-
 <a id="x-28DC-ECLECTIC-3ANORMALIZE-LIST-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:NORMALIZE-LIST%20FUNCTION"></a>
 
@@ -916,11 +901,8 @@ Exported special variables.
   [425d]: http://www.lispworks.com/documentation/HyperSpec/Body/m_and.htm "AND (MGL-PAX:CLHS MGL-PAX:MACRO)"
   [4316]: #DC-ECLECTIC:SAFE-DECODE%20FUNCTION "DC-ECLECTIC:SAFE-DECODE FUNCTION"
   [4836]: #DC-ECLECTIC:DISTINCT-ELEMENTS%20FUNCTION "DC-ECLECTIC:DISTINCT-ELEMENTS FUNCTION"
-  [7aa8]: #DC-ECLECTIC:N-GRAM-STRINGS%20FUNCTION "DC-ECLECTIC:N-GRAM-STRINGS FUNCTION"
   [a260]: #DC-ECLECTIC:@INSTALLATION%20MGL-PAX:SECTION "Installation"
-  [bcd1]: #DC-ECLECTIC:ALL-PERMUTATIONS%20FUNCTION "DC-ECLECTIC:ALL-PERMUTATIONS FUNCTION"
   [beee]: #DC-ECLECTIC:SHELL-COMMAND-RUNNING-P%20FUNCTION "DC-ECLECTIC:SHELL-COMMAND-RUNNING-P FUNCTION"
-  [ce32]: #DC-ECLECTIC:N-GRAMS%20FUNCTION "DC-ECLECTIC:N-GRAMS FUNCTION"
   [dd55]: http://www.lispworks.com/documentation/HyperSpec/Body/t_and.htm "AND (MGL-PAX:CLHS TYPE)"
   [e556]: #DC-ECLECTIC:DEFINE-BASE-ENCODER%20MGL-PAX:MACRO "DC-ECLECTIC:DEFINE-BASE-ENCODER MGL-PAX:MACRO"
   [ee87]: #DC-ECLECTIC:@VARIABLES%20MGL-PAX:SECTION "Special Variables"

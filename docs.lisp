@@ -31,7 +31,6 @@
   (:title "Functions and Macros")
   "Alphabetical list of functions and macros that DC-UTILITIES defines."
   (all-permutations function)
-  (all-permutations-base function)
   (all-permutations-of-string function)
   (ascii-alpha function)
   (ascii-alpha-lower function)
@@ -76,7 +75,6 @@
   (leaf-directory-only function)
   (n-gram-strings function)
   (n-grams function)
-  (n-grams-of-list function)
   (normalize-list function)
   (path-only function)
   (path-type function)
