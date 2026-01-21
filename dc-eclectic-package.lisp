@@ -4,7 +4,8 @@
     :trivial-utf-8
     :sb-thread
     :sb-ext
-    :p-log)
+    :p-log
+    :mgl-pax)
   (:local-nicknames
     (:ds :dc-ds)
     (:re :ppcre))

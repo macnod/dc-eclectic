@@ -3,10 +3,9 @@
 (defun to-ascii (string &key
                           (replacement-char #\?)
                           (printable-only t))
-  "In STRING, replaces non-ASCII characters with REPLACEMENT_CHAR, which
-defaults to the question mark. If PRINTABLE-ONLY is true, only
-printable ASCII characters are kept, with the rest being replaced by
-REPLACEMENT-CHAR."
+  "[public] In STRING, replaces non-ASCII characters with REPLACEMENT_CHAR,
+which defaults to the question mark. If PRINTABLE-ONLY is true, only printable
+ASCII characters are kept, with the rest being replaced by REPLACEMENT-CHAR."
   (let* ((mincode (if printable-only (code-char 32) (code-char 0)))
          (maxcode (if printable-only (code-char 126) (code-char 255)))
          (replacement-function (lambda (c)
@@ -16,7 +15,7 @@ REPLACEMENT-CHAR."
     (map 'string replacement-function string)))
 
 (defun flatten (l)
-  "Given a nested list L, return a flat list. If an array or other
+  "[public] Given a nested list L, return a flat list. If an array or other
 sequence is among the elements of L, the sequence is not flattened,
 but treated as a single element."
   (cond
@@ -25,20 +24,19 @@ but treated as a single element."
     (t (loop for i in l append (flatten i)))))
 
 (defun verify-string (string regex &key ignore-case)
-  "Return t if STRING matches the REGEX exactly.  Use the IGNORE-CASE
+  "[public] Return t if STRING matches the REGEX exactly.  Use the IGNORE-CASE
 parameter if you want case-insensitve matches."
   (let ((s (format nil "~a" string)))
     (multiple-value-bind (a b)
         (re:scan (if ignore-case (concatenate 'string "(?is)" regex) regex) s)
       (and a b (zerop a) (= b (length s))))))
 
-
 ;;
 ;; BEGIN File and directory utilities
 ;;
 
 (defun join-paths (&rest path-parts)
-  "Joins parameters (collected in PATH-PARTS) into a unix-like file
+  "[public] Joins parameters (collected in PATH-PARTS) into a unix-like file
 path, inserting slashes where necessary. PATH-PARTS can be strings or
 pathnames. If the first element in PATH-PARTS starts with a slash, the resulting
 path will be absolute; otherwise, it will be relative.  PATH-PARTS elements
@@ -59,10 +57,10 @@ types to strings, if possible. NIL or empty strings are ignored."
     (format nil "~a~a" (if absolute "/" "") path)))
 
 (defun path-only (filename)
-  "Retrieves the path (path only, without the filename) of FILENAME. FILENAME
-should be a string, a pathname, or NIL. If FILENAME is NIL or the empty string,
-this function returns the empty string. If FILENAME has no path component, this
-function returns \"/\"."
+  "[public] Retrieves the path (path only, without the filename) of FILENAME.
+FILENAME should be a string, a pathname, or NIL. If FILENAME is NIL or the empty
+string, this function returns the empty string. If FILENAME has no path
+component, this function returns \"/\"."
   (declare (type (or pathname string null) filename))
   (if (or (not filename) (zerop (length (format nil "~a" filename))))
     ""
@@ -84,7 +82,8 @@ function returns \"/\"."
             ""))))))
 
 (defun filename-only (filename)
-  "Retrieves the filename (filename only, without the path) of FILENAME."
+  "[public] Retrieves the filename (filename only, without the path) of
+FILENAME."
   (if (null filename)
       ""
     (let ((file (cond
@@ -99,12 +98,14 @@ function returns \"/\"."
           (elt parts (1- (length parts))))))))
 
 (defun leaf-directory-only (path)
+  "[public] Returns the last part of the directory PATH. For example,
+/home/one/two => two"
   (car (last (re:split "/" (string-trim "/" path)))))
 
 ;; Needs tests
 (defun root-path (files)
-  "Given FILES, a list of paths in the form of strings, returns the starting path
-that all the paths have in common."
+  "[public] Given FILES, a list of paths in the form of strings, returns the
+starting path that all the paths have in common."
   (when files
     (loop
       with paths = (mapcar (lambda (d) (re:split "/" (string-trim "/" d))) files)
@@ -120,15 +121,16 @@ that all the paths have in common."
 
 ;; Needs tests
 (defun file-exists-p (path)
-  "Returns a boolean value indicating if the file specified by PATH exists."
+  "[public] Returns a boolean value indicating if the file specified by PATH
+exists."
   (let ((path (probe-file path)))
     (and path
          (not (equal (file-namestring path) "")))))
 
 ;; Needs tests
 (defun directory-exists-p (path)
-  "Returns a boolean value indicating if the directory specified by PATH
-exists."
+  "[public] Returns a boolean value indicating if the directory specified by
+PATH exists."
   (let ((path (probe-file path)))
     (and path
          (not (equal (directory-namestring path) ""))
@@ -136,7 +138,7 @@ exists."
 
 ;; Needs tests
 (defun path-type (path)
-  "Returns :FILE, :DIRECTORY, or :NOT-FOUND, depending on what PATH
+  "[public] Returns :FILE, :DIRECTORY, or :NOT-FOUND, depending on what PATH
  points to."
   (cond ((file-exists-p path) :file)
         ((directory-exists-p path) :directory)
@@ -144,7 +146,7 @@ exists."
 
 ;; Needs tests
 (defun file-extension (path)
-  "Returns a string consisting of the file extension for the file name
+  "[public] Returns a string consisting of the file extension for the file name
 given in PATH."
   (multiple-value-bind (a b)
       (re:scan-to-strings "\\.([a-z0-9]+)$" path)
@@ -152,8 +154,8 @@ given in PATH."
 
 ;; Needs tests
 (defun replace-extension (filename new-extension)
-  "This function replaces the file extension in FILENAME with the file
-extension provided in NEW-EXTENSION."
+  "[public] Replaces the file extension in FILENAME with the file extension
+provided in NEW-EXTENSION."
   (let* ((new-extension (if (re:scan "^\\." new-extension)
                             (subseq new-extension 1)
                             new-extension))
@@ -191,10 +193,12 @@ extension provided in NEW-EXTENSION."
         when (> value max-value)
           do (setf index-of-max index
                    max-value value)
-        finally (return index-of-max)))))
+        finally (return index-of-max))))
+  (:documentation "[public] Returns the index of the largest number in
+LIST-OR-VECTOR."))
 
 (defun hash-string (string &key (salt "") (size 128))
-  "Hash STRING and return a hex representation of the hash"
+  "[public] Hash STRING and return a hex representation of the hash"
   (subseq
     (ironclad:byte-array-to-hex-string
       (ironclad:digest-sequence
@@ -204,7 +208,7 @@ extension provided in NEW-EXTENSION."
     size))
 
 (defun hash-hmac-256 (secret text)
-  "Hash TEXT using SECRET and hmac-sha-256 and return a hex
+  "[public] Hash TEXT using SECRET and hmac-sha-256 and return a hex
 representation of the hash"
   (let ((hmac (ironclad:make-hmac
                (ironclad:ascii-string-to-byte-array secret) :sha256)))
@@ -212,15 +216,14 @@ representation of the hash"
     (ironclad:byte-array-to-hex-string (ironclad:hmac-digest hmac))))
 
 (defun distinct-elements (sequence &key (key #'identity))
-  "Accepts a sequence of elements (list or vector) and returns a new
-sequence of the same type with distinct elements from the original
-sequence.  If the elements in the sequence are hash tables, plists, or
-objects with methods, then you can provide a value or function for the
-:key parameter.  If you provide a value, the function will use the
-value as the key of the element, and the value of the key will
-represent the unique signature of the element.  If you provide a
-function, then the function will be applied to the element to compute
-the elements unique signature."
+  "[public] Accepts a sequence of elements (list or vector) and returns a new
+sequence of the same type with distinct elements from the original. If the
+elements in the sequence are hash tables, plists, or objects with methods, then
+you can provide a value or function for the :key parameter.  If you provide a
+value, the function will use the value as the key of the element, and the value
+of the key will represent the unique signature of the element.  If you provide a
+function, then the function will be applied to the element to compute the
+elements unique signature."
   (let* ((list (if (vectorp sequence)
                    (map 'list 'identity sequence)
                    sequence))
@@ -243,10 +246,12 @@ the elements unique signature."
           (t distinct))))
 
 (defun distinct-values (list)
+  "[public] Synonym for DISTINCT-ELEMENTS."
   (distinct-elements list))
 
 ;; Needs tests
 (defun distinct-strings (list)
+  "[public] Alternative for returning a list of distinct strings."
   (when list
     (loop with sorted = (sort list #'string<)
           with last-item = nil
@@ -259,34 +264,36 @@ the elements unique signature."
              (return (reverse result)))))
 
 (defun hash-values (hash)
+  "[public] Returns a list of the values in hash table HASH."
   (loop for v being the hash-values in hash collect v))
 
 (defun hash-keys (hash)
+  "[public] Returns a list of the keys in hash table HASH."
   (loop for k being the hash-keys in hash collect k))
 
 (defun plist-keys (plist)
+  "[public] Returns list of the keys in PLIST."
   (loop for key in plist by #'cddr collect key))
 
 (defun range (start end &key (step 1) (filter #'identity) shuffle)
-  "Returns a list of values between START and END (inclusive), skipping
-values by STEP, filtering remaining values with the function in
-FILTER, and shuffling the remaining values if SHUFFLE is true.  STEP
-defaults to 1, FILTER defaults to allowing all values through, and
-SHUFFLE default to nil."
+  "[public] Returns a list of values between START and END (inclusive), skipping
+values by STEP, filtering remaining values with the function in FILTER, and
+shuffling the remaining values if SHUFFLE is true.  STEP defaults to 1, FILTER
+defaults to allowing all values through, and SHUFFLE default to nil."
   (let ((range (loop for a from start to end by step
                      when (funcall filter a) collect a)))
     (if shuffle (shuffle range) range)))
 
 (defun rand (value &optional rstate)
-  "When called without RSTATE, this is the same as calling RANDOM with only the
-VALUE parameter. Otherwise, this calls RANDOM with VALUE and RSTATE."
+  "[public] When called without RSTATE, this is the same as calling RANDOM with
+only the VALUE parameter. Otherwise, this calls RANDOM with VALUE and RSTATE."
   (if rstate
     (random value rstate)
     (random value)))
 
 (defun shuffle (seq &optional rstate)
-  "Return a sequence with the same elements as the given sequence S, but
-in random order (shuffled)."
+  "[public] Return a sequence with the same elements as the given sequence S,
+but in random order (shuffled)."
   (loop
     with l = (length seq)
     with w = (make-array l :initial-contents seq)
@@ -300,11 +307,12 @@ in random order (shuffled)."
 
 ;; Needs test
 (defun choose-one (seq &optional rstate)
+  "[public] Returns a random element from SEQ."
   (when seq
     (elt seq (rand (length seq) rstate))))
 
 (defun choose-some (seq n &optional rstate)
-  "Choose N elements from SEQ and return a new sequence with those
+  "[public] Choose N elements from SEQ and return a new sequence with those
 elements, with the new sequence having the same type as SEQ.
 
 N must be an integer that is greater than or equal to 1.
@@ -344,15 +352,15 @@ RSTATE parameter that you can optionally pass in here."
                                   value))
                        (initial-value 0))
 
-  "Creates a hash table from LIST and returns the hash table, according to
-METHOD. Supported methods are :COUNT, :PLIST, :ALIST, :INDEX, AND :CUSTOM.
+  "[public] Creates a hash table from LIST and returns the hash table, according
+to METHOD. Supported methods are :COUNT, :PLIST, :ALIST, :INDEX, AND :CUSTOM.
 
 :COUNT
 
-    With the :COUNT method, which the function uses by default, the
-    function creates a hash table in which each key is an item of the
-    list and the associated value for each key is the incidence of
-    the item in the list. For example:
+    With the :COUNT method, which the function uses by default, the function
+    creates a hash table in which each key is an item of the list and the
+    associated value for each key is the incidence of the item in the list. For
+    example:
 
     (hashify-list '(7 8 7 7 8 9))
 
@@ -362,10 +370,9 @@ METHOD. Supported methods are :COUNT, :PLIST, :ALIST, :INDEX, AND :CUSTOM.
 
 :ALIST and :PLIST
 
-    The :ALIST and :PLIST methods convert the list into a hash that
-    conceptually represent the same map as the list. Alists and plists
-    both consist of collections of key/value pairs. Alists look like
-    this:
+    The :ALIST and :PLIST methods convert the list into a hash that conceptually
+    represent the same map as the list. Alists and plists both consist of
+    collections of key/value pairs. Alists look like this:
 
     '((key1 . value1) (key2 . value2) (key3 . value3)...)
 
@@ -373,24 +380,22 @@ METHOD. Supported methods are :COUNT, :PLIST, :ALIST, :INDEX, AND :CUSTOM.
 
     '(:key1 value1 :key2 value2 :key3 value3 ...)
 
-    If a key repeats in one of these lists, its value simply
-    overwrites the value of the repeated key. However, you can change
-    that behavior. See the description of the :CUSTOM method for
-    information on how to do that.
+    If a key repeats in one of these lists, its value simply overwrites the
+    value of the repeated key. However, you can change that behavior. See the
+    description of the :CUSTOM method for information on how to do that.
 
 :INDEX
 
-    The :index method causes the values in the list to become the keys
-    in the hash table. The value associated with each key should be an
-    increasing integer, starting with 0. Thus, the list '(a b c)
-    becomes the hash {a: 1, b: 2, c: 3}.
+    The :index method causes the values in the list to become the keys in the
+    hash table. The value associated with each key should be an increasing
+    integer, starting with 0. Thus, the list '(a b c) becomes the hash {a: 1, b:
+    2, c: 3}.
 
-    If the objects in the list that you're indexing are hash tables,
-    then you can specify the object key for the value that the
-    function should use as a key in the resulting hash. That object
-    key should be present in every object in the list. This allows
-    you to index a list of hash tables by some specific value in
-    the hash table. Consider the following example:
+    If the objects in the list that you're indexing are hash tables, then you
+    can specify the object key for the value that the function should use as a
+    key in the resulting hash. That object key should be present in every object
+    in the list. This allows you to index a list of hash tables by some specific
+    value in the hash table. Consider the following example:
 
     [
       {id: \"a-001\", first: \"john\", last: \"doe\"},
@@ -405,35 +410,34 @@ METHOD. Supported methods are :COUNT, :PLIST, :ALIST, :INDEX, AND :CUSTOM.
       \"a-002\": {id: \"a-002\", first: \"jane\", last: \"doe\"}
     }
 
-    And, voilá, you no longer need to iterate through a list to find
-    your object.
+    And, voilá, you no longer need to iterate through a list to find your
+    object.
 
-    If the objects are plists, and you specify the index with
-    plist-key, you'll see the same behavior with the plist as we
-    demonstrated above for hash tables.
+    If the objects are plists, and you specify the index with plist-key, you'll
+    see the same behavior with the plist as we demonstrated above for hash
+    tables.
 
-    HASH-KEY and PLIST-KEY are just shortcuts to save you from having
-    to write some code for F-KEY. You can specify only one of
-    HASH-KEY, PLIST-KEY, and F-KEY.
+    HASH-KEY and PLIST-KEY are just shortcuts to save you from having to write
+    some code for F-KEY. You can specify only one of HASH-KEY, PLIST-KEY, and
+    F-KEY.
 
 :CUSTOM
 
-    The :CUSTOM method requires that you provide functions for
-    computing the keys and values that the function inserts into the
-    resulting hash.
+    The :CUSTOM method requires that you provide functions for computing the
+    keys and values that the function inserts into the resulting hash.
 
-    Use F-KEY to provide a function that accepts an element from LIST
-    and returns a computed hash key. Here are some examples F-KEY of
-    acceptable definitions:
+    Use F-KEY to provide a function that accepts an element from LIST and
+    returns a computed hash key. Here are some examples F-KEY of acceptable
+    definitions:
 
         - #'identity
         - #'string-upcase
         - (lambda (x) (zerop (mod x 10)))
 
-    Use F-VALUE to provide a function that accepts an element from LIST,
-    the computed key (which might be different from the element), and
-    the value that's currently associated with the computed key in the
-    resulting hash table. Here are some examples:
+    Use F-VALUE to provide a function that accepts an element from LIST, the
+    computed key (which might be different from the element), and the value
+    that's currently associated with the computed key in the resulting hash
+    table. Here are some examples:
 
         - (lambda (element computed-key value)
             (declare (ignore element computed-key))
@@ -442,8 +446,8 @@ METHOD. Supported methods are :COUNT, :PLIST, :ALIST, :INDEX, AND :CUSTOM.
             (declare (ignore element value))
             (incf value))
 
-    If there's no hash value associated with the computed key, then
-    the value specified by :INITIAL-VALUE is used."
+    If there's no hash value associated with the computed key, then the value
+    specified by :INITIAL-VALUE is used."
   (let ((h (make-hash-table :test 'equal))
         (counter 0))
     (case method
@@ -530,18 +534,16 @@ METHOD. Supported methods are :COUNT, :PLIST, :ALIST, :INDEX, AND :CUSTOM.
                                     (f-make-sortable
                                      (lambda (k) (format nil "~a" k)))
                                     flat)
-  "Turns the given hash table into a list of pairs or, if FLAT is T,
- into a plist that represents the hash. In the resulting list, the
- keys are sorted, so that the list can be more easily compared with
- other lists. HASH is the hash you want to dump. F-SORT is the sort
- predicate, which defaults to sorting strings in ascending order.
- F-MAKE-SORTABLE is a function that accepts a key and returns a
- sortable version of the key. This defaults to turning the key into a
- string. If the keys to the hash are integers, for example, you can
- provide an F-SORT of #'<, which sorts integers numerically in
- ascending order, and you can provide an F-MAKE-SORTABLE of
- #'identity, which will leave the keys as integers for sorting
- purposes."
+  "[public] Turns the given hash table into a list of pairs or, if FLAT is T,
+ into a plist that represents the hash. In the resulting list, the keys are
+ sorted, so that the list can be more easily compared with other lists. HASH is
+ the hash you want to dump. F-SORT is the sort predicate, which defaults to
+ sorting strings in ascending order.  F-MAKE-SORTABLE is a function that accepts
+ a key and returns a sortable version of the key. This defaults to turning the
+ key into a string. If the keys to the hash are integers, for example, you can
+ provide an F-SORT of #'<, which sorts integers numerically in ascending order,
+ and you can provide an F-MAKE-SORTABLE of #'identity, which will leave the keys
+ as integers for sorting purposes."
   (loop for k being the hash-keys in hash
           using (hash-value v)
         for k-sortable = (funcall f-make-sortable k)
@@ -551,6 +553,7 @@ METHOD. Supported methods are :COUNT, :PLIST, :ALIST, :INDEX, AND :CUSTOM.
                     (if flat (flatten result) result)))))
 
 (defun all-permutations-base (list)
+  "[private] Internal helper function for ALL-PERMUTATIONS."
   (cond ((null list) nil)
         ((null (cdr list)) (list list))
         (t (loop
@@ -559,7 +562,7 @@ METHOD. Supported methods are :COUNT, :PLIST, :ALIST, :INDEX, AND :CUSTOM.
                                (all-permutations-base (remove item list)))))))
 
 (defun all-permutations (list)
-  "Returns a list of every permutation of elements in LIST. For
+  "[public] Returns a list of every permutation of elements in LIST. For
  example:
     '(1 2 3) -> '((1 2 3) (1 3 2) (2 1 3) (2 3 1) (3 1 2) (3 2 1))"
   (let ((v (apply #'vector list)))
@@ -569,20 +572,22 @@ METHOD. Supported methods are :COUNT, :PLIST, :ALIST, :INDEX, AND :CUSTOM.
               (dc-eclectic::range 0 (1- (length v))))))))
 
 (defun all-permutations-of-string (s)
-  "Returns a list of strings representing every permutation of the
+  "[public] Returns a list of strings representing every permutation of the
 orginal string S. For example:
     \"abc\" -> '(\"abc\" \"acb\" \"bac\" \"bca\" \"cab\" \"cba\")"
   (mapcar (lambda (list) (map 'string 'identity list))
           (all-permutations (map 'list 'identity s))))
 
 (defun existing-permutations-of-string (s hash)
-  "Works just like all-permutations-of-string, but excludes any
+  "[public] Works just like all-permutations-of-string, but excludes any
  permutations of S that are not among the keys in HASH."
   (loop for word in (all-permutations-of-string s)
         when (gethash word hash)
           collect word))
 
 (defun n-grams-of-list (list count &optional prefix)
+  "[private] Returns n-grams of LIST each of length COUNT, optionally prefixed
+with PREFIX. This is helper function for N-GRAMS and N-GRAM-STRINGS."
   (if (zerop count)
       (apply #'vector (reverse prefix))
       (loop for item in list
@@ -594,31 +599,33 @@ orginal string S. For example:
             finally (return (flatten result)))))
 
 (defun n-grams (list count)
+  "[public] Returns n-gram lists of length COUNT using elements of LIST."
   (mapcar (lambda (v) (map 'list 'identity v))
           (n-grams-of-list list count)))
 
 (defun n-gram-strings (chars count)
-  "Accepts CHARS, a string, and COUNT, an integer, and returns all the
+  "[public] Accepts CHARS, a string, and COUNT, an integer, and returns all the
   possible combinations of length COUNT of the characters in CHARS. For example,
-  (n-gram-strings \"abc\" 3) => '(\"aa\" \"ab\" \"ac\" \"ba\" \"bb\"
+  (n-gram-strings \"abc\" 2) => '(\"aa\" \"ab\" \"ac\" \"ba\" \"bb\"
   \"bc\" \"ca\" \"cb\" \"cc\")"
   (mapcar (lambda (v) (map 'string 'identity v))
           (n-grams-of-list (map 'list 'identity chars)
                            count)))
 
 (defun existing-n-gram-strings (chars count hash)
+  "[public] Returns all the COUNT n-grams for string CHARS, but only of n-grams
+that exist as keys in HASH."
   (remove-if-not (lambda (word)
                    (gethash word hash))
                  (n-gram-strings chars count)))
 
 (defun split-n-trim (string &key (on-regex "\\s+") (fat "^\\s+|\\s+$"))
-  "Splits STRING into substrings on ON-REGEX, then trims FAT from each
-substring.  The ON-REGEX parameter value, which is optional, defaults
-to \"\\s+\", which is to say that the string is split into a list of
-words at the whitespace boundaries.  The default value for FAT, which
-is also optional, \"\\s+|\\s+$\", causes this function to trim
-whitespace from the beggining and end of each substring.  Here's an
-example:
+  "[public] Splits STRING into substrings on ON-REGEX, then trims FAT from each
+substring.  The ON-REGEX parameter value, which is optional, defaults to
+\"\\s+\", which is to say that the string is split into a list of words at the
+whitespace boundaries.  The default value for FAT, which is also optional,
+\"\\s+|\\s+$\", causes this function to trim whitespace from the beggining and
+end of each substring.  Here's an example:
 
     (split-n-trim \"Hello  beautiful      world!\")
 
@@ -628,32 +635,35 @@ example:
                      (re:split on-regex string))))
 
 (defun trim (s &optional (fat "^\\s+|\\s+$"))
-  "Trim FAT from the string in S.  The FAT parameter is optional and
+  "[public] Trim FAT from the string in S.  The FAT parameter is optional and
 defaults to \"^\\s+|\\s+$\", which means \"Whitespace at the beginning
 or end of the string\"."
   (re:regex-replace-all fat s ""))
 
 (defun trim-whitespace (s)
+  "[public] Trim Whitespace from the beginning and end of S."
 	(string-trim '(#\Space #\Newline #\Backspace #\Tab #\Linefeed #\Page #\Return
 								 #\Rubout)
 							 s))
 
 (defun plistp (list)
+  "[public] Returns T if LIST is a plist."
   (and (evenp (length list))
        (loop for key in list by #'cddr always (keywordp key))))
 
 ;; Needs tests!
 (defun normalize-list (list &key max min)
-  "Return a new list with new values between 0.0 and 1.0. MAX is the
-largest value that LIST can hold, and MIN is the smallest.  Each new
-value N is computed from the corresponding old value O in LIST, as
-follows: N = (O - MIN) / (MAX - MIN). If you don't provide MAX and
-MIN, this function does an initial pass through list where it sets MAX
-and MIN to the largest number and the smallest number in LIST,
-respectively.  Therefore, you can improve the performance of this
-function if you already know those values. Furthermore, in some cases
-the list may not even contain the values for MAX and MIN that you
-need."
+  "[public] Returns a new list with new values between 0.0 and 1.0. MAX is the
+largest value that LIST can hold, and MIN is the smallest.  Each new value N is
+computed from the corresponding old value O in LIST, as follows:
+
+  N = (O - MIN) / (MAX - MIN)
+
+If you don't provide MAX and MIN, this function does an initial pass through
+list where it sets MAX and MIN to the largest number and the smallest number in
+LIST, respectively.  Therefore, you can improve the performance of this function
+if you already know those values. Furthermore, in some cases the list may not
+even contain the values for MAX and MIN that you need."
   (loop
     with min-max = (if (and min max)
                        (cons min max)
@@ -666,12 +676,11 @@ need."
 
 ;; Needs tests!
 (defun denormalize-list (list min max &key integer)
-  "Returns a new list with the numbers in LIST, which are
- floating-point numbers between 0 and 1, expanded to the range MAX -
- MIN, such that the number 1.0 is converted to MAX, the number 0.0 is
- converted to MIN, and all the other numbers fall in the range MIN to
- MAX. INTEGER is T, the new list contains integers. Otherwise, the new
- list contains floating-point numbers."
+  "[public] Returns a new list with the numbers in LIST, which are
+floating-point numbers between 0 and 1, expanded to the range MAX - MIN, such
+that the number 1.0 is converted to MAX, the number 0.0 is converted to MIN, and
+all the other numbers fall in the range MIN to MAX. INTEGER is T, the new list
+contains integers. Otherwise, the new list contains floating-point numbers."
   (if integer
       (loop with range = (- max min)
             for o in list
@@ -681,29 +690,35 @@ need."
             collect (+ (* o range) min))))
 
 (defun slurp (filename)
+  "[public] Returns a string with the content of the file at FILENAME."
   (with-open-file (in filename :direction :input)
     (let ((contents (make-string (file-length in))))
       (read-sequence contents in)
       contents)))
 
 (defun spew (string filename)
+  "[public] Write STRING to filename, creating the file if necessary, and
+replacing the contents of the file if the file already exists."
   (with-open-file (out filename
                     :direction :output
                     :if-exists :supersede)
     (write-string string out)))
 
 (defun freeze (object)
+  "[public] Stringifies OBJECT."
   (prin1-to-string object))
 
 (defun thaw (string)
+  "[public] Returns an object resulting from the evalation of STRING. This
+is the opposite of FREEZE."
   (let ((*read-eval* nil))
     (read-from-string string)))
 
 (defun getenv (name &key default required (type :string))
-  "Get the value of the environment variable NAME, returning a string or an
-integer, depending on TYPE. If the environment variable is not set, then return
-DEFAULT, which must be of type TYPE. If the environment variable is not set and
-DEFAULT is NIL, then this function returns NIL.
+  "[public] Get the value of the environment variable NAME, returning a string
+or an integer, depending on TYPE. If the environment variable is not set, then
+return DEFAULT, which must be of type TYPE. If the environment variable is not
+set and DEFAULT is NIL, then this function returns NIL.
 
 TYPE can be :integer, :string, or :boolean."
   (unless (member type '(:string :integer :boolean))
@@ -745,8 +760,8 @@ TYPE can be :integer, :string, or :boolean."
           default)))))
 
 (defun setenv (name value)
-  "Set environment variable NAME to VALUE. VALUE is always converted into a
-string. Returns a string with VALUE."
+  "[public] Set environment variable NAME to VALUE. VALUE is always converted into
+a string. Returns a string with VALUE."
   (let ((string-value (cond
                         ((eq value t) "true")
                         ((eq value nil) "false")
@@ -757,12 +772,16 @@ string. Returns a string with VALUE."
 ;; Everything that follows neeeds tests
 
 (defun random-number (&optional (digits 4) rstate)
+  "[public] Returns a random integer of DIGITS digits."
   (loop for a from 1 to digits
     for digit = (1+ (rand 9 rstate)) then (rand 10 rstate)
     for power downfrom (1- digits) to 0
     summing (* digit (expt 10 power))))
 
 (defun random-hex-number (&optional (digits 7) (non-zero-start) rstate)
+  "[public] Returns a random hexadecimal number with DIGITS digits. If
+NON-ZERO-START is specified, then the resulting hexadecimal number starts with
+a character other than 0."
   (loop with hex-digits = "0123456789abcdef"
     for a from 1 to digits
     for digit = (elt hex-digits (if non-zero-start
@@ -773,6 +792,12 @@ string. Returns a string with VALUE."
     finally (return (map 'string 'identity number))))
 
 (defun random-string (string-length alphabet &optional rstate)
+  "[public] Returns a random string of length STRING-LENGTH. The string is
+constructed from characters in ALPHABET. ALPHABET is a string. There are
+several functions available for building ALPHABET, all starting with the
+prefix 'ASCII-'. For example:
+
+  (random-string 10 (ascii-alpha-num-lower))"
   (loop with alphabet-length = (length alphabet)
     for a from 1 to string-length
     for letter = (elt alphabet (rand alphabet-length rstate))
@@ -780,32 +805,47 @@ string. Returns a string with VALUE."
     finally (return (map 'string 'identity string))))
 
 (defun ascii-char-range (begin end)
+  "[public] Returns a string that includes ASCII characters in the ASCII code
+range given by BEGIN and END."
   (loop for code from (char-code begin) to (char-code end)
     collect (code-char code) into string
     finally (return (map 'string 'identity string))))
 
 (defun ascii-alpha-lower ()
+  "[public] Returns a string with all the lower-case alphabetic ASCII
+characters (a-z)."
   (ascii-char-range #\a #\z))
 
 (defun ascii-alpha-upper ()
+  "[public] Returns a string with all the upper-case alphabetic ASCII
+characters (A-Z)."
   (ascii-char-range #\A #\Z))
 
 (defun ascii-alpha ()
+  "[public] Return a string with all the alphabetic ASCII characters."
   (concatenate 'string (ascii-alpha-lower) (ascii-alpha-upper)))
 
 (defun ascii-numeric ()
+  "[public] Returns a string with all the ASCII characters that represent
+digits."
   (ascii-char-range #\0 #\9))
 
 (defun ascii-alpha-num-lower ()
+  "[public] Returns a string with all the lower-case alpha-numeric ASCII
+characters."
   (concatenate 'string (ascii-alpha-lower) (ascii-numeric)))
 
 (defun ascii-alpha-num-upper ()
+  "[public] Returns a string with all the upper-case alpha-numeric ASCII
+characters."
   (concatenate 'string (ascii-alpha-upper) (ascii-numeric)))
 
 (defun ascii-alpha-num ()
+  "[public] Returns a string with all the alpha-numeric ASCII characters."
   (concatenate 'string (ascii-alpha) (ascii-numeric)))
 
 (defun uuid (&optional rstate)
+  "[public] Returns a random UUID string."
   (format nil "~{~a~^-~}"
     (list
       (random-hex-number 8 t rstate)
@@ -821,11 +861,23 @@ string. Returns a string with VALUE."
 ;;
 ;; BEGIN
 (defun base64-encode (string)
+  "[public] Returns a base64-encoded version of STRING that that works list like
+the standard base64-encode implementations in the Linux command line and Emacs
+Lisp. These do not properly handle multibyte characters, so use this function
+only if you need compatibility with popular implementations. DC-ECLECTIC
+contains better encoding and decoding functions. See SAFE-ENCODE, SAFE-DECODE,
+and DEFINE-BASE-ENCODER."
   (if string
     (cl-base64:string-to-base64-string string)
     ""))
 
 (defun base64-decode (base64-encoded-string)
+  "[public] Decodes BASE64-ENCODED-STRING and returns the result. This function
+is compatible with base64-encode and with popular implementation of base64
+encoding and decoding functions. However, this function doesn't properly handle
+multi-byte characters. Unless you require compatibility with external functions,
+use the other decoding functions in DC-ECLECTIC. See SAFE-ENCODE, SAFE-DECODE,
+and DEFINE-BASE-ENCODER."
   (if base64-encoded-string
     (cl-base64:base64-string-to-string base64-encoded-string)
     ""))
@@ -834,9 +886,9 @@ string. Returns a string with VALUE."
 (defun copy-file (source destination &key
                    (if-exists :supersede)
                    (buffer-size (* 64 1024)))
-  "Copies SOURCE file to DESTINATION file. If DESTINATION's directories do not
-exist, they are created. IF-EXISTS controls the behavior if DESTINATION already
-exists, and may be :error, :new-version, :rename, :rename-and-delete,
+  "[public] Copies SOURCE file to DESTINATION file. If DESTINATION's directories
+do not exist, they are created. IF-EXISTS controls the behavior if DESTINATION
+already exists, and may be :error, :new-version, :rename, :rename-and-delete,
 :overwrite, :append, or :supersede. IF-EXISTS defaults to :supersede.
 BUFFER-SIZE controls the size of the buffer used during the copy operation, and
 defaults to 64 KB. Returns the DESTINATION path."
@@ -866,6 +918,7 @@ defaults to 64 KB. Returns the DESTINATION path."
   destination)
 
 (defun shell-command-to-string (command)
+  "[public] Executes COMMAND in the shell and returns the output as a string."
   (multiple-value-bind (output error-output exit-code)
     (uiop:run-program command
       :output :string
@@ -876,8 +929,8 @@ defaults to 64 KB. Returns the DESTINATION path."
 ;; BEGIN
 
 (defun shell-command-background (command &key (wait-interval 0.1))
-  "Run COMMAND in the background. Returns a process-info plist with keys:
-:pid, :exit-code (nil if running), :output, :error-output, :running-p,
+  "[public] Run COMMAND in the background. Returns a process-info plist with
+keys: :pid, :exit-code (nil if running), :output, :error-output, :running-p,
 :wait-interval (for polling), :status.
 
 Returns an INFO object that you can use later to check on the backgrounded
@@ -898,20 +951,21 @@ process. Use (SHELL-COMMAND-RUNNING-P INFO), (SHELL-COMMAND-WAIT INFO),
           :status :running)))
 
 (defun shell-command-running-p (info)
-  "Returns T if the background process is still running. INFO is the
+  "[public] Returns T if the background process is still running. INFO is the
 object that SHELL-COMMAND-BACKGROUND returns when it starts the process."
   (uiop:process-alive-p (getf info :process)))
 
 (defun shell-command-wait (info &optional timeout)
-  "Wait for process to finish (with optional TIMEOUT seconds). INFO is the object
-that SHELL-COMMAND-BACKGROUND returns when Updates INFO with output and exit
-code. Returns updated INFO. If TIMEOUT is ommitted or NIL, waits until the process
-finishes, which might be forever if the process is a server process, for example.
-If TIMEOUT is provided and the process does not finish within TIMEOUT seconds,
-the process is terminated. When the process terminates normally, INFO is updated
-with :status :completed, the exit code, and the output and error-output strings.
-When the process is terminated due a timeout, INFO is updated with :status
-:terminated, and the exit code, but output and error-output are left NIL."
+  "[public] Wait for process to finish (with optional TIMEOUT seconds). INFO is
+the object that SHELL-COMMAND-BACKGROUND returns when Updates INFO with output
+and exit code. Returns updated INFO. If TIMEOUT is ommitted or NIL, waits until
+the process finishes, which might be forever if the process is a server process,
+for example.  If TIMEOUT is provided and the process does not finish within
+TIMEOUT seconds, the process is terminated. When the process terminates
+normally, INFO is updated with :status :completed, the exit code, and the output
+and error-output strings.  When the process is terminated due a timeout, INFO is
+updated with :status :terminated, and the exit code, but output and error-output
+are left NIL."
   (let ((process (getf info :process))
         (wait-interval (or (getf info :wait-interval) 0.1))
         (end-time (when timeout (+ (get-universal-time) timeout))))
@@ -947,12 +1001,12 @@ When the process is terminated due a timeout, INFO is updated with :status
       info))
 
 (defun safe-sort (list &key predicate)
-  "Returns a sorted copy of LIST, without modifying LIST. If PREDICATE is
-not provided, the function determines the type of the first element of the
+  "[public] Returns a sorted copy of LIST, without modifying LIST. If PREDICATE
+is not provided, the function determines the type of the first element of the
 list to pick a suitable sort predicate. The function assumes that all the
 elements in LIST are of the same type and that they are either strings,
-keywords, or numbers. The function sorts in ascending order by default.
-If PREDICATE is provided, then the function uses that predicate."
+keywords, or numbers. The function sorts in ascending order by default.  If
+PREDICATE is provided, then the function uses that predicate."
   (let ((p (or predicate
              (cond
                ((stringp (car list)) #'string<)
@@ -965,9 +1019,9 @@ If PREDICATE is provided, then the function uses that predicate."
 ;; Background a shell command and support functions
 
 (defgeneric has (reference-list thing)
-  (:documentation "Returns T if REFERENCE-LIST contains THING. If THING is a
-string, this function checks for that string in REFERENCE-LIST. If THING is a
-list, this function checks that all elements of THING are in REFERENCE-LIST.")
+  (:documentation "[public] Returns T if REFERENCE-LIST contains THING. If THING
+is a string, this function checks for that string in REFERENCE-LIST. If THING is
+a list, this function checks that all elements of THING are in REFERENCE-LIST.")
   (:method ((reference-list list) (thing string))
     (when (member thing reference-list :test 'equal) t))
   (:method ((reference-list list) (thing number))
@@ -978,7 +1032,8 @@ list, this function checks that all elements of THING are in REFERENCE-LIST.")
       t)))
 
 (defun has-some (reference-list query-list)
-  "Returns T if REFERENCE-LIST contains any of the elements in QUERY-LIST."
+  "[public] Returns T if REFERENCE-LIST contains any of the elements in
+QUERY-LIST."
   (if (null query-list)
     t
     (when
@@ -986,29 +1041,29 @@ list, this function checks that all elements of THING are in REFERENCE-LIST.")
       t)))
 
 (defgeneric exclude (reference-list exclude)
-  (:documentation "Returns a list containing the elements of REFERENCE-LIST
-that are not in EXCLUDE. If EXCLUDE is a list, this function excludes all
-elements in EXCLUDE from REFERENCE-LIST. If EXCLUDE is a string, this function
-excludes the string from REFERENCE-LIST")
+  (:documentation "[public] Returns a list containing the elements of
+REFERENCE-LIST that are not in EXCLUDE. If EXCLUDE is a list, this function
+excludes all elements in EXCLUDE from REFERENCE-LIST. If EXCLUDE is a string,
+this function excludes the string from REFERENCE-LIST")
   (:method ((reference-list list) (exclude string))
-    "Returns a list containing the elements of REFERENCE-LIST excluding
-the one that is equal to EXCLUDE."
+    "[public] Returns a list containing the elements of REFERENCE-LIST
+excluding the one that is equal to EXCLUDE."
     (remove-if (lambda (s) (equal s exclude)) reference-list))
   (:method ((reference-list list) (exclude number))
-    "Returns a list containing the elements of REFERENCE-LIST excluding
-the one that is equal to EXCLUDE."
+    "[publlic] Returns a list containing the elements of REFERENCE-LIST
+excluding the one that is equal to EXCLUDE."
     (remove-if (lambda (n) (= n exclude)) reference-list))
   (:method ((reference-list list) (exclude list))
-    "Returns a list containing the elements of REFERENCE-LIST excluding
+    "[public] Returns a list containing the elements of REFERENCE-LIST excluding
 all elements in EXCLUDE."
     (remove-if
       (lambda (s) (member s exclude :test 'equal))
       reference-list)))
 
 (defun exclude-regex (reference-list exclude &optional exceptions)
-  "Returns a list of the elements of REFERENCE-LIST that that don't match the
-EXCLUDE regular expression. However, elements that are not in EXCEPTIONS are
-not excluded, even if they match EXCLUDE."
+  "[public] Returns a list of the elements of REFERENCE-LIST that that don't
+match the EXCLUDE regular expression. However, elements that are not in
+EXCEPTIONS are not excluded, even if they match EXCLUDE."
   (remove-if (lambda (s)
                (and
                  exclude
@@ -1017,7 +1072,7 @@ not excluded, even if they match EXCLUDE."
     reference-list))
 
 (defun deep-copy (thing)
-  "Deep copy THING, recursively copying lists, vectors, and strings."
+  "[public] Deep copy THING, recursively copying lists, vectors, and strings."
   (cond
     ((null thing) nil)
     ((consp thing)
@@ -1027,7 +1082,7 @@ not excluded, even if they match EXCLUDE."
     (t thing)))
 
 (defun singular (word)
-  "Convert plural to singular form (works most of the time)."
+  "[public] Convert plural to singular form (works most of the time)."
   (loop with pairs = '(("ies" . "y")
                         ("ves" . "f")
                         ("is" . "es")
@@ -1047,8 +1102,8 @@ not excluded, even if they match EXCLUDE."
     finally (return word)))
 
 (defun tree-get (tree &rest path)
-  "Get value from the TREE structure, at PATH. TREE is a nested data structure
-where each value can be a plist, list, object, t, or nil."
+  "[public] Get value from the TREE structure, at PATH. TREE is a nested data
+structure where each value can be a plist, list, object, t, or nil."
   (loop for key in path
         do (etypecase key
              (integer (progn
@@ -1060,7 +1115,7 @@ where each value can be a plist, list, object, t, or nil."
         finally (return tree)))
 
 (defmacro tree-put (value tree &rest path)
-  "Set VALUE at the location specified by PATH in the TREE structure.
+  "[public] Set VALUE at the location specified by PATH in the TREE structure.
 Expands into a series of `getf` and `nth` calls for efficient access."
   (let ((place
           (reduce (lambda (current key)

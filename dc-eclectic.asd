@@ -11,9 +11,12 @@
                 :cl-base64
                 :cl-csv
                 :babel
+                :mgl-pax
                 :dc-ds)
   :serial t
   :components ((:file "dc-eclectic-package")
                 (:file "dc-eclectic")
                 (:file "encoder")
-                (:file "reference-random-state")))
+                (:file "reference-random-state")
+                (:file "docs")
+                (:file "exports")))
