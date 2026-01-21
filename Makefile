@@ -36,10 +36,17 @@ test:
 	ros run -- --disable-debugger --load "$(TEST_FILE)" --quit
 
 docs:
-	ros run -- --disable-debugger \
+	@if ros run -- --disable-debugger \
       --eval '(asdf:load-system :dc-eclectic :force t)' \
       --eval "(dc-eclectic::generate-readme)" \
-			--quit;
+			--quit; then \
+			echo; \
+	    echo "Generated README.md successfully"; \
+	else \
+			echo; \
+	    echo "Failed to generate README.md."; \
+	    exit 1; \
+	fi
 
 .PHONY: install-roswell install-dependencies test
 .DEFAULT_GOAL := test
