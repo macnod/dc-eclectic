@@ -12,7 +12,7 @@ on:
       disable-cache:
         description: 'Disable caching'
         required: false
-        default: 'false'
+        default: false
         type: boolean
 
 jobs:
