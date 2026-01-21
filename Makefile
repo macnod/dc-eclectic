@@ -27,6 +27,7 @@ install-dependencies:
 	ros install cl-csv
 	ros install babel
 	ros install fiveam
+	ros install mgl-pax
 	ros install macnod/dc-ds
 	ros install macnod/dc-time
 	ros install macnod/p-log
