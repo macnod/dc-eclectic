@@ -68,6 +68,7 @@
     normalize-list
     open-log
     path-only
+    path-parent
     path-type
     plist-keys
     plistp

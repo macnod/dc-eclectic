@@ -97,6 +97,21 @@ FILENAME."
           ""
           (elt parts (1- (length parts))))))))
 
+(defun path-parent (path)
+  ":public: Returns the absolute path to the directory that is the parent of
+PATH. PATH must be an absolute path. If PATH points to a file, then this returns
+the path to the file, minus the file name. If PATH points to a directory, this
+returns the parent of the directory in PATH. If PATH points to a directory, it
+must end in /. If PATH is / or not an absolute path, this function returns NIL."
+  (if (or (member path '("/" "" nil) :test 'equal)
+        (not (re:scan "^/" path)))
+    nil
+    (if (re:scan "/$" path)
+      (let* ((parts (re:split "/" path))
+              (parent (apply #'join-paths (cons "/" (butlast parts)))))
+        (if (re:scan "/$" parent) parent (format nil "~a/" parent)))
+      (path-only path))))
+
 (defun leaf-directory-only (path)
   ":public: Returns the last part of the directory PATH. For example,
 /home/one/two => two"

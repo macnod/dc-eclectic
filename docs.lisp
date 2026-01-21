@@ -77,6 +77,7 @@
   (n-grams function)
   (normalize-list function)
   (path-only function)
+  (path-parent function)
   (path-type function)
   (plist-keys function)
   (plistp function)

@@ -852,6 +852,19 @@
       (tree-put :integer copy :files :fields 1 :type)
       (is (equal :integer (tree-get copy :files :fields 1 :type))))))
 
+(test path-parent
+  (is (equal "/" (path-parent "/one")))
+  (is (equal "/" (path-parent "/one/")))
+  (is (equal "/" (path-parent "/one.txt")))
+  (is-false (path-parent "one"))
+  (is-false (path-parent ""))
+  (is-false (path-parent "/"))
+  (is (equal "/one/" (path-parent "/one/two/")))
+  (is (equal "/one/" (path-parent "/one/two")))
+  (is (equal "/one/" (path-parent "/one/two.txt")))
+  (is (equal "/one/two/" (path-parent "/one/two/three")))
+  (is (equal "/one/two/" (path-parent "/one/two/three.txt"))))
+
 ;;; Run tests
 (unless (run-all-tests)
   (sb-ext:quit :unix-status 1))
