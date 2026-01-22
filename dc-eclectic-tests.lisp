@@ -865,6 +865,30 @@
   (is (equal "/one/two/" (path-parent "/one/two/three")))
   (is (equal "/one/two/" (path-parent "/one/two/three.txt"))))
 
+(test starts-with
+  (is-true (starts-with "hello world" "hello"))
+  (is-true (starts-with "hello" "hello"))
+  (is-true (starts-with "hello" "h"))
+  (is-true (starts-with "h" "h"))
+  (is-false (starts-with "hello world" "world"))
+  (is-false (starts-with "hello" "world"))
+  (is-false (starts-with "hello" "hello world"))
+  (is-true (starts-with "hello" ""))
+  (is-true (starts-with "" ""))
+  (is-false (starts-with "" "x")))
+
+(test ends-with
+  (is-true (ends-with "hello world" "world"))
+  (is-true (ends-with "hello world" "hello world"))
+  (is-true (ends-with "hello world" "d"))
+  (is-true (ends-with "hello world" ""))
+  (is-true (ends-with "h" "h"))
+  (is-true (ends-with "" ""))
+  (is-false (ends-with "hello world" "hello"))
+  (is-false (ends-with "hello" "hello world"))
+  (is-false (ends-with "" "x"))
+  (is-false (ends-with "hello" "hellohello")))
+
 ;;; Run tests
 (unless (run-all-tests)
   (sb-ext:quit :unix-status 1))

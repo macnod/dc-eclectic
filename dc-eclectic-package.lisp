@@ -38,6 +38,7 @@
     directory-exists-p
     distinct-elements
     distinct-values
+    ends-with
     exclude
     exclude-regex
     existing-n-gram-strings
@@ -85,6 +86,7 @@
     safe-sort
     set-log-severity-threshold
     setenv
+    starts-with
     shell-command-to-string
     shell-command-background
     shell-command-running-p

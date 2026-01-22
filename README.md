@@ -280,6 +280,13 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
     Synonym for [`DISTINCT-ELEMENTS`][4836].
 
+<a id="x-28DC-ECLECTIC-3AENDS-WITH-20FUNCTION-29"></a>
+<a id="DC-ECLECTIC:ENDS-WITH%20FUNCTION"></a>
+
+- [function] **ENDS-WITH** *S SUFFIX*
+
+    Returns `T` if string `S` ends with `SUFFIX`.
+
 <a id="x-28DC-ECLECTIC-3AEXCLUDE-20GENERIC-FUNCTION-29"></a>
 <a id="DC-ECLECTIC:EXCLUDE%20GENERIC-FUNCTION"></a>
 
@@ -588,6 +595,17 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
     string, this function returns the empty string. If `FILENAME` has no path
     component, this function returns "/".
 
+<a id="x-28DC-ECLECTIC-3APATH-PARENT-20FUNCTION-29"></a>
+<a id="DC-ECLECTIC:PATH-PARENT%20FUNCTION"></a>
+
+- [function] **PATH-PARENT** *PATH*
+
+    Returns the absolute path to the directory that is the parent of
+    `PATH`. `PATH` must be an absolute path. If `PATH` points to a file, then this returns
+    the path to the file, minus the file name. If `PATH` points to a directory, this
+    returns the parent of the directory in `PATH`. If `PATH` points to a directory, it
+    must end in /. If `PATH` is / or not an absolute path, this function returns `NIL`.
+
 <a id="x-28DC-ECLECTIC-3APATH-TYPE-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:PATH-TYPE%20FUNCTION"></a>
 
@@ -796,6 +814,13 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
         
         => '("Hello" "beautiful" "world!")
 
+
+<a id="x-28DC-ECLECTIC-3ASTARTS-WITH-20FUNCTION-29"></a>
+<a id="DC-ECLECTIC:STARTS-WITH%20FUNCTION"></a>
+
+- [function] **STARTS-WITH** *S PREFIX*
+
+    Returns `T` if string `S` starts with `PREFIX`.
 
 <a id="x-28DC-ECLECTIC-3ATHAW-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:THAW%20FUNCTION"></a>

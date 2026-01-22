@@ -1140,3 +1140,19 @@ Expands into a series of `getf` and `nth` calls for efficient access."
                   path
                   :initial-value tree)))
     `(setf ,place ,value)))
+
+(defun starts-with (s prefix)
+  ":public: Returns T if string S starts with PREFIX."
+  (let ((l (length s))
+         (l-prefix (length prefix)))
+    (and
+      (>= l l-prefix)
+      (string= prefix s :end2 l-prefix))))
+
+(defun ends-with (s suffix)
+  ":public: Returns T if string S ends with SUFFIX."
+  (let ((l (length s))
+         (l-suffix (length suffix)))
+    (and
+      (>= l l-suffix)
+      (string= suffix s :start2 (- l l-suffix)))))
