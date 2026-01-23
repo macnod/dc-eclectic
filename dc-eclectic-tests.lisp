@@ -803,6 +803,17 @@
   (is (equal "file" (singular "files")))
   (is (equal "datum" (singular "data"))))
 
+(test plural
+  (is (equal "widgets" (plural "widget")))
+  (is (equal "workmen" (plural "workman")))
+  (is (equal "ladies" (plural "lady")))
+  (is (equal "children" (plural "child")))
+  (is (equal "teeth" (plural "tooth")))
+  (is (equal "my_children" (plural "my_child")))
+  (is (equal "directories" (plural "directory")))
+  (is (equal "files" (plural "file")))
+  (is (equal "data" (plural "datum"))))
+
 (test tree-get
   (let ((tree '(:files
                  (:enable t

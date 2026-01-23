@@ -73,6 +73,7 @@
     path-type
     plist-keys
     plistp
+    plural
     rand
     random-hex-number
     random-number

@@ -82,6 +82,7 @@
   (path-type function)
   (plist-keys function)
   (plistp function)
+  (plural function)
   (rand function)
   (random-hex-number function)
   (random-number function)

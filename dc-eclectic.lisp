@@ -1116,6 +1116,25 @@ EXCEPTIONS are not excluded, even if they match EXCLUDE."
     do (return-from singular (re:regex-replace regex word replacement))
     finally (return word)))
 
+(defun plural (word)
+  ":public: Convert singular to plural form (works most of the time)."
+  (loop with pairs = '(("y" . "ies")
+                        ("f" . "ves")
+                        ("is" . "es")
+                        ("man" . "men")
+                        ("child" . "children")
+                        ("foot" . "feet")
+                        ("tooth" . "teeth")
+                        ("mouse" . "mice")
+                        ("person" . "people")
+                        ("datum" . "data"))
+    for pair in pairs
+    for regex = (format nil "~a$" (car pair))
+    for replacement = (cdr pair)
+    when (re:scan regex word)
+    do (return-from plural (re:regex-replace regex word replacement))
+    finally (return (format nil "~as" word))))
+
 (defun tree-get (tree &rest path)
   ":public: Get value from the TREE structure, at PATH. TREE is a nested data
 structure where each value can be a plist, list, object, t, or nil."

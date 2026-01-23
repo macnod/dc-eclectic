@@ -628,6 +628,13 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
     Returns `T` if `LIST` is a plist.
 
+<a id="x-28DC-ECLECTIC-3APLURAL-20FUNCTION-29"></a>
+<a id="DC-ECLECTIC:PLURAL%20FUNCTION"></a>
+
+- [function] **PLURAL** *WORD*
+
+    Convert singular to plural form (works most of the time).
+
 <a id="x-28DC-ECLECTIC-3ARAND-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:RAND%20FUNCTION"></a>
 
