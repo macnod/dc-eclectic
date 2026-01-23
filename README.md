@@ -539,9 +539,11 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
     Joins parameters (collected in `PATH-PARTS`) into a unix-like file
     path, inserting slashes where necessary. `PATH-PARTS` can be strings or
     pathnames. If the first element in `PATH-PARTS` starts with a slash, the resulting
-    path will be absolute; otherwise, it will be relative.  `PATH-PARTS` elements
-    should be strings or pathnames, but this function will try to convert other
-    types to strings, if possible. `NIL` or empty strings are ignored.
+    path will be absolute; otherwise, it will be relative. If the last element of
+    `PATH-PARTS` ends in a slash, the resulting path will also end in a
+    slash. `PATH-PARTS` elements should be strings or pathnames, but this function
+    will try to convert other types to strings, if possible. `NIL` or empty strings
+    are ignored.
 
 <a id="x-28DC-ECLECTIC-3ALEAF-DIRECTORY-ONLY-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:LEAF-DIRECTORY-ONLY%20FUNCTION"></a>

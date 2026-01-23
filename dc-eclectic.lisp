@@ -39,22 +39,29 @@ parameter if you want case-insensitve matches."
   ":public: Joins parameters (collected in PATH-PARTS) into a unix-like file
 path, inserting slashes where necessary. PATH-PARTS can be strings or
 pathnames. If the first element in PATH-PARTS starts with a slash, the resulting
-path will be absolute; otherwise, it will be relative.  PATH-PARTS elements
-should be strings or pathnames, but this function will try to convert other
-types to strings, if possible. NIL or empty strings are ignored."
+path will be absolute; otherwise, it will be relative. If the last element of
+PATH-PARTS ends in a slash, the resulting path will also end in a
+slash. PATH-PARTS elements should be strings or pathnames, but this function
+will try to convert other types to strings, if possible. NIL or empty strings
+are ignored."
   (when (null path-parts) (return-from join-paths ""))
   (let* ((parts (loop for part in path-parts
-                      for part-string = (when part (format nil "~a" part))
-                      unless (or (null part-string) (zerop (length part-string)))
-                        collect part-string))
-         (absolute (verify-string (car parts) "^/.*$"))
-         (clean-parts (remove-if
-                       (lambda (p) (zerop (length p)))
-                       (mapcar
-                        (lambda (p) (re:regex-replace-all "^/|/$" p ""))
-                        parts)))
-         (path (format nil "~{~a~^/~}" clean-parts)))
-    (format nil "~a~a" (if absolute "/" "") path)))
+                  for part-string = (when part (format nil "~a" part))
+                  unless (or (null part-string) (zerop (length part-string)))
+                  collect part-string))
+          (absolute (verify-string (car parts) "^/.*$"))
+          (directory (ends-with (car (last parts)) "/"))
+          (clean-parts (remove-if
+                         (lambda (p) (zerop (length p)))
+                         (mapcar
+                           (lambda (p) (re:regex-replace-all "^/|/$" p ""))
+                           parts)))
+          (core-path (format nil "~{~a~^/~}" clean-parts))
+          (path (format nil "~a~a~a"
+                  (if absolute "/" "")
+                  core-path
+                  (if directory "/" ""))))
+    (if (equal path "//") "/" path)))
 
 (defun path-only (filename)
   ":public: Retrieves the path (path only, without the filename) of FILENAME.
