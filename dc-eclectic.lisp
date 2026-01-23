@@ -49,7 +49,7 @@ are ignored."
                   for part-string = (when part (format nil "~a" part))
                   unless (or (null part-string) (zerop (length part-string)))
                   collect part-string))
-          (absolute (verify-string (car parts) "^/.*$"))
+          (absolute (starts-with (car parts) "/"))
           (directory (ends-with (car (last parts)) "/"))
           (clean-parts (remove-if
                          (lambda (p) (zerop (length p)))
