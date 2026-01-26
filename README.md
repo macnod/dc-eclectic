@@ -551,7 +551,7 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 - [function] **LEAF-DIRECTORY-ONLY** *PATH*
 
     Returns the last part of the directory `PATH`. For example,
-    /home/one/two => two
+    /home/one/two => two. If `PATH` is /, this function returns /.
 
 <a id="x-28DC-ECLECTIC-3AN-GRAM-STRINGS-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:N-GRAM-STRINGS%20FUNCTION"></a>

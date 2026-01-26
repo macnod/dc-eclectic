@@ -121,8 +121,10 @@ must end in /. If PATH is / or not an absolute path, this function returns NIL."
 
 (defun leaf-directory-only (path)
   ":public: Returns the last part of the directory PATH. For example,
-/home/one/two => two"
-  (car (last (re:split "/" (string-trim "/" path)))))
+/home/one/two => two. If PATH is /, this function returns /."
+  (if (equal path "/")
+    "/"
+    (car (last (re:split "/" (string-trim "/" path))))))
 
 ;; Needs tests
 (defun root-path (files)

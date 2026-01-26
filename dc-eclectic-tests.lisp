@@ -118,8 +118,8 @@
     "filename-only with file.txt/"))
 
 (test directory-leaf-only
-  (is (equal (leaf-directory-only "/") nil)
-    "leaf-directory-only / is nil")
+  (is (equal (leaf-directory-only "/") "/")
+    "leaf-directory-only / is /")
   (is (equal (leaf-directory-only "/one") "one")
     "leaf-directory-only /one is one")
   (is (equal (leaf-directory-only "/one/") "one")
