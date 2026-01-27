@@ -380,8 +380,9 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 - [generic-function] **HAS** *REFERENCE-LIST THING*
 
     Returns `T` if `REFERENCE-LIST` contains `THING`. If `THING`
-    is a string, this function checks for that string in `REFERENCE-LIST`. If `THING` is
-    a list, this function checks that all elements of `THING` are in `REFERENCE-LIST`.
+    is a string, number, or symbol (including keywords), this function checks for
+    that item in `REFERENCE-LIST`. If `THING` is a list, this function checks that all
+    elements of `THING` are in `REFERENCE-LIST`.
 
 <a id="x-28DC-ECLECTIC-3AHAS-SOME-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:HAS-SOME%20FUNCTION"></a>

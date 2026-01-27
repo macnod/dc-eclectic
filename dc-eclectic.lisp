@@ -1044,8 +1044,9 @@ PREDICATE is provided, then the function uses that predicate."
 
 (defgeneric has (reference-list thing)
   (:documentation ":public: Returns T if REFERENCE-LIST contains THING. If THING
-is a string, this function checks for that string in REFERENCE-LIST. If THING is
-a list, this function checks that all elements of THING are in REFERENCE-LIST.")
+is a string, number, or symbol (including keywords), this function checks for
+that item in REFERENCE-LIST. If THING is a list, this function checks that all
+elements of THING are in REFERENCE-LIST.")
   (:method ((reference-list list) (thing string))
     (when (member thing reference-list :test 'equal) t))
   (:method ((reference-list list) (thing number))
@@ -1053,7 +1054,9 @@ a list, this function checks that all elements of THING are in REFERENCE-LIST.")
   (:method ((reference-list list) (thing list))
     (when
       (every (lambda (s) (member s reference-list :test 'equal)) thing)
-      t)))
+      t))
+  (:method ((reference-list list) (thing symbol))
+    (when (member thing reference-list :test 'eq) t)))
 
 (defun has-some (reference-list query-list)
   ":public: Returns T if REFERENCE-LIST contains any of the elements in
