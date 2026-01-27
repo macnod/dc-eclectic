@@ -1056,7 +1056,9 @@ elements of THING are in REFERENCE-LIST.")
       (every (lambda (s) (member s reference-list :test 'equal)) thing)
       t))
   (:method ((reference-list list) (thing symbol))
-    (when (member thing reference-list :test 'eq) t)))
+    (if (eq thing nil)
+      t
+      (member thing reference-list :test 'eq))))
 
 (defun has-some (reference-list query-list)
   ":public: Returns T if REFERENCE-LIST contains any of the elements in
