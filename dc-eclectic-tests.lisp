@@ -708,7 +708,15 @@
   (is-false (has nil '("one" "two" "three")))
   (is-false (has '("one" "two" "three") "four"))
   (is-false (has '("one" "two" "three") '("three" "four")))
-  (is-false (has '("one" "two" "three") "zero")))
+  (is-false (has '("one" "two" "three") "zero"))
+  ;; Symbols
+  (is-true (has '(:one :two :three) :one))
+  (is-true (has '(:one :two :three) nil))
+  (is-true (has '(:one :two :three) '(:one)))
+  (is-true (has '(:one :two :three) '(:one :two)))
+  (is-false (has '(:one :two :three) :four))
+  (is-false (has nil :one)))
+
 
 (test has-some
   (is-true (has-some '(1 2 3) '(1)))
