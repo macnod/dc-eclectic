@@ -1111,7 +1111,8 @@ EXCEPTIONS are not excluded, even if they match EXCLUDE."
     (t thing)))
 
 (defun singular (word)
-  ":public: Convert plural to singular form (works most of the time)."
+  ":public: Convert plural to singular form (works most of the time). Return
+value is always in lower case."
   (loop with pairs = '(("ies" . "y")
                         ("ves" . "f")
                         ("is" . "es")
@@ -1124,14 +1125,15 @@ EXCEPTIONS are not excluded, even if they match EXCLUDE."
                         ("people" . "person")
                         ("data" . "datum"))
     for pair in pairs
-    for regex = (format nil "~a$" (car pair))
+    for regex = (format nil "(?i)~a$" (car pair))
     for replacement = (cdr pair)
     when (re:scan regex word)
     do (return-from singular (re:regex-replace regex word replacement))
     finally (return word)))
 
 (defun plural (word)
-  ":public: Convert singular to plural form (works most of the time)."
+  ":public: Convert singular to plural form (works most of the time). Return
+value is always in lower case."
   (loop with pairs = '(("y" . "ies")
                         ("f" . "ves")
                         ("is" . "es")
@@ -1143,7 +1145,7 @@ EXCEPTIONS are not excluded, even if they match EXCLUDE."
                         ("person" . "people")
                         ("datum" . "data"))
     for pair in pairs
-    for regex = (format nil "~a$" (car pair))
+    for regex = (format nil "(?i)~a$" (car pair))
     for replacement = (cdr pair)
     when (re:scan regex word)
     do (return-from plural (re:regex-replace regex word replacement))

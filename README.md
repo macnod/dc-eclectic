@@ -650,7 +650,8 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **PLURAL** *WORD*
 
-    Convert singular to plural form (works most of the time).
+    Convert singular to plural form (works most of the time). Return
+    value is always in lower case.
 
 <a id="x-28DC-ECLECTIC-3ARAND-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:RAND%20FUNCTION"></a>
@@ -805,7 +806,8 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **SINGULAR** *WORD*
 
-    Convert plural to singular form (works most of the time).
+    Convert plural to singular form (works most of the time). Return
+    value is always in lower case.
 
 <a id="x-28DC-ECLECTIC-3ASLURP-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:SLURP%20FUNCTION"></a>
