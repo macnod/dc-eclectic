@@ -74,6 +74,7 @@
   (index-of-max function)
   (join-paths function)
   (leaf-directory-only function)
+  (make-keyword function)
   (n-gram-strings function)
   (n-grams function)
   (normalize-list function)

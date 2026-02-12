@@ -893,6 +893,14 @@
   (is-false (ends-with "" "x"))
   (is-false (ends-with "hello" "hellohello")))
 
+(test make-keyword
+  (is (equal :HELLO-WORLD (make-keyword "hello-world")))
+  (is (equal :HELLO-WORLD (make-keyword "HELLO-WORLD")))
+  (is (equal :HELLO-WORLD (make-keyword "HELLO-world")))
+  (is (equal :HELLO-WORLD (make-keyword "hello_world")))
+  (is (equal :HELLO-WORLD (make-keyword " hello_world")))
+  (is (equal :HELLO-WORLD (make-keyword "_hello___world_"))))
+
 ;;; Run tests
 (unless (run-all-tests)
   (sb-ext:quit :unix-status 1))

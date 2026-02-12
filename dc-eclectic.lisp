@@ -1189,3 +1189,17 @@ Expands into a series of `getf` and `nth` calls for efficient access."
     (and
       (>= l l-suffix)
       (string= suffix s :start2 (- l l-suffix)))))
+
+(defun make-keyword (s)
+  ":public: Returns a keyword form of the string S. Examples:
+
+```text
+hello world      => :HELLO-WORLD
+-hello--world--- => :HELLO-WORLD
+hello__world     => :HELLO-WORLD
+```
+"
+  (let* ((s1 (re:regex-replace-all "[^-a-zA-Z0-9]" (string-upcase s) "-"))
+          (s2 (re:regex-replace-all "--+" s1 "-"))
+          (s3 (re:regex-replace-all "^-|-$" s2 "")))
+    (intern s3 :keyword)))

@@ -64,6 +64,7 @@
     log-it-pairs
     make-decoder
     make-encoder
+    make-keyword
     n-gram-strings
     n-grams
     normalize-list
