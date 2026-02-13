@@ -641,9 +641,9 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 <a id="x-28DC-ECLECTIC-3APLISTP-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:PLISTP%20FUNCTION"></a>
 
-- [function] **PLISTP** *LIST*
+- [function] **PLISTP** *THING*
 
-    Returns `T` if `LIST` is a plist.
+    Returns `T` if `THING` is a plist.
 
 <a id="x-28DC-ECLECTIC-3APLURAL-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:PLURAL%20FUNCTION"></a>

@@ -670,10 +670,12 @@ or end of the string\"."
 								 #\Rubout)
 							 s))
 
-(defun plistp (list)
-  ":public: Returns T if LIST is a plist."
-  (and (evenp (length list))
-       (loop for key in list by #'cddr always (keywordp key))))
+(defun plistp (thing)
+  ":public: Returns T if THING is a plist."
+  (and
+    (listp thing)
+    (evenp (length thing))
+    (loop for key in thing by #'cddr always (keywordp key))))
 
 ;; Needs tests!
 (defun normalize-list (list &key max min)

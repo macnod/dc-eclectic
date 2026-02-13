@@ -348,7 +348,10 @@
 
 (test plistp-tests
   (is-true (plistp '(:one 1 :two 2 :three 3)))
-  (is-true (not (plistp '(:one 1 :two :three 3)))))
+  (is-true (plistp '(:one "abc")))
+  (is-false (plistp '(:one 1 :two :three 3)))
+  (is-false (plistp :hello))
+  (is-false (plistp "hello")))
 
 (test file-tests
   (let* ((root "/tmp/dc-eclectic-tests/")
