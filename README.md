@@ -636,7 +636,14 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **PLIST-KEYS** *PLIST*
 
-    Returns list of the keys in `PLIST`.
+    Returns a list of the keys in `PLIST`.
+
+<a id="x-28DC-ECLECTIC-3APLIST-VALUES-20FUNCTION-29"></a>
+<a id="DC-ECLECTIC:PLIST-VALUES%20FUNCTION"></a>
+
+- [function] **PLIST-VALUES** *PLIST*
+
+    Returns a list of the values in `PLIST`.
 
 <a id="x-28DC-ECLECTIC-3APLISTP-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:PLISTP%20FUNCTION"></a>

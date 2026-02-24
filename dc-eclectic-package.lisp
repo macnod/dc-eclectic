@@ -73,6 +73,7 @@
     path-parent
     path-type
     plist-keys
+    plist-values
     plistp
     plural
     rand

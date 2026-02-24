@@ -82,6 +82,7 @@
   (path-parent function)
   (path-type function)
   (plist-keys function)
+  (plist-values function)
   (plistp function)
   (plural function)
   (rand function)

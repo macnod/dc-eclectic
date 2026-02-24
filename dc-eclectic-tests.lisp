@@ -904,6 +904,14 @@
   (is (equal :HELLO-WORLD (make-keyword " hello_world")))
   (is (equal :HELLO-WORLD (make-keyword "_hello___world_"))))
 
+(test plist-keys-and-values
+  (is (equal '(:one :two :three) (plist-keys '(:one 1 :two 2 :three 3))))
+  (is-false (plist-keys nil))
+  (signals error (plist-keys '(:one :two :three)))
+  (is (equal '(1 2 3) (plist-values '(:one 1 :two 2 :three 3))))
+  (is-false (plist-values nil))
+  (signals error (plist-keys '("a" "b" "c" "d"))))
+
 ;;; Run tests
 (unless (run-all-tests)
   (sb-ext:quit :unix-status 1))

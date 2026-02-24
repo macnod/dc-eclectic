@@ -296,8 +296,16 @@ elements unique signature."
   (loop for k being the hash-keys in hash collect k))
 
 (defun plist-keys (plist)
-  ":public: Returns list of the keys in PLIST."
-  (loop for key in plist by #'cddr collect key))
+  ":public: Returns a list of the keys in PLIST."
+  (if (plistp plist)
+    (loop for key in plist by #'cddr collect key)
+    (error "PLIST is not a plist.")))
+
+(defun plist-values (plist)
+  ":public: Returns a list of the values in PLIST."
+  (if (plistp plist)
+    (loop for value in (cdr plist) by #'cddr collect value)
+    (error "PLIST is not a plist.")))
 
 (defun range (start end &key (step 1) (filter #'identity) shuffle)
   ":public: Returns a list of values between START and END (inclusive), skipping
