@@ -108,4 +108,5 @@
     trim-whitespace
     uuid
     verify-string
+    zip
     ))
