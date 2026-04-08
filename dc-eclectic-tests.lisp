@@ -2,6 +2,7 @@
 
 (require :cl-ppcre)
 (require :dc-ds)
+(require :dc-dlist)
 (require :dc-time)
 (require :fiveam)
 
@@ -911,6 +912,11 @@
   (is (equal '(1 2 3) (plist-values '(:one 1 :two 2 :three 3))))
   (is-false (plist-values nil))
   (signals error (plist-keys '("a" "b" "c" "d"))))
+
+(test zip
+  (is (equal (zip '(1 4 7) '(2 5 8) '(3 6 9 10))
+        '(1 2 3 4 5 6 7 8 9 10))
+    "zip 3 lists of unequal size"))
 
 ;;; Run tests
 (unless (run-all-tests)

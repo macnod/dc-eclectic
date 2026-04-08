@@ -1215,3 +1215,24 @@ hello__world     => :HELLO-WORLD
           (s2 (re:regex-replace-all "--+" s1 "-"))
           (s3 (re:regex-replace-all "^-|-$" s2 "")))
     (intern s3 :keyword)))
+
+(defun zip (&rest lists)
+  ":public: Returns a new list with elements from the multiple lists in LISTS
+merged. Each list in LISTS can be of any size. This function picks the first
+element from each list and adds it to the result, then picks the second element
+of each list, and adds it to the result, and so on. If any list runs out of
+elements, the function continues performing the same operation with the lists
+that still have elements left. This function does not alter the original
+lists. Examples:
+
+```lisp
+(zip '(1 4 7) '(2 5 8) '(3 6 9 10)) ;; => '(1 2 3 4 5 6 7 8 9 10)
+```
+"
+  (loop with ls = (loop for l in lists collect (dl:from-list l))
+    with max-length = (loop for l in ls maximizing (dl:len l))
+    for a from 0 below max-length
+    for next-vals = (loop for l in ls
+                      unless (zerop (dl:len l))
+                      collect (dl:pop-head l))
+    appending next-vals))

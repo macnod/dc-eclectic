@@ -8,6 +8,7 @@
     :mgl-pax)
   (:local-nicknames
     (:ds :dc-ds)
+    (:dl :dc-dlist)
     (:re :ppcre))
   (:import-from :ironclad
                 :ascii-string-to-byte-array

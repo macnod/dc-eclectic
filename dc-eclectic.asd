@@ -12,7 +12,8 @@
                 :cl-csv
                 :babel
                 :mgl-pax
-                :dc-ds)
+                :dc-ds
+                :dc-dlist)
   :serial t
   :components ((:file "dc-eclectic-package")
                 (:file "dc-eclectic")

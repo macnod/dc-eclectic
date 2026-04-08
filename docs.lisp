@@ -113,7 +113,8 @@
   (trim function)
   (trim-whitespace function)
   (uuid function)
-  (verify-string function))
+  (verify-string function)
+  (zip function))
 
 (defsection @variables
   (:title "Special Variables")

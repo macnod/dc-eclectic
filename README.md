@@ -919,6 +919,23 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
     Return t if `STRING` matches the `REGEX` exactly.  Use the `IGNORE-CASE`
     parameter if you want case-insensitve matches.
 
+<a id="x-28DC-ECLECTIC-3AZIP-20FUNCTION-29"></a>
+<a id="DC-ECLECTIC:ZIP%20FUNCTION"></a>
+
+- [function] **ZIP** *&REST LISTS*
+
+    Returns a new list with elements from `LISTS` merged. Each list in
+    `LISTS` can be of any size. This function picks the first element from each list
+    and adds those to the result, then picks the second element of each list, and
+    adds those to the result, and so on. If any list runs out of elements, the
+    function continues performing the same operation with the lists that still have
+    elements left. This function does not alter the original lists. Examples:
+    
+    ```lisp
+    (zip '(1 4 7) '(2 5 8) '(3 6 9 10)) ;; => '(1 2 3 4 5 6 7 8 9 10)
+    ```
+
+
 <a id="x-28DC-ECLECTIC-3A-40VARIABLES-20MGL-PAX-3ASECTION-29"></a>
 <a id="DC-ECLECTIC:@VARIABLES%20MGL-PAX:SECTION"></a>
 
