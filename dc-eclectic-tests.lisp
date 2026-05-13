@@ -860,6 +860,31 @@
       (tree-put :integer copy :files :fields 1 :type)
       (is (equal :integer (tree-get copy :files :fields 1 :type))))))
 
+(test tree-col
+  (let ((tree '(:files
+                 (:enable t
+                   :fields ((:name "size" :type :integer)
+                             (:name "type" :type :text)
+                             (:name "description" :type :text
+                               :default "No description")
+                             (:name "hash" :type :text :unique t)
+                             (:name "xgroup" :type :integer :required t)))
+                 :directories (:enable t :fields nil))))
+    (is (equal
+          (tree-col tree :files :fields :name)
+          '("size" "type" "description" "hash" "xgroup")))
+    (is (equal
+          (tree-col tree :files :fields :type)
+          '(:integer :text :text :text :integer)))
+    (is-false (tree-col tree :files :unknown :some-col))
+    (signals error (tree-col tree :directories :name))
+    (signals error (tree-col tree :directories :fields))
+    (is-true (every #'null
+               (tree-col tree :files :fields :non-existing-column-name)))
+    (is (equal
+          (length (tree-col tree :files :fields :non-existing-column-name))
+          (length (tree-get tree :files :fields))))))
+
 (test path-parent
   (is (equal "/" (path-parent "/one")))
   (is (equal "/" (path-parent "/one/")))

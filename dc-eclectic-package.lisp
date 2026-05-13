@@ -102,6 +102,7 @@
     split-n-trim
     thaw
     to-ascii
+    tree-col
     tree-get
     tree-put
     trim

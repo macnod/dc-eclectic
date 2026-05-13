@@ -1186,6 +1186,29 @@ Expands into a series of `getf` and `nth` calls for efficient access."
                   :initial-value tree)))
     `(setf ,place ,value)))
 
+(defun tree-col (tree &rest path)
+  ":public: Treat all the elements in PATH minus the last element as the node
+path and treats the last element of PATH as the column key. The node path should
+lead to a node that consists of a list of plists. This list can be NIL. This
+function locates the node given by the node path and retrieves the values
+associated with the column key from the plists in the node, returning those
+values ina list. For example, if PATH is '(:a :b :c), and the node at path '(:a
+:b) is a list of plists, this function returns a list consiting of the value
+associated with :c in every plist at '(:a :b). If the node at the node path does
+not exist, this function returns nil. If a node at the node path exists and is
+not a plist (nil counts as a plist), then this function signals an error."
+  (let* ((real-path (butlast path))
+          (column (car (last path)))
+          (list-node (apply #'tree-get (cons tree real-path))))
+    (cond
+      ((null list-node) nil)
+      ((or (not (listp list-node))
+         (not (plistp (car list-node))))
+        (error "~s must lead to a list of plists" real-path))
+      (t (mapcar
+           (lambda (p) (getf p column))
+           list-node)))))
+
 (defun starts-with (s prefix)
   ":public: Returns T if string S starts with PREFIX."
   (let ((l (length s))

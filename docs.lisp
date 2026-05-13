@@ -108,6 +108,7 @@
   (starts-with function)
   (thaw function)
   (to-ascii function)
+  (tree-col function)
   (tree-get function)
   (tree-put macro)
   (trim function)

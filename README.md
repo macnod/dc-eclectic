@@ -872,6 +872,22 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
     which defaults to the question mark. If `PRINTABLE-ONLY` is true, only printable
     ASCII characters are kept, with the rest being replaced by `REPLACEMENT-CHAR`.
 
+<a id="x-28DC-ECLECTIC-3ATREE-COL-20FUNCTION-29"></a>
+<a id="DC-ECLECTIC:TREE-COL%20FUNCTION"></a>
+
+- [function] **TREE-COL** *TREE &REST PATH*
+
+    Treat all the elements in `PATH` minus the last element as the node
+    path and treats the last element of `PATH` as the column key. The node path should
+    lead to a node that consists of a list of plists. This list can be `NIL`. This
+    function locates the node given by the node path and retrieves the values
+    associated with the column key from the plists in the node, returning those
+    values ina list. For example, if `PATH` is '(:a :b :c), and the node at path '(:a
+    :b) is a list of plists, this function returns a list consiting of the value
+    associated with :c in every plist at '(:a :b). If the node at the node path does
+    not exist, this function returns nil. If a node at the node path exists and is
+    not a plist (nil counts as a plist), then this function signals an error.
+
 <a id="x-28DC-ECLECTIC-3ATREE-GET-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:TREE-GET%20FUNCTION"></a>
 
@@ -924,12 +940,13 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **ZIP** *&REST LISTS*
 
-    Returns a new list with elements from `LISTS` merged. Each list in
-    `LISTS` can be of any size. This function picks the first element from each list
-    and adds those to the result, then picks the second element of each list, and
-    adds those to the result, and so on. If any list runs out of elements, the
-    function continues performing the same operation with the lists that still have
-    elements left. This function does not alter the original lists. Examples:
+    Returns a new list with elements from the multiple lists in `LISTS`
+    merged. Each list in `LISTS` can be of any size. This function picks the first
+    element from each list and adds it to the result, then picks the second element
+    of each list, and adds it to the result, and so on. If any list runs out of
+    elements, the function continues performing the same operation with the lists
+    that still have elements left. This function does not alter the original
+    lists. Examples:
     
     ```lisp
     (zip '(1 4 7) '(2 5 8) '(3 6 9 10)) ;; => '(1 2 3 4 5 6 7 8 9 10)
