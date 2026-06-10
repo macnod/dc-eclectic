@@ -69,24 +69,25 @@ FILENAME should be a string, a pathname, or NIL. If FILENAME is NIL or the empty
 string, this function returns the empty string. If FILENAME has no path
 component, this function returns \"/\"."
   (declare (type (or pathname string null) filename))
-  (if (or (not filename) (zerop (length (format nil "~a" filename))))
-    ""
-    (loop
-      with s = (format nil "~a" filename)
-      with parts = (re:split "/" s)
-      with directory = (unless (zerop (length parts)) (re:scan "/$" s))
-      and absolute = (re:scan "^/" s)
-      for part in (butlast parts)
-      when (and part (not (zerop (length part))))
-      collect part into new-parts
-      finally
-      (return
-        (format nil "~a~{~a/~}~a"
-          (if absolute "/" "")
-          new-parts
-          (if directory
-            (format nil "~a/" (car (last parts)))
-            ""))))))
+  (let ((filename-string (format nil "~a" filename)))
+    (if (or (not filename-string) (zerop (length filename-string)))
+      ""
+      (loop
+        with parts = (re:split "/" filename-string)
+        with directory = (unless (zerop (length parts))
+                           (re:scan "/$" filename-string))
+        and absolute = (re:scan "^/" filename-string)
+        for part in (butlast parts)
+        when (and part (not (zerop (length part))))
+        collect part into new-parts
+        finally
+        (return
+          (format nil "~a~{~a/~}~a"
+            (if absolute "/" "")
+            new-parts
+            (if directory
+              (format nil "~a/" (car (last parts)))
+              "")))))))
 
 (defun filename-only (filename)
   ":public: Retrieves the filename (filename only, without the path) of
@@ -109,22 +110,27 @@ FILENAME."
 PATH. PATH must be an absolute path. If PATH points to a file, then this returns
 the path to the file, minus the file name. If PATH points to a directory, this
 returns the parent of the directory in PATH. If PATH points to a directory, it
-must end in /. If PATH is / or not an absolute path, this function returns NIL."
-  (if (or (member path '("/" "" nil) :test 'equal)
-        (not (re:scan "^/" path)))
-    nil
-    (if (re:scan "/$" path)
-      (let* ((parts (re:split "/" path))
-              (parent (apply #'join-paths (cons "/" (butlast parts)))))
-        (if (re:scan "/$" parent) parent (format nil "~a/" parent)))
-      (path-only path))))
+must end in /. If PATH is / or not an absolute path, this function returns NIL.
+PATH can be a PATHNAME or a string. However, when the parent is found, this
+function returns the parent as a string."
+  (let ((path-string (format nil "~a" path)))
+    (if (or (member path-string '("/" "" nil) :test 'equal)
+          (not (re:scan "^/" path-string)))
+      nil
+      (if (re:scan "/$" path-string)
+        (let* ((parts (re:split "/" path-string))
+                (parent (apply #'join-paths (cons "/" (butlast parts)))))
+          (if (re:scan "/$" parent) parent (format nil "~a/" parent)))
+        (path-only path-string)))))
 
 (defun leaf-directory-only (path)
   ":public: Returns the last part of the directory PATH. For example,
-/home/one/two => two. If PATH is /, this function returns /."
-  (if (equal path "/")
-    "/"
-    (car (last (re:split "/" (string-trim "/" path))))))
+/home/one/two => two. If PATH is /, this function returns /. PATH can be a
+PATHNAME or a string. Upon success, this function returns a string."
+  (let ((path-string (format nil "~a" path)))
+    (if (equal path-string "/")
+      "/"
+      (car (last (re:split "/" (string-trim "/" path-string)))))))
 
 ;; Needs tests
 (defun root-path (files)
