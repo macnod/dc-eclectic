@@ -37,6 +37,7 @@
     define-base-encoder
     denormalize-list
     directory-exists-p
+    directory-listing
     distinct-elements
     distinct-values
     ends-with
@@ -70,6 +71,7 @@
     n-grams
     normalize-list
     open-log
+    path-leaf-only
     path-only
     path-parent
     path-type

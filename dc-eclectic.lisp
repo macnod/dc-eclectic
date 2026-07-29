@@ -127,7 +127,7 @@ must end in /. If PATH is / or not an absolute path, this function returns NIL."
           (if (re:scan "/$" parent) parent (format nil "~a/" parent)))
         (path-only s-path)))))
 
-(defun leaf-directory-only (path)
+(defun path-leaf-only (path)
   ":public: Returns the last part of the directory PATH. For example,
 /home/one/two => two. If PATH is /, this function returns /."
   (let ((s-path (cond
@@ -212,6 +212,48 @@ provided in NEW-EXTENSION."
     (when (and new-filename (not (zerop (length new-extension))))
       (setf new-filename (format nil "~a.~a" new-filename new-extension)))
     new-filename))
+
+(defun all-paths-under (dir)
+  (let ((results '()))
+    (uiop:collect-sub*directories
+      dir t t
+      (lambda (subdir)
+        (push subdir results)
+        (dolist (f (directory
+                     (merge-pathnames "*.*"
+                       (make-pathname :defaults subdir
+                         :name nil
+                         :type nil))))
+          (push f results))))
+    (nreverse (delete-duplicates results :test #'equal :from-end t))))
+
+(defun directory-listing (path &key
+                           files-only
+                           directories-only
+                           leaf-filter
+                           abs-filter)
+  (when (and files-only directories-only)
+    (error "Only :files-only or :directories-only allowed. Not both."))
+  (let* ((spath (if (stringp path) path (namestring path)))
+          (paths (exclude
+                   (mapcar #'namestring (all-paths-under spath))
+                   spath))
+          (paths-1 (if files-only (exclude-regex paths "/$") paths))
+          (paths-2 (if directories-only
+                     (exclude-regex paths-1 "[^/]$")
+                     paths-1))
+          (paths-3 (if leaf-filter
+                     (remove-if-not
+                       (lambda (p) 
+                         (re:scan leaf-filter (path-leaf-only p)))
+                       paths-2)
+                     paths-2))
+          (paths-4 (if abs-filter
+                     (remove-if-not
+                       (lambda (p) (re:scan abs-filter p))
+                       paths-3)
+                     paths-3)))
+    (safe-sort paths-4)))
 
 ;;
 ;; END File and directory utilities

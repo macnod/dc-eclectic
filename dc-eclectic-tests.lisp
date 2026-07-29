@@ -118,17 +118,17 @@
   (is (equal (filename-only "file.txt/") "")
     "filename-only with file.txt/"))
 
-(test directory-leaf-only
-  (is (equal (leaf-directory-only "/") "/")
-    "leaf-directory-only / is /")
-  (is (equal (leaf-directory-only "/one") "one")
-    "leaf-directory-only /one is one")
-  (is (equal (leaf-directory-only "/one/") "one")
-    "leaf-directory-only /one/ is one")
-  (is (equal (leaf-directory-only "/one/abc.txt") "abc.txt")
-    "leaf-directory-only /one/abc.txt is abc.txt")
-  (is (equal (leaf-directory-only "/one/two/three/four") "four")
-    "leaf-directory-only /one/two/three/four is four"))
+(test path-leaf-only
+  (is (equal (path-leaf-only "/") "/")
+    "path-leaf-only / is /")
+  (is (equal (path-leaf-only "/one") "one")
+    "path-leaf-only /one is one")
+  (is (equal (path-leaf-only "/one/") "one")
+    "path-leaf-only /one/ is one")
+  (is (equal (path-leaf-only "/one/abc.txt") "abc.txt")
+    "path-leaf-only /one/abc.txt is abc.txt")
+  (is (equal (path-leaf-only "/one/two/three/four") "four")
+    "path-leaf-only /one/two/three/four is four"))
 
 (test sorted-hash-tests
   (is (equal (comparable-hash-dump
@@ -989,6 +989,37 @@
     (is (replace-extension non-existing-file ".txt") "txt")
     (is (replace-extension non-existing-file "txt") "txt")
     (uiop:delete-directory-tree (pathname temp-dir) :validate t)))
+
+(test directory-listing
+  (let* ((temp-dir "/tmp/dc-eclectic-tests/"))
+    (loop
+      initially
+      (ensure-directories-exist (join-paths temp-dir "a" "b/"))
+      (ensure-directories-exist (join-paths temp-dir "c/"))
+      with filenames = (list
+                         "a/a-1.txt"
+                         "a/a-2.txt"
+                         "a/a-3.txt"
+                         "a/b/b-1.txt"
+                         "a/b/b-2.txt"
+                         "c/c-1.txt"
+                         "a/a-1.csv"
+                         "a/a-2.csv"
+                         "a/a-3.csv"
+                         "a/b/b-1.csv"
+                         "a/b/b-2.csv"
+                         "c/c-1.csv")
+      for file in filenames
+      for path = (join-paths temp-dir file)
+      for content = (filename-only path)
+      do (spew content path)
+      collect path)
+    (is (equal (length (directory-listing temp-dir)) 15))
+    (is (equal (length (directory-listing temp-dir :files-only t)) 12))
+    (is (equal (length (directory-listing temp-dir :directories-only t)) 3))
+    (is (equal (length (directory-listing temp-dir :leaf-filter "a-1")) 2))
+    (is (equal (length (directory-listing temp-dir :abs-filter "\\.txt$")) 6))))
+  
 
 ;;; Run tests
 (unless (run-all-tests)
