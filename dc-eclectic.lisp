@@ -69,24 +69,28 @@ FILENAME should be a string, a pathname, or NIL. If FILENAME is NIL or the empty
 string, this function returns the empty string. If FILENAME has no path
 component, this function returns \"/\"."
   (declare (type (or pathname string null) filename))
-  (if (or (not filename) (zerop (length (format nil "~a" filename))))
-    ""
-    (loop
-      with s = (format nil "~a" filename)
-      with parts = (re:split "/" s)
-      with directory = (unless (zerop (length parts)) (re:scan "/$" s))
-      and absolute = (re:scan "^/" s)
-      for part in (butlast parts)
-      when (and part (not (zerop (length part))))
-      collect part into new-parts
-      finally
-      (return
-        (format nil "~a~{~a/~}~a"
-          (if absolute "/" "")
-          new-parts
-          (if directory
-            (format nil "~a/" (car (last parts)))
-            ""))))))
+  (let ((s-filename (cond 
+                      ((stringp filename) filename)
+                      ((pathnamep filename) (namestring filename))
+                      (t (format nil "~a" filename)))))
+    (if (or (not s-filename) (zerop (length (format nil "~a" s-filename))))
+      ""
+      (loop
+        with s = (format nil "~a" s-filename)
+        with parts = (re:split "/" s)
+        with directory = (unless (zerop (length parts)) (re:scan "/$" s))
+        and absolute = (re:scan "^/" s)
+        for part in (butlast parts)
+        when (and part (not (zerop (length part))))
+        collect part into new-parts
+        finally
+        (return
+          (format nil "~a~{~a/~}~a"
+            (if absolute "/" "")
+            new-parts
+            (if directory
+              (format nil "~a/" (car (last parts)))
+              "")))))))
 
 (defun filename-only (filename)
   ":public: Retrieves the filename (filename only, without the path) of
@@ -96,7 +100,7 @@ FILENAME."
     (let ((file (cond
                   ((stringp filename) filename)
                   ((pathnamep filename) (namestring filename))
-                  (t (error "FILENAME must be a string or pathname.")))))
+                  (t (error "FILENAME must be a string or a pathname.")))))
       (multiple-value-bind (match parts)
         (re:scan-to-strings "((.*)/)?([^\/]*)$" file)
         (declare (ignore match))
@@ -110,40 +114,54 @@ PATH. PATH must be an absolute path. If PATH points to a file, then this returns
 the path to the file, minus the file name. If PATH points to a directory, this
 returns the parent of the directory in PATH. If PATH points to a directory, it
 must end in /. If PATH is / or not an absolute path, this function returns NIL."
-  (if (or (member path '("/" "" nil) :test 'equal)
-        (not (re:scan "^/" path)))
-    nil
-    (if (re:scan "/$" path)
-      (let* ((parts (re:split "/" path))
-              (parent (apply #'join-paths (cons "/" (butlast parts)))))
-        (if (re:scan "/$" parent) parent (format nil "~a/" parent)))
-      (path-only path))))
+  (let ((s-path (cond
+                  ((stringp path) path)
+                  ((pathnamep path) (namestring path))
+                  (t (error "PATH must be a string or a pathname.")))))
+    (if (or (member s-path '("/" "" nil) :test 'equal)
+          (not (re:scan "^/" s-path)))
+      nil
+      (if (re:scan "/$" s-path)
+        (let* ((parts (re:split "/" s-path))
+                (parent (apply #'join-paths (cons "/" (butlast parts)))))
+          (if (re:scan "/$" parent) parent (format nil "~a/" parent)))
+        (path-only s-path)))))
 
 (defun leaf-directory-only (path)
   ":public: Returns the last part of the directory PATH. For example,
 /home/one/two => two. If PATH is /, this function returns /."
-  (if (equal path "/")
-    "/"
-    (car (last (re:split "/" (string-trim "/" path))))))
+  (let ((s-path (cond
+                  ((stringp path) path)
+                  ((pathnamep path) (namestring path))
+                  (t (error "PATH must be a string or a pathname.")))))
+    (if (equal s-path "/")
+      "/"
+      (car (last (re:split "/" (string-trim "/" s-path)))))))
 
-;; Needs tests
 (defun root-path (files)
   ":public: Given FILES, a list of paths in the form of strings, returns the
 starting path that all the paths have in common."
-  (when files
-    (loop
-      with paths = (mapcar (lambda (d) (re:split "/" (string-trim "/" d))) files)
-      for part-index from 0 below (length (car paths))
-      for current-part = (elt (car paths) part-index)
-      for common = (loop
-                     for current-path in (cdr paths) always
-                     (and
-                       (< part-index (length current-path) )
-                       (equal current-part (elt current-path part-index))))
-      when common collect current-part into current-parts
-      finally (return (format nil "/~{~a/~}" current-parts)))))
+  (cond
+    ((null files) nil)
+    ((not (listp files)) (error "FILES must be a list of strings or pathnames"))
+    ((not (every (lambda (f) (or (stringp f) (pathnamep f))) files))
+      (error "FILES must be a list of strings or pathnames"))
+    (t
+      (loop
+        with s-files = (mapcar (lambda (f) (format nil "~a" f)) files)
+        with paths = (mapcar
+                       (lambda (d) (re:split "/" (string-trim "/" d)))
+                       s-files)
+        for part-index from 0 below (length (car paths))
+        for current-part = (elt (car paths) part-index)
+        for common = (loop
+                       for current-path in (cdr paths) always
+                       (and
+                         (< part-index (length current-path) )
+                         (equal current-part (elt current-path part-index))))
+        when common collect current-part into current-parts
+        finally (return (format nil "/~{~a/~}" current-parts))))))
 
-;; Needs tests
 (defun file-exists-p (path)
   ":public: Returns a boolean value indicating if the file specified by PATH
 exists."
@@ -151,7 +169,6 @@ exists."
     (and path
          (not (equal (file-namestring path) "")))))
 
-;; Needs tests
 (defun directory-exists-p (path)
   ":public: Returns a boolean value indicating if the directory specified by
 PATH exists."
@@ -160,7 +177,6 @@ PATH exists."
          (not (equal (directory-namestring path) ""))
          (equal (file-namestring path) ""))))
 
-;; Needs tests
 (defun path-type (path)
   ":public: Returns :FILE, :DIRECTORY, or :NOT-FOUND, depending on what PATH
  points to."
@@ -168,25 +184,31 @@ PATH exists."
         ((directory-exists-p path) :directory)
         (t :not-found)))
 
-;; Needs tests
 (defun file-extension (path)
   ":public: Returns a string consisting of the file extension for the file name
 given in PATH."
-  (multiple-value-bind (a b)
-      (re:scan-to-strings "\\.([a-z0-9]+)$" path)
-    (when a (aref b 0))))
+  (let ((s-path (cond
+                  ((stringp path) path)
+                  ((pathnamep path) (namestring path))
+                  (t (error "PATH must be a string or a pathname.")))))
+    (multiple-value-bind (a b)
+      (re:scan-to-strings "\\.([a-z0-9]+)$" s-path)
+      (when a (aref b 0)))))
 
-;; Needs tests
 (defun replace-extension (filename new-extension)
   ":public: Replaces the file extension in FILENAME with the file extension
 provided in NEW-EXTENSION."
-  (let* ((new-extension (if (re:scan "^\\." new-extension)
-                            (subseq new-extension 1)
-                            new-extension))
-         (new-filename (multiple-value-bind (a b)
-                           (re:scan-to-strings "^(.*)\\.[^.]+$" filename)
-                         (declare (ignore a))
-                         (if b (elt b 0) filename))))
+  (let* ((file (cond
+                 ((stringp filename) filename)
+                 ((pathnamep filename) (namestring filename))
+                 (t (error "FILENAME must be a string or a pathname."))))
+          (new-extension (if (re:scan "^\\." new-extension)
+                           (subseq new-extension 1)
+                           new-extension))
+          (new-filename (multiple-value-bind (a b)
+                          (re:scan-to-strings "^(.*)\\.[^.]+$" file)
+                          (declare (ignore a))
+                          (if b (elt b 0) file))))
     (when (and new-filename (not (zerop (length new-extension))))
       (setf new-filename (format nil "~a.~a" new-filename new-extension)))
     new-filename))

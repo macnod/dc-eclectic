@@ -943,6 +943,53 @@
         '(1 2 3 4 5 6 7 8 9 10))
     "zip 3 lists of unequal size"))
 
+(test root-path
+  (let* ((temp-dir "/tmp/dc-eclectic-tests/")
+          (files (loop
+                   initially
+                   (ensure-directories-exist (join-paths temp-dir "a" "b/"))
+                   (ensure-directories-exist (join-paths temp-dir "c/"))
+                   with filenames = (list
+                                      "a/a-1.txt"
+                                      "a/a-2.txt"
+                                      "a/a-3.txt"
+                                      "a/b/b-1.txt"
+                                      "a/b/b-2.txt"
+                                      "c/c-1.txt"
+                                      "a/a-1.csv"
+                                      "a/a-2.csv"
+                                      "a/a-3.csv"
+                                      "a/b/b-1.csv"
+                                      "a/b/b-2.csv"
+                                      "c/c-1.csv")
+                   for file in filenames
+                   for path = (join-paths temp-dir file)
+                   for content = (filename-only path)
+                   do (spew content path)
+                   collect path)))
+    (let ((result (root-path files)))
+      (is (equal result temp-dir)))
+    (uiop:delete-directory-tree (pathname temp-dir) :validate t)))
+
+(test path-functions
+  (let* ((temp-dir "/tmp/dc-eclectic-tests/")
+          (existing-file (join-paths temp-dir "a/b/b-1.txt"))
+          (non-existing-file (join-paths temp-dir "/a/c/c-1.csv")))
+    (ensure-directories-exist existing-file)
+    (spew "hello" existing-file)
+    (is-true (file-exists-p existing-file))
+    (is-false (file-exists-p non-existing-file))
+    (is-true (directory-exists-p (path-only existing-file)))
+    (is-false (directory-exists-p (path-only non-existing-file)))
+    (is (equal (path-type existing-file) :file))
+    (is (equal (path-type (path-only existing-file)) :directory))
+    (is (equal (path-type non-existing-file) :not-found))
+    (is (equal (file-extension existing-file) "txt"))
+    (is (equal (file-extension non-existing-file) "csv"))
+    (is (replace-extension non-existing-file ".txt") "txt")
+    (is (replace-extension non-existing-file "txt") "txt")
+    (uiop:delete-directory-tree (pathname temp-dir) :validate t)))
+
 ;;; Run tests
 (unless (run-all-tests)
   (sb-ext:quit :unix-status 1))
