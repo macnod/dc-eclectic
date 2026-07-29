@@ -235,9 +235,10 @@ provided in NEW-EXTENSION."
   (when (and files-only directories-only)
     (error "Only :files-only or :directories-only allowed. Not both."))
   (let* ((spath (if (stringp path) path (namestring path)))
+          (dir (if (ends-with spath "/") spath (format nil "~a/" spath)))
           (paths (exclude
-                   (mapcar #'namestring (all-paths-under spath))
-                   spath))
+                   (mapcar #'namestring (all-paths-under dir))
+                   dir))
           (paths-1 (if files-only (exclude-regex paths "/$") paths))
           (paths-2 (if directories-only
                      (exclude-regex paths-1 "[^/]$")
