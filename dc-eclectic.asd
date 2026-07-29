@@ -2,18 +2,18 @@
   :description "Functions that I use in most of my programs."
   :author "Donnie Cameron <macnod@gmail.com>"
   :license "MIT License"
-  :depends-on (:dc-time
-                :p-log
-                :cl-ppcre
-                :yason
-                :ironclad
-                :trivial-utf-8
+  :depends-on (:babel
                 :cl-base64
                 :cl-csv
-                :babel
-                :mgl-pax
+                :cl-ppcre
+                :dc-dlist
                 :dc-ds
-                :dc-dlist)
+                :dc-time
+                :ironclad
+                :mgl-pax
+                :p-log
+                :trivial-utf-8
+                :yason)
   :serial t
   :components ((:file "dc-eclectic-package")
                 (:file "dc-eclectic")
