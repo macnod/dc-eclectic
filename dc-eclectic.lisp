@@ -1012,8 +1012,9 @@ defaults to 64 KB. Returns the DESTINATION path."
             (write-sequence buf out :end pos))))))
   (let ((mtime (file-write-date source)))
     (when mtime
+      (let ((utime (dc-time:universal-time-to-unix-time mtime)))
       (ignore-errors
-        (sb-posix:utimes (namestring destination) mtime mtime))))
+        (sb-posix:utimes (namestring destination) utime utime)))))
   destination)
 
 (defun shell-command-to-string (command)
