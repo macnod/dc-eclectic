@@ -488,7 +488,23 @@
       (is (equal (car thawed) "hello")
         "First element of thawed list is \"hello\"")
       (is (equal (second thawed) :world)
-        "Second element of thawed list is :world"))))
+        "Second element of thawed list is :world"))
+  ;; Multibyte: file-length counts bytes, but a character stream decodes
+  ;; UTF-8, so the character count is smaller. Slurp must return exactly
+  ;; the decoded text, with no NUL padding.
+  (let* ((string (format nil "em~adash, arrow ~a, ~a?"
+                          (code-char #x2014) (code-char #x2192)
+                          (code-char #x00d1)))
+         (filename "/tmp/multibyte.txt"))
+    (spew string filename)
+    (let ((slurped (slurp filename)))
+      (is (= (length slurped) (length string))
+        "slurp length matches string length for multibyte content")
+      (is (equal slurped string)
+        "slurp roundtrips multibyte content")
+      (is (zerop (count (code-char 0) slurped))
+        "slurp has no NUL padding for multibyte content"))
+    (delete-file filename))))
 
 (test split-n-trim-tests
   (let* ((s1 "one two three")

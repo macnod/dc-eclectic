@@ -791,9 +791,9 @@ contains integers. Otherwise, the new list contains floating-point numbers."
 (defun slurp (filename)
   ":public: Returns a string with the content of the file at FILENAME."
   (with-open-file (in filename :direction :input)
-    (let ((contents (make-string (file-length in))))
-      (read-sequence contents in)
-      contents)))
+    (let* ((contents (make-string (file-length in)))
+           (count (read-sequence contents in)))
+      (subseq contents 0 count))))
 
 (defun spew (string filename)
   ":public: Write STRING to filename, creating the file if necessary, and
