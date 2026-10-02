@@ -1,5 +1,10 @@
 (in-package :dc-eclectic)
 
+(defvar *default-rstate* nil
+  ":public: Shared random state for the random generators and uuid when no
+RSTATE is passed. Lazily seeded from the OS on first use; nil until then.
+Bind to (reference-random-state) for deterministic output.")
+
 (defun to-ascii (string &key
                           (replacement-char #\?)
                           (printable-only t))
@@ -382,11 +387,15 @@ defaults to allowing all values through, and SHUFFLE default to nil."
     (if shuffle (shuffle range) range)))
 
 (defun rand (value &optional rstate)
-  ":public: When called without RSTATE, this is the same as calling RANDOM with
-only the VALUE parameter. Otherwise, this calls RANDOM with VALUE and RSTATE."
-  (if rstate
-    (random value rstate)
-    (random value)))
+  ":public: Returns a random number below VALUE. With RSTATE, draws from that
+random state. Without it, draws from *default-rstate*, which is lazily seeded
+from the OS on first use (per-process randomness; not the global
+*random-state*)."
+  (let ((rs (or
+              rstate
+              *default-rstate*
+              (setf *default-rstate* (make-random-state t)))))
+    (random value rs)))
 
 (defun shuffle (seq &optional rstate)
   ":public: Return a sequence with the same elements as the given sequence S,
@@ -872,23 +881,31 @@ a string. Returns a string with VALUE."
 
 (defun random-number (&optional (digits 4) rstate)
   ":public: Returns a random integer of DIGITS digits."
-  (loop for a from 1 to digits
-    for digit = (1+ (rand 9 rstate)) then (rand 10 rstate)
-    for power downfrom (1- digits) to 0
-    summing (* digit (expt 10 power))))
+  (let ((rs (or
+              rstate
+              *default-rstate*
+              (setf *default-rstate* (make-random-state t)))))
+    (loop for a from 1 to digits
+      for digit = (1+ (rand 9 rs)) then (rand 10 rs)
+      for power downfrom (1- digits) to 0
+      summing (* digit (expt 10 power)))))
 
 (defun random-hex-number (&optional (digits 7) (non-zero-start) rstate)
   ":public: Returns a random hexadecimal number with DIGITS digits. If
 NON-ZERO-START is specified, then the resulting hexadecimal number starts with
 a character other than 0."
-  (loop with hex-digits = "0123456789abcdef"
-    for a from 1 to digits
-    for digit = (elt hex-digits (if non-zero-start
-                                  (1+ (rand 15 rstate))
-                                  (rand 16 rstate)))
-    then (elt hex-digits (rand 16 rstate))
-    collect digit into number
-    finally (return (map 'string 'identity number))))
+  (let ((rs (or
+              rstate
+              *default-rstate*
+              (setf *default-rstate* (make-random-state t)))))
+    (loop with hex-digits = "0123456789abcdef"
+      for a from 1 to digits
+      for digit = (elt hex-digits (if non-zero-start
+                                    (1+ (rand 15 rs))
+                                    (rand 16 rs)))
+      then (elt hex-digits (rand 16 rs))
+      collect digit into number
+      finally (return (map 'string 'identity number)))))
 
 (defun random-string (string-length alphabet &optional rstate)
   ":public: Returns a random string of length STRING-LENGTH. The string is
@@ -897,11 +914,15 @@ several functions available for building ALPHABET, all starting with the
 prefix 'ASCII-'. For example:
 
   (random-string 10 (ascii-alpha-num-lower))"
-  (loop with alphabet-length = (length alphabet)
-    for a from 1 to string-length
-    for letter = (elt alphabet (rand alphabet-length rstate))
-    collect letter into string
-    finally (return (map 'string 'identity string))))
+  (let ((rs (or
+              rstate
+              *default-rstate*
+              (setf *default-rstate* (make-random-state t)))))
+    (loop with alphabet-length = (length alphabet)
+      for a from 1 to string-length
+      for letter = (elt alphabet (rand alphabet-length rs))
+      collect letter into string
+      finally (return (map 'string 'identity string)))))
 
 (defun ascii-char-range (begin end)
   ":public: Returns a string that includes ASCII characters in the ASCII code
@@ -945,13 +966,17 @@ characters."
 
 (defun uuid (&optional rstate)
   ":public: Returns a random UUID string."
-  (format nil "~{~a~^-~}"
-    (list
-      (random-hex-number 8 t rstate)
-      (random-hex-number 4 nil rstate)
-      (random-hex-number 4 nil rstate)
-      (random-hex-number 4 nil rstate)
-      (random-hex-number 12 nil rstate))))
+  (let ((rs (or
+              rstate
+              *default-rstate*
+              (setf *default-rstate* (make-random-state t)))))
+    (format nil "~{~a~^-~}"
+      (list
+        (random-hex-number 8 t rs)
+        (random-hex-number 4 nil rs)
+        (random-hex-number 4 nil rs)
+        (random-hex-number 4 nil rs)
+        (random-hex-number 12 nil rs)))))
 
 ;; There's much better encoding code in encoder.lisp, where you can create
 ;; encoders with any alphabet, and where multibyte characters are supported.

@@ -232,7 +232,6 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
         (hex-encode "Hello World!")             ;; => "48656c6c6f20576f726c6421"
         (hex-decode "48656c6c6f20576f726c6421") ;; => "Hello World!"
 
-
 <a id="x-28DC-ECLECTIC-3ADENORMALIZE-LIST-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:DENORMALIZE-LIST%20FUNCTION"></a>
 
@@ -523,7 +522,6 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
         If there's no hash value associated with the computed key, then the value
         specified by :INITIAL-VALUE is used.
 
-
 <a id="x-28DC-ECLECTIC-3AINDEX-OF-MAX-20GENERIC-FUNCTION-29"></a>
 <a id="DC-ECLECTIC:INDEX-OF-MAX%20GENERIC-FUNCTION"></a>
 
@@ -546,14 +544,6 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
     will try to convert other types to strings, if possible. `NIL` or empty strings
     are ignored.
 
-<a id="x-28DC-ECLECTIC-3ALEAF-DIRECTORY-ONLY-20FUNCTION-29"></a>
-<a id="DC-ECLECTIC:LEAF-DIRECTORY-ONLY%20FUNCTION"></a>
-
-- [function] **LEAF-DIRECTORY-ONLY** *PATH*
-
-    Returns the last part of the directory `PATH`. For example,
-    /home/one/two => two. If `PATH` is /, this function returns /.
-
 <a id="x-28DC-ECLECTIC-3AMAKE-KEYWORD-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:MAKE-KEYWORD%20FUNCTION"></a>
 
@@ -566,7 +556,6 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
     -hello--world--- => :HELLO-WORLD
     hello__world     => :HELLO-WORLD
     ```
-
 
 <a id="x-28DC-ECLECTIC-3AN-GRAM-STRINGS-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:N-GRAM-STRINGS%20FUNCTION"></a>
@@ -601,6 +590,14 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
     `LIST`, respectively.  Therefore, you can improve the performance of this function
     if you already know those values. Furthermore, in some cases the list may not
     even contain the values for `MAX` and `MIN` that you need.
+
+<a id="x-28DC-ECLECTIC-3APATH-LEAF-ONLY-20FUNCTION-29"></a>
+<a id="DC-ECLECTIC:PATH-LEAF-ONLY%20FUNCTION"></a>
+
+- [function] **PATH-LEAF-ONLY** *PATH*
+
+    Returns the last part of the directory `PATH`. For example,
+    /home/one/two => two. If `PATH` is /, this function returns /.
 
 <a id="x-28DC-ECLECTIC-3APATH-ONLY-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:PATH-ONLY%20FUNCTION"></a>
@@ -665,8 +662,10 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 
 - [function] **RAND** *VALUE &OPTIONAL RSTATE*
 
-    When called without `RSTATE`, this is the same as calling [`RANDOM`][1f1d] with
-    only the `VALUE` parameter. Otherwise, this calls `RANDOM` with `VALUE` and `RSTATE`.
+    Returns a random number below `VALUE`. With `RSTATE`, draws from that
+    random state. Without it, draws from *default-rstate*, which is lazily seeded
+    from the OS on first use (per-process randomness; not the global
+    *random-state*).
 
 <a id="x-28DC-ECLECTIC-3ARANDOM-HEX-NUMBER-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:RANDOM-HEX-NUMBER%20FUNCTION"></a>
@@ -834,19 +833,18 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 <a id="x-28DC-ECLECTIC-3ASPLIT-N-TRIM-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:SPLIT-N-TRIM%20FUNCTION"></a>
 
-- [function] **SPLIT-N-TRIM** *STRING &KEY (ON-REGEX "\\\\s+") (FAT "^\\\\s+|\\\\s+$")*
+- [function] **SPLIT-N-TRIM** *STRING &KEY (ON-REGEX "\\\\s+") (FAT "^\\\\s+|\\\\s+\$")*
 
     Splits `STRING` into substrings on `ON-REGEX`, then trims `FAT` from each
     substring.  The `ON-REGEX` parameter value, which is optional, defaults to
     "\s+", which is to say that the string is split into a list of words at the
     whitespace boundaries.  The default value for `FAT`, which is also optional,
-    "\s+|\s+$", causes this function to trim whitespace from the beggining and
+    "\s+|\s+\$", causes this function to trim whitespace from the beggining and
     end of each substring.  Here's an example:
     
         (split-n-trim "Hello  beautiful      world!")
         
         => '("Hello" "beautiful" "world!")
-
 
 <a id="x-28DC-ECLECTIC-3ASTARTS-WITH-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:STARTS-WITH%20FUNCTION"></a>
@@ -907,10 +905,10 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
 <a id="x-28DC-ECLECTIC-3ATRIM-20FUNCTION-29"></a>
 <a id="DC-ECLECTIC:TRIM%20FUNCTION"></a>
 
-- [function] **TRIM** *S &OPTIONAL (FAT "^\\\\s+|\\\\s+$")*
+- [function] **TRIM** *S &OPTIONAL (FAT "^\\\\s+|\\\\s+\$")*
 
     Trim `FAT` from the string in `S`.  The `FAT` parameter is optional and
-    defaults to "^\s+|\s+$", which means "Whitespace at the beginning
+    defaults to "^\s+|\s+\$", which means "Whitespace at the beginning
     or end of the string".
 
 <a id="x-28DC-ECLECTIC-3ATRIM-WHITESPACE-20FUNCTION-29"></a>
@@ -952,7 +950,6 @@ Alphabetical list of functions and macros that DC-UTILITIES defines.
     (zip '(1 4 7) '(2 5 8) '(3 6 9 10)) ;; => '(1 2 3 4 5 6 7 8 9 10)
     ```
 
-
 <a id="x-28DC-ECLECTIC-3A-40VARIABLES-20MGL-PAX-3ASECTION-29"></a>
 <a id="DC-ECLECTIC:@VARIABLES%20MGL-PAX:SECTION"></a>
 
@@ -980,6 +977,15 @@ Exported special variables.
 - [variable] **\*ALPHABET-ALPHANUM-UPPER\*** *"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"*
 
     Alphabet with uppercase letters and numbers.
+
+<a id="x-28DC-ECLECTIC-3A-2ADEFAULT-RSTATE-2A-20VARIABLE-29"></a>
+<a id="DC-ECLECTIC:*DEFAULT-RSTATE*%20VARIABLE"></a>
+
+- [variable] **\*DEFAULT-RSTATE\*** *NIL*
+
+    Shared random state for the random generators and uuid when no
+    `RSTATE` is passed. Lazily seeded from the OS on first use; nil until then.
+    Bind to (reference-random-state) for deterministic output.
 
   [0c8e]: #DC-ECLECTIC:SHELL-COMMAND-BACKGROUND%20FUNCTION "DC-ECLECTIC:SHELL-COMMAND-BACKGROUND FUNCTION"
   [0f15]: #DC-ECLECTIC:SHELL-COMMAND-WAIT%20FUNCTION "DC-ECLECTIC:SHELL-COMMAND-WAIT FUNCTION"

@@ -73,11 +73,11 @@
   (hashify-list function)
   (index-of-max function)
   (join-paths function)
-  (leaf-directory-only function)
   (make-keyword function)
   (n-gram-strings function)
   (n-grams function)
   (normalize-list function)
+  (path-leaf-only function)
   (path-only function)
   (path-parent function)
   (path-type function)
@@ -122,7 +122,8 @@
   "Exported special variables."
   (*alphabet-alphanum* variable)
   (*alphabet-bitcoin* variable)
-  (*alphabet-alphanum-upper* variable))
+  (*alphabet-alphanum-upper* variable)
+  (*default-rstate* variable))
 
 (defun generate-readme ()
   (let* ((file-name (join-paths

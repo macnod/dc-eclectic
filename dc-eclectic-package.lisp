@@ -16,6 +16,7 @@
                 :digest-sequence
                 :sha512)
   (:export
+    *default-rstate*
     all-permutations
     all-permutations-of-string
     ascii-alpha
@@ -60,7 +61,6 @@
     hashify-list
     index-of-max
     join-paths
-    leaf-directory-only
     log-it
     log-it-lazy
     log-it-pairs
